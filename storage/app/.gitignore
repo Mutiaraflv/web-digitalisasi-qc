@@ -1,0 +1,7 @@
+*
+!private/
+!public/
+!templates/
+!templates/**
+!default_template.json
+!.gitignore

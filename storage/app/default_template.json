@@ -1,0 +1,154 @@
+{
+  "general": {
+    "docNo": "FORM-QC-002",
+    "rev": "04",
+    "reportNo": "",
+    "date": "",
+    "customer": "",
+    "partName": "OUTPUT SHAFT",
+    "inspectionType": "Pre",
+    "jobNo": "-",
+    "modelUnit": "HT051",
+    "sscId": "",
+    "quoteNo": "-",
+    "partNo": "-"
+  },
+  "sections": {
+    "item01": {
+      "title": "OD Area \"A\" and OD Spline",
+      "spec": "Ø79 ± 0.25",
+      "x": 79.0,
+      "y": 79.0,
+      "z": 79.0,
+      "ar": "A",
+      "remark1": "Actual measurement OD area \"A\" in good condition",
+      "remark2": "",
+      "remark3": "",
+      "remark4": "",
+      "remark5": "",
+      "remark6": "",
+      "lengthItem": "L",
+      "lengthSpec": "N/A",
+      "lengthResult": 724.0,
+      "lengthAr": "-",
+      "penetrantRemark": "No indication crack at OD area \"A\" and OD spline after penetrant check"
+    },
+    "item02": {
+      "title": "OD Area \"B and C\"",
+      "itemB": {
+        "spec": "Ø82 ± 0.25",
+        "row1": { "x": 82.0, "y": 82.0, "z": 82.0, "ar": "A" },
+        "row2": { "x": 82.0, "y": 82.0, "z": 82.0, "ar": "A" },
+        "row3": { "x": 82.0, "y": 82.0, "z": 82.0, "ar": "A" }
+      },
+      "itemC": {
+        "spec": "Ø77 ± 0.25",
+        "row1": { "x": 77.0, "y": 77.0, "z": 77.0, "ar": "A" },
+        "row2": { "x": 77.0, "y": 77.0, "z": 77.0, "ar": "A" },
+        "row3": { "x": 77.0, "y": 77.0, "z": 77.0, "ar": "A" }
+      },
+      "remarks": [
+        "Actual measurement OD area \"B and C\" in good condition"
+      ],
+      "penetrantRemark": "No indication crack at OD Area \"B and C\" after penetrant check"
+    },
+    "item03": {
+      "title": "OD Area \"D\"",
+      "itemD": {
+        "spec": "Ø118 ± 0.5",
+        "x": 118.0,
+        "y": 118.0,
+        "z": 118.0,
+        "ar": "A"
+      },
+      "distanceE": {
+        "spec": "13 ± 0.5",
+        "x": 13.0,
+        "y": 13.0,
+        "z": 13.0,
+        "ar": "A"
+      },
+      "remarks": [
+        "Actual measurement OD area \"D\" in good condition",
+        "Actual distance area \"E\" in good condition"
+      ],
+      "penetrantRemark": "No indication crack at OD area \"D\" after penetrant check"
+    },
+    "item04": {
+      "title": "OD Area \"F\"",
+      "itemF": {
+        "spec": "Ø100,01 ± 0,008",
+        "row1": { "x": 100.01, "y": 100.01, "z": 100.01, "ar": "A" },
+        "row2": { "x": 100.01, "y": 100.01, "z": 100.01, "ar": "A" },
+        "row3": { "x": 100.01, "y": 100.01, "z": 100.01, "ar": "A" }
+      },
+      "distanceK": {
+        "spec": "N/A",
+        "result": 188.55,
+        "ar": "-"
+      },
+      "remarks": [
+        "Actual measurement OD area \"F\" in good condition"
+      ],
+      "penetrantRemark": "No indication crack at area OD area \"F\" after penetrant check"
+    },
+    "item05": {
+      "title": "OD Area \"H\"",
+      "itemH": {
+        "spec": "Ø94 ± 0,013",
+        "row1": { "x": 94.0, "y": 94.0, "z": 94.0, "ar": "A" },
+        "row2": { "x": 94.0, "y": 94.0, "z": 94.0, "ar": "A" },
+        "row3": { "x": 94.0, "y": 94.0, "z": 94.0, "ar": "A" }
+      },
+      "distanceJ": {
+        "spec": "N/A",
+        "result": 142.8,
+        "ar": "-"
+      },
+      "remarks": [
+        "Actual measurement OD area \"H\" in good condition"
+      ],
+      "penetrantRemark": "No indication crack at area OD area \"H\" after penetrant check"
+    },
+    "item06": {
+      "title": "OD Area \"G\" and OD Spline",
+      "itemG": {
+        "spec": "Ø84,2 ± 0,13",
+        "x": 84.2,
+        "y": 84.2,
+        "z": 84.2,
+        "ar": "A"
+      },
+      "distanceI": {
+        "spec": "N/A",
+        "result": 98.78,
+        "ar": "-"
+      },
+      "remarks": [
+        "Actual measurement OD area \"G\" in good condition"
+      ],
+      "penetrantRemark": "No indication crack at area OD spline after penetrant check"
+    }
+  },
+  "tir": {
+    "spec": "Max 0,2",
+    "datum": "Datum at item \"B and E\"",
+    "items": [
+      { "item": "A", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" },
+      { "item": "B", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" },
+      { "item": "C", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" },
+      { "item": "D", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" },
+      { "item": "E", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" },
+      { "item": "F", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" }
+    ]
+  },
+  "recommendations": [
+    { "item": "01", "remarks": "Cleaning and polish OD area \"A\"", "recommendation": "Cleaning and polish OD area \"A\"" }
+  ],
+  "signatures": {
+    "checkedBy": { "name": "Faqih S A A", "title": "QC Inspector", "date": "" },
+    "createdBy": { "name": "M Kevin S", "title": "QC Inspector", "date": "" },
+    "reviewedBy": { "name": "Agus Riyanto", "title": "Leader QC", "date": "" }
+  }
+}
+
