@@ -19,24 +19,40 @@ const reportForm = document.getElementById('reportForm');
 const recTableBody = document.getElementById('recTableBody');
 const btnAddRecRow = document.getElementById('btnAddRecRow');
 const toastContainer = document.getElementById('toastContainer');
+const toggleBlueprint = document.getElementById('toggleBlueprint');
+const blueprintContent = document.getElementById('blueprintContent');
+const blueprintToggleText = document.getElementById('blueprintToggleText');
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.lucide) lucide.createIcons();
     setupEventListeners();
+    setupToleranceAutoEvaluation();
     await fetchDefaultTemplate();
 });
 
 function setupEventListeners() {
-    // Tabs
+    // Tabs Navigation
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const targetId = btn.getAttribute('data-tab');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             btn.classList.add('active');
-            document.getElementById(targetId).classList.add('active');
+            const targetEl = document.getElementById(targetId);
+            if (targetEl) targetEl.classList.add('active');
         });
     });
+
+    // Blueprint Schematic Toggle
+    if (toggleBlueprint && blueprintContent) {
+        toggleBlueprint.addEventListener('click', () => {
+            const isHidden = blueprintContent.style.display === 'none';
+            blueprintContent.style.display = isHidden ? 'block' : 'none';
+            if (blueprintToggleText) {
+                blueprintToggleText.textContent = isHidden ? 'sembunyikan' : 'tampilkan';
+            }
+        });
+    }
 
     // Modal controls
     if (btnCreateNew) btnCreateNew.addEventListener('click', () => openCreateModal());
@@ -66,6 +82,129 @@ function setupEventListeners() {
     // Modal save buttons
     if (btnSaveOnly) btnSaveOnly.addEventListener('click', () => handleSave(false));
     if (btnSubmitAndDownload) btnSubmitAndDownload.addEventListener('click', () => handleSave(true));
+}
+
+// Live Tolerance Auto-Evaluation
+function setupToleranceAutoEvaluation() {
+    // Dimension Inputs
+    document.querySelectorAll('.auto-eval').forEach(input => {
+        input.addEventListener('input', () => evaluateDimensionInput(input));
+    });
+
+    // TIR Inputs
+    document.querySelectorAll('.tir-eval').forEach(input => {
+        input.addEventListener('input', () => evaluateTirInput(input));
+    });
+
+    // Select A/R change triggers tab status recalculation
+    document.querySelectorAll('.meas-table select').forEach(sel => {
+        sel.addEventListener('change', () => recalculateAllTabStatuses());
+    });
+}
+
+function evaluateDimensionInput(input) {
+    const nominal = parseFloat(input.dataset.specNominal);
+    const tol = parseFloat(input.dataset.specTol);
+    const val = parseFloat(input.value);
+
+    if (isNaN(val) || input.value === '') {
+        input.classList.remove('is-in-spec', 'is-out-of-spec');
+        recalculateAllTabStatuses();
+        return;
+    }
+
+    const min = nominal - tol;
+    const max = nominal + tol;
+
+    // Small rounding tolerance for floating point comparisons
+    const inSpec = (val >= (min - 0.0001)) && (val <= (max + 0.0001));
+
+    if (inSpec) {
+        input.classList.add('is-in-spec');
+        input.classList.remove('is-out-of-spec');
+    } else {
+        input.classList.add('is-out-of-spec');
+        input.classList.remove('is-in-spec');
+
+        // Automatically set nearest row A/R select to 'R' if out of spec
+        const row = input.closest('tr');
+        if (row) {
+            const selectAr = row.querySelector('select');
+            if (selectAr) {
+                selectAr.value = 'R';
+            }
+        }
+    }
+
+    recalculateAllTabStatuses();
+}
+
+function evaluateTirInput(input) {
+    const val = parseFloat(input.value);
+    if (isNaN(val) || input.value === '') {
+        input.classList.remove('is-in-spec', 'is-out-of-spec');
+        recalculateAllTabStatuses();
+        return;
+    }
+
+    // Max 0.2 mm
+    const inSpec = val <= 0.2001;
+    if (inSpec) {
+        input.classList.add('is-in-spec');
+        input.classList.remove('is-out-of-spec');
+    } else {
+        input.classList.add('is-out-of-spec');
+        input.classList.remove('is-in-spec');
+
+        const row = input.closest('tr');
+        if (row) {
+            const selectAr = row.querySelector('select');
+            if (selectAr) selectAr.value = 'R';
+        }
+    }
+
+    recalculateAllTabStatuses();
+}
+
+function recalculateAllTabStatuses() {
+    const checkTab = (contentId, dotId) => {
+        const content = document.getElementById(contentId);
+        const dot = document.getElementById(dotId);
+        if (!content || !dot) return;
+
+        const hasOutOfSpec = content.querySelector('.is-out-of-spec') !== null;
+        let hasRejectSelect = false;
+        content.querySelectorAll('select').forEach(s => {
+            if (s.value === 'R') hasRejectSelect = true;
+        });
+
+        dot.classList.remove('has-reject', 'all-accept');
+        if (hasOutOfSpec || hasRejectSelect) {
+            dot.classList.add('has-reject');
+            dot.title = 'Terdapat parameter reject/out of spec';
+        } else {
+            dot.classList.add('all-accept');
+            dot.title = 'Semua parameter terukur in-spec (Accept)';
+        }
+    };
+
+    checkTab('tab-sec1', 'dot-sec1');
+    checkTab('tab-sec2', 'dot-sec2');
+    checkTab('tab-sec34', 'dot-sec34');
+    checkTab('tab-sec56', 'dot-sec56');
+    checkTab('tab-tir', 'dot-tir');
+}
+
+// Quick Preset Remark Helper
+function appendRemark(targetId, text) {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    if (!el.value) {
+        el.value = text;
+    } else if (!el.value.includes(text)) {
+        el.value += '; ' + text;
+    }
+    showToast(`Remark "${text}" ditambahkan`, 'success');
 }
 
 function showToast(message, type = 'success') {
@@ -106,7 +245,7 @@ function filterTableLocally() {
 
 // Download Excel
 async function downloadExcel(id, sscId) {
-    showToast(`Sedang membuat file Excel untuk ${sscId}...`, 'success');
+    showToast(`Sedang menyiapkan file Excel ${sscId}...`, 'success');
     try {
         const response = await fetch(`/reports/${id}/export`);
         if (!response.ok) throw new Error('Gagal mengunduh file Excel');
@@ -128,7 +267,7 @@ async function downloadExcel(id, sscId) {
 
 // Delete Report
 async function deleteReport(id, sscId) {
-    if (!confirm(`Apakah Anda yakin ingin menghapus laporan "${sscId}"?`)) return;
+    if (!confirm(`Konfirmasi: Apakah Anda yakin ingin menghapus data laporan "${sscId}"?`)) return;
     try {
         const res = await fetch(`/reports/${id}`, {
             method: 'DELETE',
@@ -137,7 +276,7 @@ async function deleteReport(id, sscId) {
                 'Accept': 'application/json'
             }
         });
-        if (!res.ok) throw new Error('Gagal menghapus laporan');
+        if (!res.ok) throw new Error('Gagal menghapus laporan dari database');
         showToast('Laporan berhasil dihapus', 'success');
         setTimeout(() => window.location.reload(), 600);
     } catch (err) {
@@ -166,7 +305,7 @@ async function duplicateReport(id) {
 // Open Modal Create
 function openCreateModal() {
     currentEditingId = null;
-    modalTitle.innerHTML = `<i data-lucide="plus-circle"></i> Buat Laporan Baru (Laravel + MySQL)`;
+    modalTitle.innerHTML = `<i data-lucide="plus-circle"></i> Buat Laporan Inspeksi Baru`;
     reportForm.reset();
     recTableBody.innerHTML = '';
 
@@ -180,14 +319,19 @@ function openCreateModal() {
         populateForm(defaultTemplate);
         document.getElementById('g_sscId').value = `SSC SBY-${Math.floor(1000 + Math.random() * 9000)}`;
         document.getElementById('g_reportNo').value = `0${Math.floor(700 + Math.random() * 200)}`;
-        document.getElementById('g_date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('sig_checkedDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('sig_createdDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('sig_reviewedDate').value = new Date().toISOString().split('T')[0];
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('g_date').value = todayStr;
+        document.getElementById('sig_checkedDate').value = todayStr;
+        document.getElementById('sig_createdDate').value = todayStr;
+        document.getElementById('sig_reviewedDate').value = todayStr;
     }
 
     reportModal.classList.add('active');
     if (window.lucide) lucide.createIcons();
+
+    // Trigger initial tolerance evaluations
+    document.querySelectorAll('.auto-eval').forEach(input => evaluateDimensionInput(input));
+    document.querySelectorAll('.tir-eval').forEach(input => evaluateTirInput(input));
 }
 
 // Open Modal Edit
@@ -200,10 +344,10 @@ async function openEditModal(id) {
         const res = await fetch(`/reports/${id}`, {
             headers: { 'Accept': 'application/json' }
         });
-        if (!res.ok) throw new Error('Laporan tidak ditemukan');
+        if (!res.ok) throw new Error('Data laporan tidak ditemukan di server');
         const data = await res.json();
 
-        modalTitle.innerHTML = `<i data-lucide="file-edit"></i> Edit Laporan: <span class="mono">${data.ssc_id}</span>`;
+        modalTitle.innerHTML = `<i data-lucide="file-edit"></i> Edit Laporan: <span class="mono" style="color:var(--primary); font-weight:700;">${data.ssc_id}</span>`;
 
         // Switch to first tab
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -215,6 +359,10 @@ async function openEditModal(id) {
 
         reportModal.classList.add('active');
         if (window.lucide) lucide.createIcons();
+
+        // Run evaluation on populated values
+        document.querySelectorAll('.auto-eval').forEach(input => evaluateDimensionInput(input));
+        document.querySelectorAll('.tir-eval').forEach(input => evaluateTirInput(input));
     } catch (err) {
         showToast(err.message, 'error');
     }
@@ -452,12 +600,12 @@ function populateSignatures(sig) {
 function addRecommendationRow(item = '01', remarks = '', recommendation = '') {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td><input type="text" class="rec-item" value="${item || '01'}" style="text-align: center;"></td>
-        <td><input type="text" class="rec-remarks" value="${remarks || ''}" placeholder="Temuan visual atau kondisi..."></td>
-        <td><input type="text" class="rec-rec" value="${recommendation || ''}" placeholder="Rekomendasi tindakan..."></td>
+        <td><input type="text" class="rec-item mono" value="${item || '01'}" style="text-align: center; font-weight:700;"></td>
+        <td><input type="text" class="rec-remarks" value="${remarks || ''}" placeholder="Temuan visual atau kondisi aktual..."></td>
+        <td><input type="text" class="rec-rec" value="${recommendation || ''}" placeholder="Rekomendasi tindakan teknis..."></td>
         <td style="text-align: center;">
             <button type="button" class="btn btn-secondary btn-icon btn-sm" onclick="this.closest('tr').remove()" title="Hapus baris">
-                <i data-lucide="x"></i>
+                <i data-lucide="trash-2"></i>
             </button>
         </td>
     `;
@@ -468,7 +616,7 @@ function addRecommendationRow(item = '01', remarks = '', recommendation = '') {
 function collectFormData() {
     const sscId = document.getElementById('g_sscId').value.trim();
     if (!sscId) {
-        alert('SSC ID wajib diisi!');
+        showToast('Nomor SSC ID wajib diisi!', 'error');
         document.querySelector('[data-tab="tab-general"]').click();
         document.getElementById('g_sscId').focus();
         return null;
@@ -664,7 +812,7 @@ async function handleSave(downloadDirectly = false) {
     if (!payload) return;
 
     if (downloadDirectly) {
-        showToast('Sedang menyimpan ke MySQL & men-generate file Excel...', 'success');
+        showToast('Sedang menyimpan & men-generate file Excel FORM-QC-002...', 'success');
         try {
             const res = await fetch('/reports/submit-and-download', {
                 method: 'POST',
@@ -675,7 +823,7 @@ async function handleSave(downloadDirectly = false) {
                 body: JSON.stringify(payload)
             });
 
-            if (!res.ok) throw new Error('Gagal memproses data laporan');
+            if (!res.ok) throw new Error('Gagal memproses data laporan ke server');
 
             const blob = await res.blob();
             const url = window.URL.createObjectURL(blob);
@@ -713,7 +861,7 @@ async function handleSave(downloadDirectly = false) {
                 throw new Error(errData.message || 'Gagal menyimpan laporan');
             }
 
-            showToast('Laporan berhasil disimpan ke MySQL!', 'success');
+            showToast('Laporan berhasil disimpan ke database!', 'success');
             closeModal();
             setTimeout(() => window.location.reload(), 600);
         } catch (err) {
@@ -721,4 +869,3 @@ async function handleSave(downloadDirectly = false) {
         }
     }
 }
-
