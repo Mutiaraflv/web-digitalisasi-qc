@@ -32,9 +32,14 @@
           <span>Dashboard</span>
         </a>
 
-        <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+        <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') && !request()->has('create') ? 'active' : '' }}">
           <i data-lucide="file-check-2"></i>
-          <span>Inspeksi QC</span>
+          <span>Daftar Laporan QC</span>
+        </a>
+
+        <a href="{{ route('reports.index', ['create' => 1]) }}" class="nav-item {{ request()->has('create') ? 'active' : '' }}">
+          <i data-lucide="file-plus"></i>
+          <span>Form Input QC Baru</span>
         </a>
 
         <a href="{{ route('ncrs.index') }}" class="nav-item {{ request()->routeIs('ncrs.*') ? 'active' : '' }}">

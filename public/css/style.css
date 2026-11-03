@@ -592,20 +592,16 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(17, 24, 39, 0.6);
-  display: flex;
+  background: rgba(17, 24, 39, 0.65);
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 1.25rem;
-  z-index: 100;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.15s ease;
+  z-index: 9999;
 }
 
 .modal-overlay.active {
-  opacity: 1;
-  visibility: visible;
+  display: flex !important;
 }
 
 .modal-dialog {

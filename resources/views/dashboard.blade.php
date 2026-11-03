@@ -4,7 +4,7 @@
 @section('page_title', 'Dashboard')
 
 @section('top_actions')
-  <a href="{{ route('reports.index') }}" class="btn btn-primary btn-sm">
+  <a href="{{ route('reports.index', ['create' => 1]) }}" class="btn btn-primary btn-sm">
     <i data-lucide="plus"></i> Inspeksi Baru
   </a>
 @endsection
@@ -103,7 +103,7 @@
         <h3>Menu Cepat</h3>
       </div>
       <div class="card-body" style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <a href="{{ route('reports.index') }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
+        <a href="{{ route('reports.index', ['create' => 1]) }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
           <i data-lucide="file-plus"></i> Input Inspeksi Komponen
         </a>
         <a href="{{ route('ncrs.index') }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">

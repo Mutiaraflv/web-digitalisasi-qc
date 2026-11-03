@@ -4,7 +4,7 @@
 @section('page_title', 'Inspeksi QC')
 
 @section('top_actions')
-  <button id="btnCreateNew" class="btn btn-primary btn-sm">
+  <button id="btnCreateNew" onclick="openCreateModal()" class="btn btn-primary btn-sm">
     <i data-lucide="plus"></i> Inspeksi Baru
   </button>
 @endsection
@@ -117,7 +117,10 @@
           @empty
             <tr>
               <td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-subtle);">
-                Belum ada data inspeksi. Klik <strong>Inspeksi Baru</strong> untuk menambahkan.
+                <p style="margin-bottom: 0.75rem;">Belum ada data inspeksi yang tersimpan.</p>
+                <button type="button" onclick="openCreateModal()" class="btn btn-primary btn-sm">
+                  <i data-lucide="plus"></i> Buka Form Input Inspeksi Baru
+                </button>
               </td>
             </tr>
           @endforelse
