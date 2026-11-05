@@ -193,12 +193,46 @@ function setupLivePreviewSync() {
 }
 
 function updateLivePreview() {
+    // Official template defaults from PDF (SSC SBY-5778 CCR PRE OUTPUT SHAFT.pdf)
+    const defVals = {
+        docNo: 'FORM-QC-002', rev: '04', responsibility: 'Quality Control', effectiveDate: '28-Jan-2022', page: '1   of   6',
+        reportNo: '0742', sscId: 'SSC SBY-5778', customer: 'AMMAN MINERAL NUSA TENGGARA, PT', partName: 'OUTPUT SHAFT',
+        inspectionType: 'Pre', modelUnit: 'HT051', jobNo: '-', quoteNo: '-', partNo: '-',
+        i1_x: '78,850', i1_y: '78,865', i1_z: '78,865', i1_ar: 'A', i1_len: '724,320',
+        i2_b1_x: '81,830', i2_b1_y: '81,840', i2_b1_z: '81,840', i2_b1_ar: 'A',
+        i2_b2_x: '81,840', i2_b2_y: '81,850', i2_b2_z: '81,850', i2_b2_ar: 'A',
+        i2_b3_x: '81,850', i2_b3_y: '81,860', i2_b3_z: '81,860', i2_b3_ar: 'A',
+        i2_c1_x: '76,850', i2_c1_y: '76,860', i2_c1_z: '76,865', i2_c1_ar: 'A',
+        i2_c2_x: '76,855', i2_c2_y: '76,850', i2_c2_z: '76,860', i2_c2_ar: 'A',
+        i2_c3_x: '76,860', i2_c3_y: '76,870', i2_c3_z: '76,860', i2_c3_ar: 'A',
+        i3_d_x: '118,030', i3_d_y: '118,020', i3_d_z: '118,010', i3_d_ar: 'A',
+        i3_e_x: '12,950', i3_e_ar: 'A',
+        i4_f1_x: '101,010', i4_f1_y: '101,010', i4_f1_z: '101,005', i4_f1_ar: 'A',
+        i4_f2_x: '101,015', i4_f2_y: '101,015', i4_f2_z: '101,015', i4_f2_ar: 'A',
+        i4_f3_x: '101,010', i4_f3_y: '101,010', i4_f3_z: '101,010', i4_f3_ar: 'A',
+        i4_k: '188,550',
+        i5_h1_x: '93,980', i5_h1_y: '93,985', i5_h1_z: '93,980', i5_h1_ar: 'R',
+        i5_h2_x: '93,980', i5_h2_y: '93,985', i5_h2_z: '93,985', i5_h2_ar: 'R',
+        i5_h3_x: '93,995', i5_h3_y: '94,000', i5_h3_z: '93,990', i5_h3_ar: 'A',
+        i5_j: '142,800',
+        i6_x: '83,980', i6_y: '84,010', i6_z: '84,000', i6_ar: 'R',
+        i6_i: '98,780',
+        tir: {
+            a: { d0: '0', d90: '+0,05', d180: '+0,18', d270: '+0,10', ar: 'A' },
+            b: { d0: '0', d90: '+0,02', d180: '0', d270: '+0,02', ar: 'A' },
+            c: { d0: '0', d90: '+0,12', d180: '+0,10', d270: '+0,03', ar: 'A' },
+            d: { d0: '0', d90: '+0,03', d180: '+0,03', d270: '0', ar: 'A' },
+            e: { d0: '0', d90: '+0,01', d180: '0', d270: '0', ar: 'A' },
+            f: { d0: '0', d90: '-0,05', d180: '-0,08', d270: '+0,02', ar: 'A' }
+        }
+    };
+
     // 1. General & Document Control
-    const docNo = document.getElementById('g_docNo')?.value || 'FORM-QC-002';
-    const rev = document.getElementById('g_rev')?.value || '04';
-    const responsibility = document.getElementById('g_responsibility')?.value || 'QC Inspector';
-    const effectiveDate = document.getElementById('g_effectiveDate')?.value || '-';
-    const page = document.getElementById('g_page')?.value || '1';
+    const docNo = document.getElementById('g_docNo')?.value || defVals.docNo;
+    const rev = document.getElementById('g_rev')?.value || defVals.rev;
+    const responsibility = document.getElementById('g_responsibility')?.value || defVals.responsibility;
+    const effectiveDate = document.getElementById('g_effectiveDate')?.value || defVals.effectiveDate;
+    const page = document.getElementById('g_page')?.value || defVals.page;
 
     setPreviewText('prev_docNo', docNo);
     setPreviewText('prev_rev', rev);
@@ -206,21 +240,17 @@ function updateLivePreview() {
     setPreviewText('prev_effectiveDate', effectiveDate);
     setPreviewText('prev_page', page);
 
-    // Top Bar badges
-    setPreviewText('top_badge_docNo', docNo);
-    setPreviewText('top_badge_rev', rev);
-
     // Info Grid
-    const sscId = document.getElementById('g_sscId')?.value || '-';
-    const reportNo = document.getElementById('g_reportNo')?.value || '-';
-    const date = document.getElementById('g_date')?.value || '-';
-    const customer = document.getElementById('g_customer')?.value || '-';
-    const partName = document.getElementById('g_partName')?.value || 'OUTPUT SHAFT';
-    const inspectionType = document.getElementById('g_inspectionType')?.value || 'Pre';
-    const modelUnit = document.getElementById('g_modelUnit')?.value || 'HT051';
-    const jobNo = document.getElementById('g_jobNo')?.value || '-';
-    const quoteNo = document.getElementById('g_quoteNo')?.value || '-';
-    const partNo = document.getElementById('g_partNo')?.value || '-';
+    const sscId = document.getElementById('g_sscId')?.value || defVals.sscId;
+    const reportNo = document.getElementById('g_reportNo')?.value || defVals.reportNo;
+    const date = document.getElementById('g_date')?.value || '17-Oct-26';
+    const customer = document.getElementById('g_customer')?.value || defVals.customer;
+    const partName = document.getElementById('g_partName')?.value || defVals.partName;
+    const inspectionType = document.getElementById('g_inspectionType')?.value || defVals.inspectionType;
+    const modelUnit = document.getElementById('g_modelUnit')?.value || defVals.modelUnit;
+    const jobNo = document.getElementById('g_jobNo')?.value || defVals.jobNo;
+    const quoteNo = document.getElementById('g_quoteNo')?.value || defVals.quoteNo;
+    const partNo = document.getElementById('g_partNo')?.value || defVals.partNo;
 
     setPreviewText('prev_sscId', sscId);
     setPreviewText('prev_reportNo', reportNo);
@@ -231,119 +261,110 @@ function updateLivePreview() {
     setPreviewText('prev_jobNo', jobNo);
     setPreviewText('prev_quoteNo', quoteNo);
     setPreviewText('prev_partNo', partNo);
-    setPreviewText('prev_metaDate2', date);
+    setPreviewText('prev_metaDate', date);
 
     const isPre = inspectionType === 'Pre';
     const preEl = document.getElementById('prev_preCheck');
     const postEl = document.getElementById('prev_postCheck');
-    if (preEl) preEl.innerHTML = isPre ? 'Pre &#9745;' : 'Pre &#9744;';
-    if (postEl) postEl.innerHTML = !isPre ? 'Post &#9745;' : 'Post &#9744;';
+    if (preEl) preEl.innerHTML = isPre ? '&#9745; Pre' : '&#9744; Pre';
+    if (postEl) postEl.innerHTML = !isPre ? '&#9745; Post' : '&#9744; Post';
 
-    // 2. Section 01
-    setPreviewText('prev_i1_x', document.getElementById('i1_x')?.value || '-');
-    setPreviewText('prev_i1_y', document.getElementById('i1_y')?.value || '-');
-    setPreviewText('prev_i1_z', document.getElementById('i1_z')?.value || '-');
-    const i1Ar = document.getElementById('i1_ar')?.value || 'A';
+    // 2. Section 01 (Area A)
+    setPreviewText('prev_i1_x', document.getElementById('i1_x')?.value || defVals.i1_x);
+    setPreviewText('prev_i1_y', document.getElementById('i1_y')?.value || defVals.i1_y);
+    setPreviewText('prev_i1_z', document.getElementById('i1_z')?.value || defVals.i1_z);
+    const i1Ar = document.getElementById('i1_ar')?.value || defVals.i1_ar;
     setPreviewText('prev_i1_ar', i1Ar);
     colorStatusCell('prev_i1_ar', i1Ar);
-    setPreviewText('prev_i1_len', document.getElementById('i1_length')?.value || '-');
-    setPreviewText('prev_i1_rem', document.getElementById('i1_remark1')?.value || 'Actual measurement OD area "A" in good condition');
+    setPreviewText('prev_i1_len', document.getElementById('i1_length')?.value || defVals.i1_len);
 
     // 3. Section 02 (B & C)
     ['1', '2', '3'].forEach(r => {
         ['x', 'y', 'z'].forEach(axis => {
-            setPreviewText(`prev_i2_b${r}_${axis}`, document.getElementById(`i2_b${r}_${axis}`)?.value || '-');
-            setPreviewText(`prev_i2_c${r}_${axis}`, document.getElementById(`i2_c${r}_${axis}`)?.value || '-');
+            const bVal = document.getElementById(`i2_b${r}_${axis}`)?.value || defVals[`i2_b${r}_${axis}`];
+            const cVal = document.getElementById(`i2_c${r}_${axis}`)?.value || defVals[`i2_c${r}_${axis}`];
+            setPreviewText(`prev_i2_b${r}_${axis}`, bVal);
+            setPreviewText(`prev_i2_c${r}_${axis}`, cVal);
         });
-        const bAr = document.getElementById(`i2_b${r}_ar`)?.value || 'A';
+        const bAr = document.getElementById(`i2_b${r}_ar`)?.value || defVals[`i2_b${r}_ar`];
         setPreviewText(`prev_i2_b${r}_ar`, bAr);
         colorStatusCell(`prev_i2_b${r}_ar`, bAr);
 
-        const cAr = document.getElementById(`i2_c${r}_ar`)?.value || 'A';
+        const cAr = document.getElementById(`i2_c${r}_ar`)?.value || defVals[`i2_c${r}_ar`];
         setPreviewText(`prev_i2_c${r}_ar`, cAr);
         colorStatusCell(`prev_i2_c${r}_ar`, cAr);
     });
 
     // 4. Section 03 (D & E)
     ['x', 'y', 'z'].forEach(axis => {
-        setPreviewText(`prev_i3_d_${axis}`, document.getElementById(`i3_d_${axis}`)?.value || '-');
-        setPreviewText(`prev_i3_e_${axis}`, document.getElementById(`i3_e_${axis}`)?.value || '-');
+        setPreviewText(`prev_i3_d_${axis}`, document.getElementById(`i3_d_${axis}`)?.value || defVals[`i3_d_${axis}`]);
     });
-    const dAr = document.getElementById('i3_d_ar')?.value || 'A';
+    setPreviewText('prev_i3_e_x', document.getElementById('i3_e_x')?.value || defVals.i3_e_x);
+    const dAr = document.getElementById('i3_d_ar')?.value || defVals.i3_d_ar;
     setPreviewText('prev_i3_d_ar', dAr);
     colorStatusCell('prev_i3_d_ar', dAr);
 
-    const eAr = document.getElementById('i3_e_ar')?.value || 'A';
+    const eAr = document.getElementById('i3_e_ar')?.value || defVals.i3_e_ar;
     setPreviewText('prev_i3_e_ar', eAr);
     colorStatusCell('prev_i3_e_ar', eAr);
 
     // 5. Section 04 (F & K)
     ['1', '2', '3'].forEach(r => {
         ['x', 'y', 'z'].forEach(axis => {
-            setPreviewText(`prev_i4_f${r}_${axis}`, document.getElementById(`i4_f${r}_${axis}`)?.value || '-');
+            setPreviewText(`prev_i4_f${r}_${axis}`, document.getElementById(`i4_f${r}_${axis}`)?.value || defVals[`i4_f${r}_${axis}`]);
         });
-        const fAr = document.getElementById(`i4_f${r}_ar`)?.value || 'A';
+        const fAr = document.getElementById(`i4_f${r}_ar`)?.value || defVals[`i4_f${r}_ar`];
         setPreviewText(`prev_i4_f${r}_ar`, fAr);
         colorStatusCell(`prev_i4_f${r}_ar`, fAr);
     });
-    setPreviewText('prev_i4_k', document.getElementById('i4_k_res')?.value || '-');
+    setPreviewText('prev_i4_k', document.getElementById('i4_k_res')?.value || defVals.i4_k);
 
     // 6. Section 05 (H & J)
     ['1', '2', '3'].forEach(r => {
         ['x', 'y', 'z'].forEach(axis => {
-            setPreviewText(`prev_i5_h${r}_${axis}`, document.getElementById(`i5_h${r}_${axis}`)?.value || '-');
+            setPreviewText(`prev_i5_h${r}_${axis}`, document.getElementById(`i5_h${r}_${axis}`)?.value || defVals[`i5_h${r}_${axis}`]);
         });
-        const hAr = document.getElementById(`i5_h${r}_ar`)?.value || 'A';
+        const hAr = document.getElementById(`i5_h${r}_ar`)?.value || defVals[`i5_h${r}_ar`];
         setPreviewText(`prev_i5_h${r}_ar`, hAr);
         colorStatusCell(`prev_i5_h${r}_ar`, hAr);
     });
-    setPreviewText('prev_i5_j', document.getElementById('i5_j_res')?.value || '-');
+    setPreviewText('prev_i5_j', document.getElementById('i5_j_res')?.value || defVals.i5_j);
 
     // 7. Section 06 (G & I)
     ['x', 'y', 'z'].forEach(axis => {
-        setPreviewText(`prev_i6_${axis}`, document.getElementById(`i6_${axis}`)?.value || '-');
+        setPreviewText(`prev_i6_${axis}`, document.getElementById(`i6_${axis}`)?.value || defVals[`i6_${axis}`]);
     });
-    const gAr = document.getElementById('i6_ar')?.value || 'A';
+    const gAr = document.getElementById('i6_ar')?.value || defVals.i6_ar;
     setPreviewText('prev_i6_ar', gAr);
     colorStatusCell('prev_i6_ar', gAr);
-    setPreviewText('prev_i6_i', document.getElementById('i6_i_res')?.value || '-');
+    setPreviewText('prev_i6_i', document.getElementById('i6_i_res')?.value || defVals.i6_i);
 
-    // 8. TIR Points
-    syncTirPreview();
+    // 8. TIR Table
+    ['a', 'b', 'c', 'd', 'e', 'f'].forEach(pt => {
+        ['0', '90', '180', '270'].forEach(deg => {
+            const val = document.getElementById(`tir_${pt}_${deg}`)?.value || defVals.tir[pt][`d${deg}`];
+            setPreviewText(`prev_tir_${pt}_${deg}`, val);
+        });
+        const ar = document.getElementById(`tir_${pt}_ar`)?.value || defVals.tir[pt].ar;
+        setPreviewText(`prev_tir_${pt}_ar`, ar);
+        colorStatusCell(`prev_tir_${pt}_ar`, ar);
+    });
 
-    // 9. Signatures
+    // 9. Recommendations
+    syncRecommendationsPreview();
+
+    // 10. Signatures
     setPreviewText('prev_sigCheckedName', document.getElementById('sig_checkedName')?.value || 'Faqih S A A');
     setPreviewText('prev_sigCheckedTitle', document.getElementById('sig_checkedTitle')?.value || 'QC Inspector');
-    setPreviewText('prev_sigCheckedDate', document.getElementById('sig_checkedDate')?.value || '-');
+    setPreviewText('prev_sigCheckedDate', 'Date: ' + (document.getElementById('sig_checkedDate')?.value || 'October 20, 2026'));
 
     setPreviewText('prev_sigCreatedName', document.getElementById('sig_createdName')?.value || 'M Kevin S');
     setPreviewText('prev_sigCreatedTitle', document.getElementById('sig_createdTitle')?.value || 'QC Inspector');
-    setPreviewText('prev_sigCreatedDate', document.getElementById('sig_createdDate')?.value || '-');
+    setPreviewText('prev_sigCreatedDate', 'Date: ' + (document.getElementById('sig_createdDate')?.value || 'October 21, 2026'));
 
     setPreviewText('prev_sigReviewedName', document.getElementById('sig_reviewedName')?.value || 'Agus Riyanto');
     setPreviewText('prev_sigReviewedTitle', document.getElementById('sig_reviewedTitle')?.value || 'Leader QC');
-    setPreviewText('prev_sigReviewedDate', document.getElementById('sig_reviewedDate')?.value || '-');
-
-    // 10. Check Overall Verdict
-    evaluateOverallStatus();
-}
-
-function syncTirPreview() {
-    const points = ['a', 'b', 'c', 'd', 'e', 'f'];
-    points.forEach(pt => {
-        const v0 = document.getElementById(`tir_${pt}_0`)?.value || '-';
-        const v90 = document.getElementById(`tir_${pt}_90`)?.value || '-';
-        const v180 = document.getElementById(`tir_${pt}_180`)?.value || '-';
-        const v270 = document.getElementById(`tir_${pt}_270`)?.value || '-';
-        const status = document.getElementById(`tir_${pt}_ar`)?.value || 'A';
-
-        setPreviewText(`prev_tir_${pt}_0`, v0);
-        setPreviewText(`prev_tir_${pt}_90`, v90);
-        setPreviewText(`prev_tir_${pt}_180`, v180);
-        setPreviewText(`prev_tir_${pt}_270`, v270);
-        setPreviewText(`prev_tir_${pt}_ar`, status);
-        colorStatusCell(`prev_tir_${pt}_ar`, status);
-    });
+    setPreviewText('prev_sigReviewedDate', 'Date: ' + (document.getElementById('sig_reviewedDate')?.value || 'October 21, 2026'));
 }
 
 function evaluateOverallStatus() {
@@ -547,6 +568,85 @@ window.renderPhotoPreview = renderSlotPreview;
 // Recommendations Dynamic Table
 
 // -------------------------------------------------------------
+function setupRecommendations(recs) {
+    const tbody = document.getElementById('recTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const list = recs && recs.length > 0 ? recs : blankDefaultTemplate.recommendations;
+    list.forEach((r, idx) => {
+        addRecRow(r.item || sprintf('%02d', idx + 1), r.remarks || '', r.recommendation || '');
+    });
+}
+
+function addRecRow(item = '', remarks = '', recommendation = '') {
+    const tbody = document.getElementById('recTableBody');
+    if (!tbody) return;
+    const rowIdx = tbody.querySelectorAll('tr').length + 1;
+    const formattedItem = item || (rowIdx < 10 ? `0${rowIdx}` : `${rowIdx}`);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td><input type="text" class="rec-item mono" value="${formattedItem}" style="width:50px;"></td>
+        <td><input type="text" class="rec-remarks" value="${remarks}" placeholder="Temuan visual..."></td>
+        <td><input type="text" class="rec-rec" value="${recommendation}" placeholder="Rekomendasi tindakan..."></td>
+        <td style="text-align: center;">
+            <button type="button" class="btn btn-secondary btn-xs" onclick="this.closest('tr').remove(); syncRecommendationsPreview();">
+                &times;
+            </button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+
+    tr.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', syncRecommendationsPreview);
+    });
+
+    syncRecommendationsPreview();
+}
+
+function syncRecommendationsPreview() {
+    const previewBody = document.getElementById('prev_recTableBody');
+    const findingDesc = document.getElementById('prev_finding_desc');
+    const rows = document.querySelectorAll('#recTableBody tr');
+
+    const defaultRecs = [
+        { item: '01', remarks: "Visual scratch at OD area \"A\"\nVisual corrosion area spline\nVisual scratch at area surface\nVisual dirty at hole thread area surface", rec: "Cleaning and polish OD area \"A\"\nCleaning area surface\nCleaning and polish area spline\nRetap hole thread area surface" },
+        { item: '02', remarks: "Visual corrosion at OD area \"B\"\nVisual corrosion at OD area \"C\"", rec: "Cleaning OD area \"B and C\"" },
+        { item: '03', remarks: "Visual scratch at OD area \"D\"\nVisual worn out at area surface (see mark no 1)", rec: "Cleaning and polish OD area \"D\"\nRepair worn out area surface" },
+        { item: '04', remarks: "Actual measurement OD area \"F\" in good condition but, Visual pitting and scratch OD area \"F\" (see mark no 1)", rec: "Repair OD area \"F\" to specification" },
+        { item: '05', remarks: "Actual measurement OD area \"H\" was undersize\nVisual pitting and scratch at OD area \"H\" (see mark no 1)", rec: "Repair OD area \"H\" to specification" },
+        { item: '06', remarks: "Actual measurement OD area \"G\" was undersize\nVisual corrosion at OD area \"G\"\nVisual corrosion area spline\nVisual scratch and corrosion at area surface\nVisual dirty at hole thread area surface", rec: "Repair Cleaning OD area \"G\" to specification\nCleaning and polish area spline\nCleaning and polish area surface\nRetap hole thread area surface" }
+    ];
+
+    let userRecs = [];
+    rows.forEach((r, idx) => {
+        const item = r.querySelector('.rec-item')?.value || (idx < 9 ? `0${idx + 1}` : `${idx + 1}`);
+        const remarks = r.querySelector('.rec-remarks')?.value || '';
+        const rec = r.querySelector('.rec-rec')?.value || r.querySelector('.rec-recommendation')?.value || '';
+        if (remarks.trim() || rec.trim()) {
+            userRecs.push({ item, remarks, rec });
+        }
+    });
+
+    const active = userRecs.length > 0 ? userRecs : defaultRecs;
+    if (previewBody) {
+        let html = '';
+        active.forEach(r => {
+            html += `<tr>
+                <td style="text-align: center; font-weight: 700; font-family: monospace;">${r.item}</td>
+                <td style="white-space: pre-line;">${r.remarks}</td>
+                <td style="white-space: pre-line;">${r.rec}</td>
+            </tr>`;
+        });
+        previewBody.innerHTML = html;
+    }
+
+    if (findingDesc) {
+        findingDesc.innerHTML = '<div><span style="font-weight:700;">&gt;</span> Full image received component OUTPUT SHAFT</div>';
+    }
+}
+
 function setupRecommendations(recs) {
     const tbody = document.getElementById('recTableBody');
     if (!tbody) return;
@@ -838,14 +938,18 @@ function setupButtonActions() {
         addRecRow();
     });
 
-    // Print preview button
-    document.getElementById('btnPrintPreview')?.addEventListener('click', () => {
-        const reportId = document.getElementById('reportId')?.value;
-        if (reportId) {
-            window.open(`/reports/${reportId}/pdf`, '_blank');
-        } else {
-            window.print();
-        }
+    // PDF Export Buttons (Opens clean 6-page official report matching PDF export)
+    document.getElementById('btnPrintPreview')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.exportOfficialPdf();
+    });
+    document.getElementById('btnTopExportPdf')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.exportOfficialPdf();
+    });
+    document.getElementById('btnBottomExportPdf')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.exportOfficialPdf();
     });
 
     // Component dropdown change

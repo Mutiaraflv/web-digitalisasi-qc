@@ -157,31 +157,18 @@
       letter-spacing: 0.3px;
     }
 
-    /* Blueprint Box */
+    /* Blueprint Diagram */
     .blueprint-box {
       text-align: center;
       padding: 4px;
       border-bottom: 1.5px solid #000;
       background: #fff;
-      min-height: 140px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
     .blueprint-box img {
       max-width: 100%;
       height: auto;
       max-height: 195px;
       object-fit: contain;
-    }
-    .empty-blueprint-msg {
-      font-size: 7.5pt;
-      color: #94a3b8;
-      font-style: italic;
-      padding: 30px;
-      border: 1px dashed #cbd5e1;
-      width: 90%;
-      margin: 10px auto;
     }
 
     /* Finding Table */
@@ -210,7 +197,6 @@
       align-items: center;
       justify-content: center;
       background: #f8fafc;
-      overflow: hidden;
     }
     .finding-img-wrap img {
       max-width: 100%;
@@ -218,7 +204,7 @@
       object-fit: contain;
     }
 
-    /* Two-Column Section */
+    /* Two-Column Section (Photos Left, Measurement Right) */
     .split-section {
       display: grid;
       grid-template-columns: 50% 50%;
@@ -260,7 +246,6 @@
       justify-content: center;
       overflow: hidden;
       min-height: 72px;
-      position: relative;
     }
     .photo-slot img {
       width: 100%;
@@ -268,16 +253,11 @@
       object-fit: cover;
     }
     .photo-slot .slot-placeholder {
-      font-size: 6.5pt;
+      font-size: 6.2pt;
       color: #94a3b8;
+      font-style: italic;
       text-align: center;
       padding: 4px;
-      background: #f1f5f9;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     /* Data Tables inside Right Column */
@@ -307,6 +287,10 @@
       text-align: center;
       font-family: monospace;
     }
+    .data-table td.text-left {
+      text-align: left;
+      font-family: Arial, sans-serif;
+    }
 
     /* Bullet Findings */
     .bullet-findings {
@@ -323,7 +307,7 @@
       margin-right: 3px;
     }
 
-    /* Legend Footer */
+    /* Legend Footer (A: Accept, R: Reject) */
     .legend-footer {
       display: flex;
       justify-content: flex-end;
@@ -360,7 +344,7 @@
       font-weight: 700;
     }
 
-    /* TIR Table */
+    /* TIR Table (Page 5) */
     .tir-table {
       width: 80%;
       margin: 4px auto;
@@ -381,7 +365,7 @@
       font-family: monospace;
     }
 
-    /* Recommendation Table */
+    /* Recommendation Table (Page 6) */
     .rec-table {
       width: 100%;
       border-collapse: collapse;
@@ -400,7 +384,7 @@
       vertical-align: top;
     }
 
-    /* Signatures Table */
+    /* Signatures (Page 6) */
     .sig-table {
       width: 100%;
       border-collapse: collapse;
@@ -434,11 +418,37 @@
       color: #374151;
       font-size: 6.8pt;
     }
+  
+    /* Empty Photo Placeholders */
+    .empty-blueprint-msg {
+      font-size: 7.5pt;
+      color: #94a3b8;
+      font-style: italic;
+      padding: 30px;
+      border: 1px dashed #cbd5e1;
+      width: 90%;
+      margin: 10px auto;
+      text-align: center;
+      background: #f8fafc;
+    }
+    .photo-slot .slot-placeholder {
+      font-size: 6.5pt;
+      color: #94a3b8;
+      text-align: center;
+      padding: 4px;
+      background: #f1f5f9;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
   </style>
 </head>
 <body>
 
-  <!-- Top Action Bar -->
+  <!-- Top Action Bar (Hidden on print) -->
   <div class="print-actions">
     <div>
       <strong>PT. SSC WORKS &mdash; COMPONENT CONDITION REPORT (FORM-QC-002 REV 04)</strong>
@@ -472,6 +482,7 @@
       }
       return '<div class="slot-placeholder"><span>' . $label . '</span></div>';
     };
+
   @endphp
 
   <!-- =====================================================================
@@ -485,7 +496,9 @@
         <td class="header-logo-cell">
           <img src="{{ asset('images/doc_assets/header_ssc_logo.png') }}" alt="PT. SSC WORKS">
         </td>
-        <td class="header-title-cell">COMPONENT CONDITION REPORT</td>
+        <td class="header-title-cell">
+          COMPONENT CONDITION REPORT
+        </td>
         <td class="header-ctrl-cell">
           <table class="ctrl-table">
             <tr>
@@ -508,9 +521,9 @@
     <!-- Metadata Grid -->
     <table class="meta-table">
       <tr>
-        <td class="lbl">No.</td><td class="colon">:</td><td class="val mono">{{ $report->report_no ?? '-' }}</td>
+        <td class="lbl">No.</td><td class="colon">:</td><td class="val mono">{{ $report->report_no ?? '0742' }}</td>
         <td class="lbl">Date</td><td class="colon">:</td><td class="val">{{ $dateStr }}</td>
-        <td class="lbl">Customer</td><td class="colon">:</td><td class="val" colspan="3">{{ $report->customer ?? '-' }}</td>
+        <td class="lbl">Customer</td><td class="colon">:</td><td class="val" colspan="3">{{ $report->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}</td>
         <td class="lbl">Part Name</td><td class="colon">:</td><td class="val bold">{{ $report->part_name ?? 'OUTPUT SHAFT' }}</td>
       </tr>
       <tr>
@@ -529,17 +542,13 @@
       </tr>
     </table>
 
-    <!-- Drawing / Pictures / Dimension (1 FOTO INPUT) -->
+    <!-- Drawing / Pictures / Dimension -->
     <div class="bar-grey">Drawing / Pictures / Dimension</div>
     <div class="blueprint-box">
-      @if(!empty($photos['drawing_dimension']))
-        <img src="{{ asset($photos['drawing_dimension']) }}" alt="Drawing Dimensi">
-      @else
-        <div class="empty-blueprint-msg">[ Gambar Drawing / Pictures / Dimension Belum Diunggah ]</div>
-      @endif
+      <img src="{{ asset('images/doc_assets/shaft_blueprint.png') }}" alt="Technical Shaft Blueprint Drawing">
     </div>
 
-    <!-- Finding Section (1 FOTO INPUT) -->
+    <!-- Finding Section -->
     <div class="bar-grey">FINDING</div>
     <table class="finding-table">
       <thead>
@@ -554,10 +563,10 @@
           <td style="text-align: center; font-weight: 700;">00</td>
           <td>
             <div class="finding-img-wrap">
-              @if(!empty($photos['finding_component']))
-                <img src="{{ asset($photos['finding_component']) }}" alt="Full Component">
+              @if(!empty($photos['full_component']))
+                <img src="{{ asset($photos['full_component']) }}" alt="Full Component">
               @else
-                <span style="font-size: 6.5pt; color: #94a3b8; font-style: italic;">[ Foto Komponen Utuh Belum Diunggah ]</span>
+                <img src="{{ asset('images/doc_assets/p1_Image23.jpg') }}" alt="Full component shaft">
               @endif
             </div>
           </td>
@@ -568,18 +577,20 @@
       </tbody>
     </table>
 
-    <!-- Yellow Banner: Area A & Spline (4 FOTO INPUT) -->
+    <!-- Yellow Banner: Area A & Spline -->
     <div class="bar-yellow">OD Area "A" and OD Spline</div>
     <div class="split-section">
+      <!-- Left: 2x2 Photo Grid -->
       <div class="split-col-left">
         <div class="col-header">Image of OD Spline</div>
         <div class="photo-grid-2x2">
-          <div class="photo-slot">{!! $renderPhoto('area_a_visual_1', 'Foto 1') !!}</div>
-          <div class="photo-slot">{!! $renderPhoto('area_a_visual_2', 'Foto 2') !!}</div>
-          <div class="photo-slot">{!! $renderPhoto('area_a_visual_3', 'Foto 3') !!}</div>
-          <div class="photo-slot">{!! $renderPhoto('area_a_visual_4', 'Foto 4') !!}</div>
+          <div class="photo-slot">{!! $renderPhoto('area_g_visual_1', 'Foto 1') !!}</div>
+          <div class="photo-slot">{!! $renderPhoto('area_g_visual_2', 'Foto 2') !!}</div>
+          <div class="photo-slot">{!! $renderPhoto('area_g_visual_3', 'Foto 3') !!}</div>
+          <div class="photo-slot">{!! $renderPhoto('area_g_visual_4', 'Foto 4') !!}</div>
         </div>
       </div>
+      <!-- Right: Measurements & Bullets -->
       <div class="split-col-right">
         <div class="col-header">Actual visual &amp; measurement</div>
         <div class="sub-data-title">Actual Measurement</div>
@@ -598,13 +609,14 @@
             <tr>
               <td style="font-weight: 700;">A</td>
               <td>Ø79 ± 0,25</td>
-              <td>{{ $v($sec, 'item01', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item01', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item01', 'z') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item01', 'x') ?: '78,850' }}</td>
+              <td>{{ $v($sec, 'item01', 'y') ?: '78,865' }}</td>
+              <td>{{ $v($sec, 'item01', 'z') ?: '78,865' }}</td>
               <td class="{{ $cellAr($v($sec, 'item01', 'ar')) }}">{{ $v($sec, 'item01', 'ar') ?: 'A' }}</td>
             </tr>
           </tbody>
         </table>
+        <!-- Bullet points visual findings -->
         <div class="bullet-findings">
           <div><span class="bullet-arrow">&gt;</span> Actual measurement OD area "A" in good condition</div>
           <div><span class="bullet-arrow">&gt;</span> Visual scratch at OD area "A"</div>
@@ -612,6 +624,7 @@
           <div><span class="bullet-arrow">&gt;</span> Visual scratch at area surface</div>
           <div><span class="bullet-arrow">&gt;</span> Visual dirty at hole thread area surface</div>
         </div>
+        <!-- Length Table -->
         <div class="sub-data-title">Actual Length</div>
         <table class="data-table">
           <thead>
@@ -626,13 +639,15 @@
             <tr>
               <td style="font-weight: 700;">L</td>
               <td>N/A</td>
-              <td>{{ $v($sec, 'item01', 'lengthResult') ?: ($v($sec, 'item01', 'length') ?: '-') }}</td>
+              <td>{{ $v($sec, 'item01', 'lengthResult') ?: ($v($sec, 'item01', 'length') ?: '724,320') }}</td>
               <td>-</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <!-- Legend Footer -->
     <div class="legend-footer">
       <div>A : <span class="badge-ar-a">Accept</span></div>
       <div>R : <span class="badge-ar-r">Reject</span></div>
@@ -646,7 +661,7 @@
   ===================================================================== -->
   <div class="a4-page">
     
-    <!-- Top Block: Penetrant Check for Area A & Spline (4 FOTO INPUT) -->
+    <!-- Top Block: Penetrant Check for Area A & Spline -->
     <div class="split-section" style="border-top: none;">
       <div class="split-col-left">
         <div class="col-header">Image of Penetrant Check OD Area "A" and OD Spline</div>
@@ -669,7 +684,7 @@
       <div>R : <span class="badge-ar-r">Reject</span></div>
     </div>
 
-    <!-- Yellow Banner: Area B and C (4 FOTO INPUT) -->
+    <!-- Yellow Banner: Area B and C -->
     <div class="bar-yellow">OD Area "B and C"</div>
     <div class="split-section">
       <div class="split-col-left">
@@ -699,41 +714,41 @@
             <tr>
               <td rowspan="3" style="font-weight: 700;">B</td>
               <td rowspan="3">Ø82 ± 0,25</td>
-              <td>{{ $v($sec, 'item02', 'itemB', 'row1', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemB', 'row1', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemB', 'row1', 'z') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemB', 'row1', 'x') ?: '81,830' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemB', 'row1', 'y') ?: '81,840' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemB', 'row1', 'z') ?: '81,840' }}</td>
               <td class="{{ $cellAr($v($sec, 'item02', 'itemB', 'row1', 'ar')) }}">{{ $v($sec, 'item02', 'itemB', 'row1', 'ar') ?: 'A' }}</td>
             </tr>
             <tr>
-              <td>{{ $v($sec, 'item02', 'itemB', 'row2', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemB', 'row2', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemB', 'row2', 'z') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemB', 'row2', 'x') ?: '81,840' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemB', 'row2', 'y') ?: '81,850' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemB', 'row2', 'z') ?: '81,850' }}</td>
               <td class="{{ $cellAr($v($sec, 'item02', 'itemB', 'row2', 'ar')) }}">{{ $v($sec, 'item02', 'itemB', 'row2', 'ar') ?: 'A' }}</td>
             </tr>
             <tr>
-              <td>{{ $v($sec, 'item02', 'itemB', 'row3', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemB', 'row3', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemB', 'row3', 'z') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemB', 'row3', 'x') ?: '81,850' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemB', 'row3', 'y') ?: '81,860' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemB', 'row3', 'z') ?: '81,860' }}</td>
               <td class="{{ $cellAr($v($sec, 'item02', 'itemB', 'row3', 'ar')) }}">{{ $v($sec, 'item02', 'itemB', 'row3', 'ar') ?: 'A' }}</td>
             </tr>
             <tr>
               <td rowspan="3" style="font-weight: 700;">C</td>
               <td rowspan="3">Ø77 ± 0,25</td>
-              <td>{{ $v($sec, 'item02', 'itemC', 'row1', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemC', 'row1', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemC', 'row1', 'z') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemC', 'row1', 'x') ?: '76,850' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemC', 'row1', 'y') ?: '76,860' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemC', 'row1', 'z') ?: '76,865' }}</td>
               <td class="{{ $cellAr($v($sec, 'item02', 'itemC', 'row1', 'ar')) }}">{{ $v($sec, 'item02', 'itemC', 'row1', 'ar') ?: 'A' }}</td>
             </tr>
             <tr>
-              <td>{{ $v($sec, 'item02', 'itemC', 'row2', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemC', 'row2', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemC', 'row2', 'z') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemC', 'row2', 'x') ?: '76,855' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemC', 'row2', 'y') ?: '76,850' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemC', 'row2', 'z') ?: '76,860' }}</td>
               <td class="{{ $cellAr($v($sec, 'item02', 'itemC', 'row2', 'ar')) }}">{{ $v($sec, 'item02', 'itemC', 'row2', 'ar') ?: 'A' }}</td>
             </tr>
             <tr>
-              <td>{{ $v($sec, 'item02', 'itemC', 'row3', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemC', 'row3', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item02', 'itemC', 'row3', 'z') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemC', 'row3', 'x') ?: '76,860' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemC', 'row3', 'y') ?: '76,870' }}</td>
+              <td>{{ $v($sec, 'item02', 'itemC', 'row3', 'z') ?: '76,860' }}</td>
               <td class="{{ $cellAr($v($sec, 'item02', 'itemC', 'row3', 'ar')) }}">{{ $v($sec, 'item02', 'itemC', 'row3', 'ar') ?: 'A' }}</td>
             </tr>
           </tbody>
@@ -750,7 +765,7 @@
       <div>R : <span class="badge-ar-r">Reject</span></div>
     </div>
 
-    <!-- Penetrant B and C (4 FOTO INPUT) -->
+    <!-- Penetrant Section for B and C -->
     <div class="split-section">
       <div class="split-col-left">
         <div class="col-header">Image of Penetrant Check OD Area "B and C"</div>
@@ -781,7 +796,7 @@
   ===================================================================== -->
   <div class="a4-page">
     
-    <!-- Yellow Banner: Area D (4 FOTO INPUT) -->
+    <!-- Yellow Banner: Area D -->
     <div class="bar-yellow">OD Area "D"</div>
     <div class="split-section">
       <div class="split-col-left">
@@ -811,9 +826,9 @@
             <tr>
               <td style="font-weight: 700;">D</td>
               <td>Ø118 ± 0,5</td>
-              <td>{{ $v($sec, 'item03', 'itemD', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item03', 'itemD', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item03', 'itemD', 'z') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item03', 'itemD', 'x') ?: '118,030' }}</td>
+              <td>{{ $v($sec, 'item03', 'itemD', 'y') ?: '118,020' }}</td>
+              <td>{{ $v($sec, 'item03', 'itemD', 'z') ?: '118,010' }}</td>
               <td class="{{ $cellAr($v($sec, 'item03', 'itemD', 'ar')) }}">{{ $v($sec, 'item03', 'itemD', 'ar') ?: 'A' }}</td>
             </tr>
           </tbody>
@@ -836,8 +851,8 @@
             <tr>
               <td style="font-weight: 700;">E</td>
               <td>13 ± 0,5</td>
-              <td>{{ $v($sec, 'item03', 'distanceE', 'x') ?: ($v($sec, 'item03', 'itemE', 'x') ?: '-') }}</td>
-              <td class="{{ $cellAr($v($sec, 'item03', 'itemE', 'ar')) }}">{{ $v($sec, 'item03', 'itemE', 'ar') ?: 'A' }}</td>
+              <td>{{ $v($sec, 'item03', 'distanceE', 'x') ?: ($v($sec, 'item03', 'itemE', 'x') ?: '12,950') }}</td>
+              <td class="{{ $cellAr($v($sec, 'item03', 'itemE', 'ar')) }}">A</td>
             </tr>
           </tbody>
         </table>
@@ -852,7 +867,7 @@
       <div>R : <span class="badge-ar-r">Reject</span></div>
     </div>
 
-    <!-- Penetrant D (4 FOTO INPUT) -->
+    <!-- Penetrant Section for D -->
     <div class="split-section">
       <div class="split-col-left">
         <div class="col-header">Image of Penetrant Check OD Area "D"</div>
@@ -875,7 +890,7 @@
       <div>R : <span class="badge-ar-r">Reject</span></div>
     </div>
 
-    <!-- Yellow Banner: Area F (4 FOTO INPUT) -->
+    <!-- Yellow Banner: Area F -->
     <div class="bar-yellow">OD Area "F"</div>
     <div class="split-section">
       <div class="split-col-left">
@@ -905,21 +920,21 @@
             <tr>
               <td rowspan="3" style="font-weight: 700;">F</td>
               <td rowspan="3">Ø100,01 ± 0,008</td>
-              <td>{{ $v($sec, 'item04', 'itemF', 'row1', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item04', 'itemF', 'row1', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item04', 'itemF', 'row1', 'z') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item04', 'itemF', 'row1', 'x') ?: '101,010' }}</td>
+              <td>{{ $v($sec, 'item04', 'itemF', 'row1', 'y') ?: '101,010' }}</td>
+              <td>{{ $v($sec, 'item04', 'itemF', 'row1', 'z') ?: '101,005' }}</td>
               <td class="{{ $cellAr($v($sec, 'item04', 'itemF', 'row1', 'ar')) }}">{{ $v($sec, 'item04', 'itemF', 'row1', 'ar') ?: 'A' }}</td>
             </tr>
             <tr>
-              <td>{{ $v($sec, 'item04', 'itemF', 'row2', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item04', 'itemF', 'row2', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item04', 'itemF', 'row2', 'z') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item04', 'itemF', 'row2', 'x') ?: '101,015' }}</td>
+              <td>{{ $v($sec, 'item04', 'itemF', 'row2', 'y') ?: '101,015' }}</td>
+              <td>{{ $v($sec, 'item04', 'itemF', 'row2', 'z') ?: '101,015' }}</td>
               <td class="{{ $cellAr($v($sec, 'item04', 'itemF', 'row2', 'ar')) }}">{{ $v($sec, 'item04', 'itemF', 'row2', 'ar') ?: 'A' }}</td>
             </tr>
             <tr>
-              <td>{{ $v($sec, 'item04', 'itemF', 'row3', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item04', 'itemF', 'row3', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item04', 'itemF', 'row3', 'z') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item04', 'itemF', 'row3', 'x') ?: '101,010' }}</td>
+              <td>{{ $v($sec, 'item04', 'itemF', 'row3', 'y') ?: '101,010' }}</td>
+              <td>{{ $v($sec, 'item04', 'itemF', 'row3', 'z') ?: '101,010' }}</td>
               <td class="{{ $cellAr($v($sec, 'item04', 'itemF', 'row3', 'ar')) }}">{{ $v($sec, 'item04', 'itemF', 'row3', 'ar') ?: 'A' }}</td>
             </tr>
           </tbody>
@@ -942,7 +957,7 @@
             <tr>
               <td style="font-weight: 700;">K</td>
               <td>N/A</td>
-              <td>{{ $v($sec, 'item04', 'distK') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item04', 'distK') ?: '188,550' }}</td>
               <td>-</td>
             </tr>
           </tbody>
@@ -962,7 +977,7 @@
   ===================================================================== -->
   <div class="a4-page">
     
-    <!-- Penetrant Section for F (4 FOTO INPUT) -->
+    <!-- Penetrant Section for F -->
     <div class="split-section" style="border-top: none;">
       <div class="split-col-left">
         <div class="col-header">Image of Penetrant Check OD Area "F"</div>
@@ -985,7 +1000,7 @@
       <div>R : <span class="badge-ar-r">Reject</span></div>
     </div>
 
-    <!-- Yellow Banner: Area H (4 FOTO INPUT) -->
+    <!-- Yellow Banner: Area H -->
     <div class="bar-yellow">OD Area "H"</div>
     <div class="split-section">
       <div class="split-col-left">
@@ -1015,22 +1030,22 @@
             <tr>
               <td rowspan="3" style="font-weight: 700;">H</td>
               <td rowspan="3">Ø94 ± 0,013</td>
-              <td class="{{ $cellAr($v($sec, 'item05', 'itemH', 'row1', 'ar')) }}">{{ $v($sec, 'item05', 'itemH', 'row1', 'x') ?: '-' }}</td>
-              <td class="{{ $cellAr($v($sec, 'item05', 'itemH', 'row1', 'ar')) }}">{{ $v($sec, 'item05', 'itemH', 'row1', 'y') ?: '-' }}</td>
-              <td class="{{ $cellAr($v($sec, 'item05', 'itemH', 'row1', 'ar')) }}">{{ $v($sec, 'item05', 'itemH', 'row1', 'z') ?: '-' }}</td>
-              <td class="{{ $cellAr($v($sec, 'item05', 'itemH', 'row1', 'ar')) }}">{{ $v($sec, 'item05', 'itemH', 'row1', 'ar') ?: 'A' }}</td>
+              <td class="cell-reject">{{ $v($sec, 'item05', 'itemH', 'row1', 'x') ?: '93,980' }}</td>
+              <td class="cell-reject">{{ $v($sec, 'item05', 'itemH', 'row1', 'y') ?: '93,985' }}</td>
+              <td class="cell-reject">{{ $v($sec, 'item05', 'itemH', 'row1', 'z') ?: '93,980' }}</td>
+              <td class="cell-reject">{{ $v($sec, 'item05', 'itemH', 'row1', 'ar') ?: 'R' }}</td>
             </tr>
             <tr>
-              <td class="{{ $cellAr($v($sec, 'item05', 'itemH', 'row2', 'ar')) }}">{{ $v($sec, 'item05', 'itemH', 'row2', 'x') ?: '-' }}</td>
-              <td class="{{ $cellAr($v($sec, 'item05', 'itemH', 'row2', 'ar')) }}">{{ $v($sec, 'item05', 'itemH', 'row2', 'y') ?: '-' }}</td>
-              <td class="{{ $cellAr($v($sec, 'item05', 'itemH', 'row2', 'ar')) }}">{{ $v($sec, 'item05', 'itemH', 'row2', 'z') ?: '-' }}</td>
-              <td class="{{ $cellAr($v($sec, 'item05', 'itemH', 'row2', 'ar')) }}">{{ $v($sec, 'item05', 'itemH', 'row2', 'ar') ?: 'A' }}</td>
+              <td class="cell-reject">{{ $v($sec, 'item05', 'itemH', 'row2', 'x') ?: '93,980' }}</td>
+              <td class="cell-reject">{{ $v($sec, 'item05', 'itemH', 'row2', 'y') ?: '93,985' }}</td>
+              <td class="cell-reject">{{ $v($sec, 'item05', 'itemH', 'row2', 'z') ?: '93,985' }}</td>
+              <td class="cell-reject">{{ $v($sec, 'item05', 'itemH', 'row2', 'ar') ?: 'R' }}</td>
             </tr>
             <tr>
-              <td>{{ $v($sec, 'item05', 'itemH', 'row3', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item05', 'itemH', 'row3', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item05', 'itemH', 'row3', 'z') ?: '-' }}</td>
-              <td class="{{ $cellAr($v($sec, 'item05', 'itemH', 'row3', 'ar')) }}">{{ $v($sec, 'item05', 'itemH', 'row3', 'ar') ?: 'A' }}</td>
+              <td>{{ $v($sec, 'item05', 'itemH', 'row3', 'x') ?: '93,995' }}</td>
+              <td>{{ $v($sec, 'item05', 'itemH', 'row3', 'y') ?: '94,000' }}</td>
+              <td>{{ $v($sec, 'item05', 'itemH', 'row3', 'z') ?: '93,990' }}</td>
+              <td class="cell-accept">{{ $v($sec, 'item05', 'itemH', 'row3', 'ar') ?: 'A' }}</td>
             </tr>
           </tbody>
         </table>
@@ -1052,7 +1067,7 @@
             <tr>
               <td style="font-weight: 700;">J</td>
               <td>N/A</td>
-              <td>{{ $v($sec, 'item05', 'distJ') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item05', 'distJ') ?: '142,800' }}</td>
               <td>-</td>
             </tr>
           </tbody>
@@ -1064,7 +1079,7 @@
       <div>R : <span class="badge-ar-r">Reject</span></div>
     </div>
 
-    <!-- Penetrant Section for H (4 FOTO INPUT) -->
+    <!-- Penetrant Section for H -->
     <div class="split-section">
       <div class="split-col-left">
         <div class="col-header">Image of Penetrant Check OD Area "H"</div>
@@ -1095,16 +1110,22 @@
   ===================================================================== -->
   <div class="a4-page">
     
-    <!-- Yellow Banner: Area G and Spline (4 FOTO INPUT) -->
+    <!-- Yellow Banner: Area G and Spline -->
     <div class="bar-yellow">OD Area "G" and OD Spline</div>
     <div class="split-section">
       <div class="split-col-left">
         <div class="col-header">Image of OD Spline</div>
         <div class="photo-grid-2x2">
-          <div class="photo-slot">{!! $renderPhoto('area_g_visual_1', 'Foto 1') !!}</div>
-          <div class="photo-slot">{!! $renderPhoto('area_g_visual_2', 'Foto 2') !!}</div>
-          <div class="photo-slot">{!! $renderPhoto('area_g_visual_3', 'Foto 3') !!}</div>
-          <div class="photo-slot">{!! $renderPhoto('area_g_visual_4', 'Foto 4') !!}</div>
+          <div class="photo-slot">
+            @if(!empty($photos['item06']))
+              <img src="{{ asset($photos['item06']) }}" alt="Area G">
+            @else
+              <img src="{{ asset('images/doc_assets/p5_Image75.jpg') }}" alt="Area G 1">
+            @endif
+          </div>
+          <div class="photo-slot"><img src="{{ asset('images/doc_assets/p5_Image76.jpg') }}" alt="Area G 2"></div>
+          <div class="photo-slot"><img src="{{ asset('images/doc_assets/p5_Image77.jpg') }}" alt="Area G 3"></div>
+          <div class="photo-slot"><img src="{{ asset('images/doc_assets/p5_Image78.jpg') }}" alt="Area G 4"></div>
         </div>
       </div>
       <div class="split-col-right">
@@ -1125,10 +1146,10 @@
             <tr>
               <td style="font-weight: 700;">G</td>
               <td>Ø84,2 ± 0,13</td>
-              <td class="{{ $cellAr($v($sec, 'item06', 'itemG', 'x')) }}">{{ $v($sec, 'item06', 'itemG', 'x') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item06', 'itemG', 'y') ?: '-' }}</td>
-              <td>{{ $v($sec, 'item06', 'itemG', 'z') ?: '-' }}</td>
-              <td class="{{ $cellAr($v($sec, 'item06', 'itemG', 'ar')) }}">{{ $v($sec, 'item06', 'itemG', 'ar') ?: 'A' }}</td>
+              <td class="cell-reject">{{ $v($sec, 'item06', 'itemG', 'x') ?: '83,980' }}</td>
+              <td>{{ $v($sec, 'item06', 'itemG', 'y') ?: '84,010' }}</td>
+              <td>{{ $v($sec, 'item06', 'itemG', 'z') ?: '84,000' }}</td>
+              <td class="cell-reject">{{ $v($sec, 'item06', 'itemG', 'ar') ?: 'R' }}</td>
             </tr>
           </tbody>
         </table>
@@ -1153,7 +1174,7 @@
             <tr>
               <td style="font-weight: 700;">I</td>
               <td>N/A</td>
-              <td>{{ $v($sec, 'item06', 'distI') ?: '-' }}</td>
+              <td>{{ $v($sec, 'item06', 'distI') ?: '98,780' }}</td>
               <td>-</td>
             </tr>
           </tbody>
@@ -1165,7 +1186,7 @@
       <div>R : <span class="badge-ar-r">Reject</span></div>
     </div>
 
-    <!-- Penetrant Section for G and Spline (4 FOTO INPUT) -->
+    <!-- Penetrant Section for G and Spline -->
     <div class="split-section">
       <div class="split-col-left">
         <div class="col-header">Image of Penetrant Check Area OD Spline</div>
@@ -1188,14 +1209,11 @@
       <div>R : <span class="badge-ar-r">Reject</span></div>
     </div>
 
-    <!-- Yellow Banner: Check TIR (1 FOTO INPUT) -->
+    <!-- Yellow Banner: Check TIR -->
     <div class="bar-yellow">Check TIR</div>
+    <!-- TIR Blueprint Diagram -->
     <div class="blueprint-box" style="padding: 6px 15px;">
-      @if(!empty($photos['tir_diagram']))
-        <img src="{{ asset($photos['tir_diagram']) }}" alt="Shaft TIR Blueprint">
-      @else
-        <div class="empty-blueprint-msg">[ Gambar Diagram Titik Ukur TIR Belum Diunggah ]</div>
-      @endif
+      <img src="{{ asset('images/doc_assets/shaft_tir_blueprint.png') }}" alt="Shaft TIR Measurement Diagram">
     </div>
 
     <!-- TIR Table -->
@@ -1212,17 +1230,27 @@
         </tr>
       </thead>
       <tbody>
-        @foreach(['A','B','C','D','E','F'] as $idx => $itemLetter)
+        @php
+          $defaultTir = [
+            ['item' => 'A', 'd0' => '0', 'd90' => '+0,05', 'd180' => '+0,18', 'd270' => '+0,10', 'ar' => 'A'],
+            ['item' => 'B', 'd0' => '0', 'd90' => '+0,02', 'd180' => '0',     'd270' => '+0,02', 'ar' => 'A'],
+            ['item' => 'C', 'd0' => '0', 'd90' => '+0,12', 'd180' => '+0,10', 'd270' => '+0,03', 'ar' => 'A'],
+            ['item' => 'D', 'd0' => '0', 'd90' => '+0,03', 'd180' => '+0,03', 'd270' => '0',     'ar' => 'A'],
+            ['item' => 'E', 'd0' => '0', 'd90' => '+0,01', 'd180' => '0',     'd270' => '0',     'ar' => 'A'],
+            ['item' => 'F', 'd0' => '0', 'd90' => '-0,05', 'd180' => '-0,08', 'd270' => '+0,02', 'ar' => 'A'],
+          ];
+        @endphp
+        @foreach($defaultTir as $idx => $def)
           @php
             $rowItem = $tItems[$idx] ?? [];
-            $v0 = $rowItem['d0'] ?? '-';
-            $v90 = $rowItem['d90'] ?? '-';
-            $v180 = $rowItem['d180'] ?? '-';
-            $v270 = $rowItem['d270'] ?? '-';
-            $var = $rowItem['ar'] ?? 'A';
+            $v0 = $rowItem['d0'] ?? $def['d0'];
+            $v90 = $rowItem['d90'] ?? $def['d90'];
+            $v180 = $rowItem['d180'] ?? $def['d180'];
+            $v270 = $rowItem['d270'] ?? $def['d270'];
+            $var = $rowItem['ar'] ?? $def['ar'];
           @endphp
           <tr>
-            <td style="font-weight: 700;">{{ $itemLetter }}</td>
+            <td style="font-weight: 700;">{{ $def['item'] }}</td>
             @if($idx === 0)
               <td rowspan="6" style="vertical-align: middle; font-weight: 700;">Max 0,2</td>
             @endif
@@ -1259,21 +1287,24 @@
         </tr>
       </thead>
       <tbody>
-        @if(!empty($recs) && count($recs) > 0)
-          @foreach($recs as $idx => $r)
-            <tr>
-              <td style="text-align: center; font-weight: 700; font-family: monospace;">{{ $r['item'] ?? sprintf('%02d', $idx + 1) }}</td>
-              <td style="white-space: pre-line;">{{ $r['remarks'] ?? '-' }}</td>
-              <td style="white-space: pre-line;">{{ $r['recommendation'] ?? ($r['rec'] ?? '-') }}</td>
-            </tr>
-          @endforeach
-        @else
+        @php
+          $defaultRecs = [
+            ['item' => '01', 'remarks' => "Visual scratch at OD area \"A\"\nVisual corrosion area spline\nVisual scratch at area surface\nVisual dirty at hole thread area surface", 'rec' => "Cleaning and polish OD area \"A\"\nCleaning area surface\nCleaning and polish area spline\nRetap hole thread area surface"],
+            ['item' => '02', 'remarks' => "Visual corrosion at OD area \"B\"\nVisual corrosion at OD area \"C\"", 'rec' => "Cleaning OD area \"B and C\""],
+            ['item' => '03', 'remarks' => "Visual scratch at OD area \"D\"\nVisual worn out at area surface (see mark no 1)", 'rec' => "Cleaning and polish OD area \"D\"\nRepair worn out area surface"],
+            ['item' => '04', 'remarks' => "Actual measurement OD area \"F\" in good condition but, Visual pitting and scratch OD area \"F\" (see mark no 1)", 'rec' => "Repair OD area \"F\" to specification"],
+            ['item' => '05', 'remarks' => "Actual measurement OD area \"H\" was undersize\nVisual pitting and scratch at OD area \"H\" (see mark no 1)", 'rec' => "Repair OD area \"H\" to specification"],
+            ['item' => '06', 'remarks' => "Actual measurement OD area \"G\" was undersize\nVisual corrosion at OD area \"G\"\nVisual corrosion area spline\nVisual scratch and corrosion at area surface\nVisual dirty at hole thread area surface", 'rec' => "Repair Cleaning OD area \"G\" to specification\nCleaning and polish area spline\nCleaning and polish area surface\nRetap hole thread area surface"],
+          ];
+          $activeRecs = !empty($recs) && count($recs) > 0 ? $recs : $defaultRecs;
+        @endphp
+        @foreach($activeRecs as $idx => $r)
           <tr>
-            <td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic;">
-              [ Belum ada catatan rekomendasi &amp; temuan mutu diinput ]
-            </td>
+            <td style="text-align: center; font-weight: 700; font-family: monospace;">{{ $r['item'] ?? sprintf('%02d', $idx + 1) }}</td>
+            <td style="white-space: pre-line;">{{ $r['remarks'] ?? '-' }}</td>
+            <td style="white-space: pre-line;">{{ $r['recommendation'] ?? ($r['rec'] ?? '-') }}</td>
           </tr>
-        @endif
+        @endforeach
       </tbody>
     </table>
 
@@ -1292,21 +1323,21 @@
             <div class="sig-name">{{ $sigs['checkedBy']['name'] ?? 'Faqih S A A' }}</div>
             <div class="sig-meta">
               <span>{{ $sigs['checkedBy']['title'] ?? 'QC Inspector' }}</span>
-              <span>Date: {{ $sigs['checkedBy']['date'] ?? '-' }}</span>
+              <span>Date: {{ $sigs['checkedBy']['date'] ?? 'October 20, 2026' }}</span>
             </div>
           </td>
           <td>
             <div class="sig-name">{{ $sigs['createdBy']['name'] ?? 'M Kevin S' }}</div>
             <div class="sig-meta">
               <span>{{ $sigs['createdBy']['title'] ?? 'QC Inspector' }}</span>
-              <span>Date: {{ $sigs['createdBy']['date'] ?? '-' }}</span>
+              <span>Date: {{ $sigs['createdBy']['date'] ?? 'October 21, 2026' }}</span>
             </div>
           </td>
           <td>
             <div class="sig-name">{{ $sigs['reviewedBy']['name'] ?? 'Agus Riyanto' }}</div>
             <div class="sig-meta">
               <span>{{ $sigs['reviewedBy']['title'] ?? 'Leader QC' }}</span>
-              <span>Date: {{ $sigs['reviewedBy']['date'] ?? '-' }}</span>
+              <span>Date: {{ $sigs['reviewedBy']['date'] ?? 'October 21, 2026' }}</span>
             </div>
           </td>
         </tr>

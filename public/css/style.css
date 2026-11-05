@@ -2586,3 +2586,87 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+/* ==========================================================================
+   PRINT STYLES FOR OFFICIAL QC REPORT (A4 PORTRAIT)
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 8mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Hide all application chrome and input forms */
+  .app-sidebar,
+  .app-header,
+  .component-selector-bar,
+  .studio-form-pane,
+  .preview-toolbar,
+  .preview-page-tabs,
+  .studio-footer,
+  .top_actions,
+  .btn,
+  header,
+  nav,
+  aside,
+  .toast-container,
+  .sheet-page-indicator {
+    display: none !important;
+  }
+
+  /* Reset containers for printing */
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 7.2pt !important;
+  }
+
+  .app-container,
+  .app-main,
+  .app-content,
+  .workspace-container,
+  .studio-layout,
+  .studio-preview-pane,
+  .sheet-container {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  /* Force all 6 sheets to print as individual A4 pages */
+  .sheet-paper,
+  .preview-sheet {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 0 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    border: 1.5px solid #000000 !important;
+    box-shadow: none !important;
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  .preview-sheet:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+}

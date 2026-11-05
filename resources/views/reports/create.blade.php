@@ -11,7 +11,10 @@
     <button type="button" id="btnTopSave" class="btn btn-secondary btn-sm">
       <i data-lucide="save"></i> Simpan Data
     </button>
-    <button type="button" id="btnTopExportExcel" class="btn btn-primary btn-sm">
+    <button type="button" id="btnTopExportPdf" class="btn btn-primary btn-sm" title="Ekspor 6 Lembar PDF Resmi">
+      <i data-lucide="file-text"></i> Ekspor PDF Resmi (6 Lembar)
+    </button>
+    <button type="button" id="btnTopExportExcel" class="btn btn-secondary btn-sm">
       <i data-lucide="file-spreadsheet"></i> Unduh Excel (.xlsx)
     </button>
   </div>
@@ -1688,8 +1691,11 @@
             <button type="button" class="btn btn-secondary" id="btnBottomSave">
               <i data-lucide="save"></i> Simpan Data
             </button>
-            <button type="button" class="btn btn-primary" id="btnBottomExportExcel">
-              <i data-lucide="download"></i> Simpan & Unduh Excel
+            <button type="button" class="btn btn-primary" id="btnBottomExportPdf" title="Simpan data dan ekspor PDF resmi 6 lembar">
+              <i data-lucide="file-text"></i> Simpan &amp; Ekspor PDF
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnBottomExportExcel">
+              <i data-lucide="download"></i> Simpan &amp; Unduh Excel
             </button>
           </div>
         </div>
