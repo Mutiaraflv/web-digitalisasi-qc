@@ -1006,3 +1006,32 @@ function showToast(message, type = 'success') {
         setTimeout(() => toast.remove(), 300);
     }, 3500);
 }
+
+// -------------------------------------------------------------
+// Preview Page Switching (Lembar 1 - 6)
+// -------------------------------------------------------------
+window.switchPreviewPage = function(page) {
+    const sheets = document.querySelectorAll('.preview-sheet');
+    const btns = document.querySelectorAll('.p-page-btn');
+
+    btns.forEach(b => b.classList.remove('active'));
+
+    if (page === 'all') {
+        sheets.forEach(s => s.classList.add('sheet-visible'));
+        const allBtn = Array.from(btns).find(b => b.innerText.includes('Semua'));
+        if (allBtn) allBtn.classList.add('active');
+    } else {
+        sheets.forEach(s => s.classList.remove('sheet-visible'));
+        const target = document.getElementById(`prev_sheet_${page}`);
+        if (target) target.classList.add('sheet-visible');
+        const activeBtn = Array.from(btns).find(b => b.innerText.includes(`Lembar ${page}`));
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+};
+
+// Initial default to Lembar 1
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        if (window.switchPreviewPage) window.switchPreviewPage(1);
+    }, 150);
+});
