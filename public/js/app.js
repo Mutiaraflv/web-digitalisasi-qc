@@ -3,16 +3,26 @@
 
 let defaultTemplate = null;
 let currentReportId = null;
-let reportPhotos = {
-    item01: null,
-    item02: null,
-    item03: null,
-    item04: null,
-    item05: null,
-    item06: null,
-    penetrant: null,
-    defect: null
-};
+const photoSlotKeys = [
+    'drawing_dimension',
+    'finding_component',
+    'area_a_visual_1', 'area_a_visual_2', 'area_a_visual_3', 'area_a_visual_4',
+    'area_a_penet_1', 'area_a_penet_2', 'area_a_penet_3', 'area_a_penet_4',
+    'area_bc_visual_1', 'area_bc_visual_2', 'area_bc_visual_3', 'area_bc_visual_4',
+    'area_bc_penet_1', 'area_bc_penet_2', 'area_bc_penet_3', 'area_bc_penet_4',
+    'area_d_visual_1', 'area_d_visual_2', 'area_d_visual_3', 'area_d_visual_4',
+    'area_d_penet_1', 'area_d_penet_2', 'area_d_penet_3', 'area_d_penet_4',
+    'area_f_visual_1', 'area_f_visual_2', 'area_f_visual_3', 'area_f_visual_4',
+    'area_f_penet_1', 'area_f_penet_2', 'area_f_penet_3', 'area_f_penet_4',
+    'area_h_visual_1', 'area_h_visual_2', 'area_h_visual_3', 'area_h_visual_4',
+    'area_h_penet_1', 'area_h_penet_2', 'area_h_penet_3', 'area_h_penet_4',
+    'area_g_visual_1', 'area_g_visual_2', 'area_g_visual_3', 'area_g_visual_4',
+    'area_g_penet_1', 'area_g_penet_2', 'area_g_penet_3', 'area_g_penet_4',
+    'tir_diagram'
+];
+
+let reportPhotos = {};
+photoSlotKeys.forEach(k => reportPhotos[k] = null);
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
@@ -379,7 +389,7 @@ window.triggerFileInput = function(inputId) {
     document.getElementById(inputId)?.click();
 };
 
-window.handlePhotoSelect = function(input, section) {
+window.handleSlotUpload = function(input, slotKey) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
 
@@ -387,17 +397,17 @@ window.handlePhotoSelect = function(input, section) {
     const reader = new FileReader();
     reader.onload = function(e) {
         const dataUrl = e.target.result;
-        renderPhotoPreview(section, dataUrl);
+        renderSlotPreview(slotKey, dataUrl);
     };
     reader.readAsDataURL(file);
 
     // Asynchronously upload to server
     const formData = new FormData();
     formData.append('photo', file);
-    formData.append('section', section);
+    formData.append('section', slotKey);
 
-    const dropzone = input.closest('.photo-dropzone');
-    if (dropzone) dropzone.style.opacity = '0.5';
+    const card = document.getElementById(`card_slot_${slotKey}`);
+    if (card) card.style.opacity = '0.5';
 
     fetch('/reports/upload-photo', {
         method: 'POST',
@@ -409,10 +419,10 @@ window.handlePhotoSelect = function(input, section) {
     })
     .then(r => r.json())
     .then(data => {
-        if (dropzone) dropzone.style.opacity = '1';
+        if (card) card.style.opacity = '1';
         if (data.success) {
-            reportPhotos[section] = data.url;
-            renderPhotoPreview(section, data.url);
+            reportPhotos[slotKey] = data.url;
+            renderSlotPreview(slotKey, data.url);
             updatePhotoBadgeCount();
             showToast('Foto berhasil diunggah', 'success');
         } else {
@@ -420,62 +430,100 @@ window.handlePhotoSelect = function(input, section) {
         }
     })
     .catch(err => {
-        if (dropzone) dropzone.style.opacity = '1';
+        if (card) card.style.opacity = '1';
         console.error('Upload photo error:', err);
-        // Fallback: keep local dataUrl for preview
         showToast('Foto tersimpan di sesi lokal', 'success');
         updatePhotoBadgeCount();
     });
 };
 
-window.removePhoto = function(section) {
-    reportPhotos[section] = null;
+window.removeSlotPhoto = function(slotKey) {
+    reportPhotos[slotKey] = null;
     
     // Reset file input
-    const input = document.getElementById(`input_photo_${section}`);
+    const input = document.getElementById(`input_slot_${slotKey}`);
     if (input) input.value = '';
 
-    // Reset dropzone view
-    const viewContainer = document.getElementById(`view_photo_${section}`);
+    // Reset card UI
+    const card = document.getElementById(`card_slot_${slotKey}`);
+    if (card) card.classList.remove('has-image');
+
+    // Reset dropzone view in Tab 3
+    const viewContainer = document.getElementById(`view_slot_${slotKey}`);
     if (viewContainer) {
-        viewContainer.innerHTML = `
-            <i data-lucide="image-plus"></i>
-            <p>Klik atau geser foto</p>
-        `;
+        if (slotKey === 'drawing_dimension') {
+            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser file gambar cetak biru (blueprint dimensi poros)</span></div>`;
+        } else if (slotKey === 'finding_component') {
+            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser foto utuh fisik komponen (Full image received component)</span></div>`;
+        } else if (slotKey === 'tir_diagram') {
+            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser file gambar diagram titik pengukuran runout</span></div>`;
+        } else {
+            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>`;
+        }
         if (window.lucide) lucide.createIcons();
     }
 
     // Hide remove button
-    const remBtn = document.getElementById(`btn_rem_${section}`);
+    const remBtn = document.getElementById(`btn_rem_slot_${slotKey}`);
     if (remBtn) remBtn.style.display = 'none';
 
-    // Reset preview sheet slot
-    const prevSlot = document.getElementById(`prev_img_${section}`);
+    // Reset right-hand preview slot to empty placeholder
+    const prevSlot = document.getElementById(`prev_slot_${slotKey}`);
     if (prevSlot) {
-        prevSlot.innerHTML = `<span class="no-photo-txt">Belum Ada Foto</span>`;
+        if (slotKey === 'drawing_dimension') {
+            prevSlot.innerHTML = `<div class="empty-blueprint-msg">[ Gambar Drawing / Pictures / Dimension Belum Diunggah ]</div>`;
+        } else if (slotKey === 'finding_component') {
+            prevSlot.innerHTML = `<span class="empty-finding-msg">[ Foto Komponen Utuh Belum Diunggah ]</span>`;
+        } else if (slotKey === 'tir_diagram') {
+            prevSlot.innerHTML = `<div class="empty-blueprint-msg">[ Gambar Diagram Titik Ukur TIR Belum Diunggah ]</div>`;
+        } else if (slotKey.includes('penet')) {
+            const num = slotKey.slice(-1);
+            prevSlot.innerHTML = `<div class="slot-placeholder">Penetrant ${num}</div>`;
+        } else {
+            const num = slotKey.slice(-1);
+            prevSlot.innerHTML = `<div class="slot-placeholder">Foto ${num}</div>`;
+        }
     }
 
     updatePhotoBadgeCount();
     showToast('Foto dihapus', 'success');
 };
 
-function renderPhotoPreview(section, imageUrl) {
-    reportPhotos[section] = imageUrl;
+window.useDefaultBlueprint = function(slotKey) {
+    let url = '';
+    if (slotKey === 'drawing_dimension') {
+        url = '/images/doc_assets/shaft_blueprint.png';
+    } else if (slotKey === 'tir_diagram') {
+        url = '/images/doc_assets/shaft_tir_blueprint.png';
+    }
+    if (!url) return;
 
-    // 1. Dropzone preview
-    const viewContainer = document.getElementById(`view_photo_${section}`);
+    reportPhotos[slotKey] = url;
+    renderSlotPreview(slotKey, url);
+    updatePhotoBadgeCount();
+    showToast('Standar gambar diterapkan', 'success');
+};
+
+function renderSlotPreview(slotKey, imageUrl) {
+    reportPhotos[slotKey] = imageUrl;
+
+    // 1. Dropzone preview in Tab 3
+    const card = document.getElementById(`card_slot_${slotKey}`);
+    if (card) card.classList.add('has-image');
+
+    const viewContainer = document.getElementById(`view_slot_${slotKey}`);
     if (viewContainer) {
-        viewContainer.innerHTML = `<img src="${imageUrl}" class="dropzone-preview-img" alt="Foto ${section}">`;
+        viewContainer.innerHTML = `<img src="${imageUrl}" alt="${slotKey}">`;
     }
 
     // 2. Show remove button
-    const remBtn = document.getElementById(`btn_rem_${section}`);
+    const remBtn = document.getElementById(`btn_rem_slot_${slotKey}`);
     if (remBtn) remBtn.style.display = 'inline-flex';
 
     // 3. Right-hand live document preview slot
-    const prevSlot = document.getElementById(`prev_img_${section}`);
+    const prevSlot = document.getElementById(`prev_slot_${slotKey}`);
     if (prevSlot) {
-        prevSlot.innerHTML = `<img src="${imageUrl}" alt="Foto ${section}">`;
+        prevSlot.innerHTML = `<img src="${imageUrl}" alt="${slotKey}">`;
     }
 
     updatePhotoBadgeCount();
@@ -490,8 +538,14 @@ function updatePhotoBadgeCount() {
     if (badge) badge.innerText = count;
 }
 
+// Aliases for backwards compatibility
+window.handlePhotoSelect = window.handleSlotUpload;
+window.removePhoto = window.removeSlotPhoto;
+window.renderPhotoPreview = renderSlotPreview;
+
 // -------------------------------------------------------------
 // Recommendations Dynamic Table
+
 // -------------------------------------------------------------
 function setupRecommendations(recs) {
     const tbody = document.getElementById('recTableBody');
@@ -829,7 +883,7 @@ function loadDefaultBlankForm() {
 
     // Reset photos
     for (const key in reportPhotos) {
-        removePhoto(key);
+        removeSlotPhoto(key);
     }
 
     // Reset recommendations
@@ -976,7 +1030,7 @@ function populateFormWithData(data) {
     const photos = typeof data.photos === 'string' ? JSON.parse(data.photos) : (data.photos || {});
     for (const key in photos) {
         if (photos[key]) {
-            renderPhotoPreview(key, photos[key]);
+            renderSlotPreview(key, photos[key]);
         }
     }
 

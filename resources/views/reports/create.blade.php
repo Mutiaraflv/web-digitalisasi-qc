@@ -18,6 +18,18 @@
 @endsection
 
 @section('content')
+@php
+  $photos = isset($report) && $report && $report->photos ? (is_array($report->photos) ? $report->photos : json_decode($report->photos, true)) : [];
+  if (!is_array($photos)) $photos = [];
+
+  $renderSlot = function($key, $label = 'Foto') use ($photos) {
+    if (!empty($photos[$key])) {
+      return '<img src="' . asset($photos[$key]) . '" alt="' . $label . '">';
+    }
+    return '<div class="slot-placeholder">' . $label . '</div>';
+  };
+@endphp
+
 <div class="workspace-container">
   
   <!-- Component Selector Bar -->
@@ -488,199 +500,1011 @@
 
           </div>
 
-          <!-- TAB 3: UPLOAD FOTO PER BAGIAN -->
+                    <!-- TAB 3: UPLOAD FOTO PER BAGIAN (51 SLOT DOKUMENTASI LENGKAP) -->
           <div class="s-tab-content" id="stab-foto">
             <div class="form-section-title">
               <i data-lucide="camera"></i>
               <h4>Unggah Foto Dokumentasi Pemeriksaan Tiap Bagian</h4>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-subtle); margin-bottom: 1rem;">
-              Foto yang diunggah akan otomatis disinkronkan dan ditampilkan pada kotak dokumentasi lembar QC preview di sebelah kanan. Format: JPG, PNG, WEBP.
+            <p style="font-size: 0.82rem; color: var(--text-subtle); margin-bottom: 1rem;">
+              Setiap slot foto di bawah ini terhubung langsung ke kotak visual pada lembar laporan resmi (6 lembar). Semua slot foto secara baku kosong dan dapat diisi sesuai hasil dokumentasi bengkel.
             </p>
 
-            <div class="photo-upload-grid">
-              
-              <!-- Foto 0: Full Component Shaft -->
-              <div class="photo-card" id="card_photo_full_component" style="grid-column: 1 / -1;">
-                <div class="photo-card-header">
-                  <strong>Foto Komponen Utuh (Full Image Received Component)</strong>
-                  <span class="photo-tag" style="background:#e0f2fe; color:#0369a1;">Halaman 1 &mdash; Finding</span>
-                </div>
-                <div class="photo-dropzone" onclick="triggerFileInput('input_photo_full_component')" style="height: 100px;">
-                  <input type="file" id="input_photo_full_component" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this, 'full_component')">
-                  <div class="dropzone-content" id="view_photo_full_component">
-                    <i data-lucide="image-plus"></i>
-                    <p>Klik atau geser foto keseluruhan fisik poros yang diterima (Output Shaft)</p>
+            <!-- LEMBAR 1 -->
+            <div class="area-photo-section">
+              <div class="area-photo-section-header">
+                <span><i data-lucide="file-text"></i> Lembar 1 &mdash; Identifikasi, Drawing, Finding & OD Area "A"</span>
+                <span class="photo-tag">Lembar 1 (6 Slot)</span>
+              </div>
+              <div class="area-photo-section-body">
+                <!-- Drawing -->
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>1. Drawing / Pictures / Dimension (Cetak Biru Teknis Dimensi)</span>
+                    <span class="subgroup-tag">1 Slot</span>
+                  </div>
+                  <div class="slot-large-card {{ !empty($photos['drawing_dimension']) ? 'has-image' : '' }}" id="card_slot_drawing_dimension">
+                    <div class="slot-large-dropzone" onclick="triggerFileInput('input_slot_drawing_dimension')" id="dropzone_slot_drawing_dimension">
+                      <input type="file" id="input_slot_drawing_dimension" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'drawing_dimension')">
+                      <div id="view_slot_drawing_dimension">
+                        @if(!empty($photos['drawing_dimension']))
+                          <img src="{{ asset($photos['drawing_dimension']) }}" alt="Drawing Dimensi">
+                        @else
+                          <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser file gambar cetak biru (blueprint dimensi poros)</span></div>
+                        @endif
+                      </div>
+                    </div>
+                    <div class="slot-quick-action">
+                      <button type="button" class="btn btn-secondary btn-xs" onclick="useDefaultBlueprint('drawing_dimension')">
+                        <i data-lucide="copy"></i> Gunakan Standar Cetak Biru Poros
+                      </button>
+                      <button type="button" class="btn btn-secondary btn-xs" id="btn_rem_slot_drawing_dimension" onclick="removeSlotPhoto('drawing_dimension')" style="{{ !empty($photos['drawing_dimension']) ? '' : 'display:none;' }}">
+                        <i data-lucide="trash-2"></i> Hapus
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div class="photo-card-footer">
-                  <button type="button" class="btn btn-secondary btn-xs btn-remove-photo" onclick="removePhoto('full_component')" style="display: none;" id="btn_rem_full_component">
-                    <i data-lucide="trash-2"></i> Hapus Foto
-                  </button>
-                </div>
-              </div>
 
-              <!-- Foto 1: Area A -->
-              <div class="photo-card" id="card_photo_item01">
-                <div class="photo-card-header">
-                  <strong>Foto 1: Area "A" & Spline</strong>
-                  <span class="photo-tag">Bagian 01</span>
-                </div>
-                <div class="photo-dropzone" onclick="triggerFileInput('input_photo_item01')">
-                  <input type="file" id="input_photo_item01" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this, 'item01')">
-                  <div class="dropzone-content" id="view_photo_item01">
-                    <i data-lucide="image-plus"></i>
-                    <p>Klik atau geser foto Area A</p>
+                <!-- Finding -->
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>2. FINDING: Foto Keseluruhan Fisik Komponen Saat Diterima (Item 00)</span>
+                    <span class="subgroup-tag">1 Slot</span>
+                  </div>
+                  <div class="slot-large-card {{ !empty($photos['finding_component']) ? 'has-image' : '' }}" id="card_slot_finding_component">
+                    <div class="slot-large-dropzone" onclick="triggerFileInput('input_slot_finding_component')" id="dropzone_slot_finding_component">
+                      <input type="file" id="input_slot_finding_component" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'finding_component')">
+                      <div id="view_slot_finding_component">
+                        @if(!empty($photos['finding_component']))
+                          <img src="{{ asset($photos['finding_component']) }}" alt="Foto Komponen Utuh">
+                        @else
+                          <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser foto utuh fisik komponen (Full image received component)</span></div>
+                        @endif
+                      </div>
+                    </div>
+                    <div class="slot-quick-action">
+                      <span style="font-size:0.7rem; color:var(--text-subtle);">Item 00: Tampilan utuh poros</span>
+                      <button type="button" class="btn btn-secondary btn-xs" id="btn_rem_slot_finding_component" onclick="removeSlotPhoto('finding_component')" style="{{ !empty($photos['finding_component']) ? '' : 'display:none;' }}">
+                        <i data-lucide="trash-2"></i> Hapus
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div class="photo-card-footer">
-                  <button type="button" class="btn btn-secondary btn-xs btn-remove-photo" onclick="removePhoto('item01')" style="display: none;" id="btn_rem_item01">
-                    <i data-lucide="trash-2"></i> Hapus Foto
-                  </button>
-                </div>
-              </div>
 
-              <!-- Foto 2: Area B & C -->
-              <div class="photo-card" id="card_photo_item02">
-                <div class="photo-card-header">
-                  <strong>Foto 2: Area "B & C"</strong>
-                  <span class="photo-tag">Bagian 02</span>
-                </div>
-                <div class="photo-dropzone" onclick="triggerFileInput('input_photo_item02')">
-                  <input type="file" id="input_photo_item02" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this, 'item02')">
-                  <div class="dropzone-content" id="view_photo_item02">
-                    <i data-lucide="image-plus"></i>
-                    <p>Klik atau geser foto Area B & C</p>
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>3. OD Area "A" and OD Spline — Foto Visual</span>
+                    <span class="subgroup-tag">4 Slot</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_a_visual_1']) ? 'has-image' : '' }}" id="card_slot_area_a_visual_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_a_visual_1')" id="dropzone_slot_area_a_visual_1">
+                        <input type="file" id="input_slot_area_a_visual_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_a_visual_1')">
+                        <div id="view_slot_area_a_visual_1">
+                          @if(!empty($photos['area_a_visual_1']))
+                            <img src="{{ asset($photos['area_a_visual_1']) }}" alt="Foto 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_a_visual_1" onclick="removeSlotPhoto('area_a_visual_1')" style="{{ !empty($photos['area_a_visual_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_a_visual_2']) ? 'has-image' : '' }}" id="card_slot_area_a_visual_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_a_visual_2')" id="dropzone_slot_area_a_visual_2">
+                        <input type="file" id="input_slot_area_a_visual_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_a_visual_2')">
+                        <div id="view_slot_area_a_visual_2">
+                          @if(!empty($photos['area_a_visual_2']))
+                            <img src="{{ asset($photos['area_a_visual_2']) }}" alt="Foto 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_a_visual_2" onclick="removeSlotPhoto('area_a_visual_2')" style="{{ !empty($photos['area_a_visual_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_a_visual_3']) ? 'has-image' : '' }}" id="card_slot_area_a_visual_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_a_visual_3')" id="dropzone_slot_area_a_visual_3">
+                        <input type="file" id="input_slot_area_a_visual_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_a_visual_3')">
+                        <div id="view_slot_area_a_visual_3">
+                          @if(!empty($photos['area_a_visual_3']))
+                            <img src="{{ asset($photos['area_a_visual_3']) }}" alt="Foto 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_a_visual_3" onclick="removeSlotPhoto('area_a_visual_3')" style="{{ !empty($photos['area_a_visual_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_a_visual_4']) ? 'has-image' : '' }}" id="card_slot_area_a_visual_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_a_visual_4')" id="dropzone_slot_area_a_visual_4">
+                        <input type="file" id="input_slot_area_a_visual_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_a_visual_4')">
+                        <div id="view_slot_area_a_visual_4">
+                          @if(!empty($photos['area_a_visual_4']))
+                            <img src="{{ asset($photos['area_a_visual_4']) }}" alt="Foto 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_a_visual_4" onclick="removeSlotPhoto('area_a_visual_4')" style="{{ !empty($photos['area_a_visual_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div class="photo-card-footer">
-                  <button type="button" class="btn btn-secondary btn-xs btn-remove-photo" onclick="removePhoto('item02')" style="display: none;" id="btn_rem_item02">
-                    <i data-lucide="trash-2"></i> Hapus Foto
-                  </button>
-                </div>
               </div>
-
-              <!-- Foto 3: Area D & E -->
-              <div class="photo-card" id="card_photo_item03">
-                <div class="photo-card-header">
-                  <strong>Foto 3: Area "D & E"</strong>
-                  <span class="photo-tag">Bagian 03</span>
-                </div>
-                <div class="photo-dropzone" onclick="triggerFileInput('input_photo_item03')">
-                  <input type="file" id="input_photo_item03" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this, 'item03')">
-                  <div class="dropzone-content" id="view_photo_item03">
-                    <i data-lucide="image-plus"></i>
-                    <p>Klik atau geser foto Area D & E</p>
-                  </div>
-                </div>
-                <div class="photo-card-footer">
-                  <button type="button" class="btn btn-secondary btn-xs btn-remove-photo" onclick="removePhoto('item03')" style="display: none;" id="btn_rem_item03">
-                    <i data-lucide="trash-2"></i> Hapus Foto
-                  </button>
-                </div>
-              </div>
-
-              <!-- Foto 4: Area F -->
-              <div class="photo-card" id="card_photo_item04">
-                <div class="photo-card-header">
-                  <strong>Foto 4: Area "F"</strong>
-                  <span class="photo-tag">Bagian 04</span>
-                </div>
-                <div class="photo-dropzone" onclick="triggerFileInput('input_photo_item04')">
-                  <input type="file" id="input_photo_item04" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this, 'item04')">
-                  <div class="dropzone-content" id="view_photo_item04">
-                    <i data-lucide="image-plus"></i>
-                    <p>Klik atau geser foto Area F</p>
-                  </div>
-                </div>
-                <div class="photo-card-footer">
-                  <button type="button" class="btn btn-secondary btn-xs btn-remove-photo" onclick="removePhoto('item04')" style="display: none;" id="btn_rem_item04">
-                    <i data-lucide="trash-2"></i> Hapus Foto
-                  </button>
-                </div>
-              </div>
-
-              <!-- Foto 5: Area H -->
-              <div class="photo-card" id="card_photo_item05">
-                <div class="photo-card-header">
-                  <strong>Foto 5: Area "H"</strong>
-                  <span class="photo-tag">Bagian 05</span>
-                </div>
-                <div class="photo-dropzone" onclick="triggerFileInput('input_photo_item05')">
-                  <input type="file" id="input_photo_item05" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this, 'item05')">
-                  <div class="dropzone-content" id="view_photo_item05">
-                    <i data-lucide="image-plus"></i>
-                    <p>Klik atau geser foto Area H</p>
-                  </div>
-                </div>
-                <div class="photo-card-footer">
-                  <button type="button" class="btn btn-secondary btn-xs btn-remove-photo" onclick="removePhoto('item05')" style="display: none;" id="btn_rem_item05">
-                    <i data-lucide="trash-2"></i> Hapus Foto
-                  </button>
-                </div>
-              </div>
-
-              <!-- Foto 6: Area G & Spline -->
-              <div class="photo-card" id="card_photo_item06">
-                <div class="photo-card-header">
-                  <strong>Foto 6: Area "G" & Spline</strong>
-                  <span class="photo-tag">Bagian 06</span>
-                </div>
-                <div class="photo-dropzone" onclick="triggerFileInput('input_photo_item06')">
-                  <input type="file" id="input_photo_item06" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this, 'item06')">
-                  <div class="dropzone-content" id="view_photo_item06">
-                    <i data-lucide="image-plus"></i>
-                    <p>Klik atau geser foto Area G & Spline</p>
-                  </div>
-                </div>
-                <div class="photo-card-footer">
-                  <button type="button" class="btn btn-secondary btn-xs btn-remove-photo" onclick="removePhoto('item06')" style="display: none;" id="btn_rem_item06">
-                    <i data-lucide="trash-2"></i> Hapus Foto
-                  </button>
-                </div>
-              </div>
-
-              <!-- Foto 7: Liquid Penetrant Test -->
-              <div class="photo-card" id="card_photo_penetrant">
-                <div class="photo-card-header">
-                  <strong>Foto 7: Uji Keretakan (Penetrant)</strong>
-                  <span class="photo-tag" style="background:#fee2e2; color:#b91c1c;">NDT Test</span>
-                </div>
-                <div class="photo-dropzone" onclick="triggerFileInput('input_photo_penetrant')">
-                  <input type="file" id="input_photo_penetrant" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this, 'penetrant')">
-                  <div class="dropzone-content" id="view_photo_penetrant">
-                    <i data-lucide="image-plus"></i>
-                    <p>Klik atau geser foto Hasil Penetrant Test</p>
-                  </div>
-                </div>
-                <div class="photo-card-footer">
-                  <button type="button" class="btn btn-secondary btn-xs btn-remove-photo" onclick="removePhoto('penetrant')" style="display: none;" id="btn_rem_penetrant">
-                    <i data-lucide="trash-2"></i> Hapus Foto
-                  </button>
-                </div>
-              </div>
-
-              <!-- Foto 8: Dial Indicator / Cacat -->
-              <div class="photo-card" id="card_photo_defect">
-                <div class="photo-card-header">
-                  <strong>Foto 8: Dial Indicator / Cacat Visual</strong>
-                  <span class="photo-tag">Runout/Temuan</span>
-                </div>
-                <div class="photo-dropzone" onclick="triggerFileInput('input_photo_defect')">
-                  <input type="file" id="input_photo_defect" accept="image/*" style="display:none;" onchange="handlePhotoSelect(this, 'defect')">
-                  <div class="dropzone-content" id="view_photo_defect">
-                    <i data-lucide="image-plus"></i>
-                    <p>Klik atau geser foto Dial Gauge / Defect</p>
-                  </div>
-                </div>
-                <div class="photo-card-footer">
-                  <button type="button" class="btn btn-secondary btn-xs btn-remove-photo" onclick="removePhoto('defect')" style="display: none;" id="btn_rem_defect">
-                    <i data-lucide="trash-2"></i> Hapus Foto
-                  </button>
-                </div>
-              </div>
-
             </div>
+
+            <!-- LEMBAR 2 -->
+            <div class="area-photo-section">
+              <div class="area-photo-section-header">
+                <span><i data-lucide="file-text"></i> Lembar 2 &mdash; Penetrant Area "A", OD Area "B & C" & Penetrant "B & C"</span>
+                <span class="photo-tag">Lembar 2 (12 Slot)</span>
+              </div>
+              <div class="area-photo-section-body">
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>1. Penetrant Check OD Area "A" and OD Spline</span>
+                    <span class="subgroup-tag">4 Slot (NDT)</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_a_penet_1']) ? 'has-image' : '' }}" id="card_slot_area_a_penet_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_a_penet_1')" id="dropzone_slot_area_a_penet_1">
+                        <input type="file" id="input_slot_area_a_penet_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_a_penet_1')">
+                        <div id="view_slot_area_a_penet_1">
+                          @if(!empty($photos['area_a_penet_1']))
+                            <img src="{{ asset($photos['area_a_penet_1']) }}" alt="Penetrant 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_a_penet_1" onclick="removeSlotPhoto('area_a_penet_1')" style="{{ !empty($photos['area_a_penet_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_a_penet_2']) ? 'has-image' : '' }}" id="card_slot_area_a_penet_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_a_penet_2')" id="dropzone_slot_area_a_penet_2">
+                        <input type="file" id="input_slot_area_a_penet_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_a_penet_2')">
+                        <div id="view_slot_area_a_penet_2">
+                          @if(!empty($photos['area_a_penet_2']))
+                            <img src="{{ asset($photos['area_a_penet_2']) }}" alt="Penetrant 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_a_penet_2" onclick="removeSlotPhoto('area_a_penet_2')" style="{{ !empty($photos['area_a_penet_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_a_penet_3']) ? 'has-image' : '' }}" id="card_slot_area_a_penet_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_a_penet_3')" id="dropzone_slot_area_a_penet_3">
+                        <input type="file" id="input_slot_area_a_penet_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_a_penet_3')">
+                        <div id="view_slot_area_a_penet_3">
+                          @if(!empty($photos['area_a_penet_3']))
+                            <img src="{{ asset($photos['area_a_penet_3']) }}" alt="Penetrant 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_a_penet_3" onclick="removeSlotPhoto('area_a_penet_3')" style="{{ !empty($photos['area_a_penet_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_a_penet_4']) ? 'has-image' : '' }}" id="card_slot_area_a_penet_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_a_penet_4')" id="dropzone_slot_area_a_penet_4">
+                        <input type="file" id="input_slot_area_a_penet_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_a_penet_4')">
+                        <div id="view_slot_area_a_penet_4">
+                          @if(!empty($photos['area_a_penet_4']))
+                            <img src="{{ asset($photos['area_a_penet_4']) }}" alt="Penetrant 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_a_penet_4" onclick="removeSlotPhoto('area_a_penet_4')" style="{{ !empty($photos['area_a_penet_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>2. OD Area "B and C" — Foto Visual</span>
+                    <span class="subgroup-tag">4 Slot</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_bc_visual_1']) ? 'has-image' : '' }}" id="card_slot_area_bc_visual_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_bc_visual_1')" id="dropzone_slot_area_bc_visual_1">
+                        <input type="file" id="input_slot_area_bc_visual_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_bc_visual_1')">
+                        <div id="view_slot_area_bc_visual_1">
+                          @if(!empty($photos['area_bc_visual_1']))
+                            <img src="{{ asset($photos['area_bc_visual_1']) }}" alt="Foto 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_bc_visual_1" onclick="removeSlotPhoto('area_bc_visual_1')" style="{{ !empty($photos['area_bc_visual_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_bc_visual_2']) ? 'has-image' : '' }}" id="card_slot_area_bc_visual_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_bc_visual_2')" id="dropzone_slot_area_bc_visual_2">
+                        <input type="file" id="input_slot_area_bc_visual_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_bc_visual_2')">
+                        <div id="view_slot_area_bc_visual_2">
+                          @if(!empty($photos['area_bc_visual_2']))
+                            <img src="{{ asset($photos['area_bc_visual_2']) }}" alt="Foto 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_bc_visual_2" onclick="removeSlotPhoto('area_bc_visual_2')" style="{{ !empty($photos['area_bc_visual_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_bc_visual_3']) ? 'has-image' : '' }}" id="card_slot_area_bc_visual_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_bc_visual_3')" id="dropzone_slot_area_bc_visual_3">
+                        <input type="file" id="input_slot_area_bc_visual_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_bc_visual_3')">
+                        <div id="view_slot_area_bc_visual_3">
+                          @if(!empty($photos['area_bc_visual_3']))
+                            <img src="{{ asset($photos['area_bc_visual_3']) }}" alt="Foto 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_bc_visual_3" onclick="removeSlotPhoto('area_bc_visual_3')" style="{{ !empty($photos['area_bc_visual_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_bc_visual_4']) ? 'has-image' : '' }}" id="card_slot_area_bc_visual_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_bc_visual_4')" id="dropzone_slot_area_bc_visual_4">
+                        <input type="file" id="input_slot_area_bc_visual_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_bc_visual_4')">
+                        <div id="view_slot_area_bc_visual_4">
+                          @if(!empty($photos['area_bc_visual_4']))
+                            <img src="{{ asset($photos['area_bc_visual_4']) }}" alt="Foto 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_bc_visual_4" onclick="removeSlotPhoto('area_bc_visual_4')" style="{{ !empty($photos['area_bc_visual_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>3. Penetrant Check OD Area "B and C"</span>
+                    <span class="subgroup-tag">4 Slot (NDT)</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_bc_penet_1']) ? 'has-image' : '' }}" id="card_slot_area_bc_penet_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_bc_penet_1')" id="dropzone_slot_area_bc_penet_1">
+                        <input type="file" id="input_slot_area_bc_penet_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_bc_penet_1')">
+                        <div id="view_slot_area_bc_penet_1">
+                          @if(!empty($photos['area_bc_penet_1']))
+                            <img src="{{ asset($photos['area_bc_penet_1']) }}" alt="Penetrant 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_bc_penet_1" onclick="removeSlotPhoto('area_bc_penet_1')" style="{{ !empty($photos['area_bc_penet_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_bc_penet_2']) ? 'has-image' : '' }}" id="card_slot_area_bc_penet_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_bc_penet_2')" id="dropzone_slot_area_bc_penet_2">
+                        <input type="file" id="input_slot_area_bc_penet_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_bc_penet_2')">
+                        <div id="view_slot_area_bc_penet_2">
+                          @if(!empty($photos['area_bc_penet_2']))
+                            <img src="{{ asset($photos['area_bc_penet_2']) }}" alt="Penetrant 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_bc_penet_2" onclick="removeSlotPhoto('area_bc_penet_2')" style="{{ !empty($photos['area_bc_penet_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_bc_penet_3']) ? 'has-image' : '' }}" id="card_slot_area_bc_penet_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_bc_penet_3')" id="dropzone_slot_area_bc_penet_3">
+                        <input type="file" id="input_slot_area_bc_penet_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_bc_penet_3')">
+                        <div id="view_slot_area_bc_penet_3">
+                          @if(!empty($photos['area_bc_penet_3']))
+                            <img src="{{ asset($photos['area_bc_penet_3']) }}" alt="Penetrant 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_bc_penet_3" onclick="removeSlotPhoto('area_bc_penet_3')" style="{{ !empty($photos['area_bc_penet_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_bc_penet_4']) ? 'has-image' : '' }}" id="card_slot_area_bc_penet_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_bc_penet_4')" id="dropzone_slot_area_bc_penet_4">
+                        <input type="file" id="input_slot_area_bc_penet_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_bc_penet_4')">
+                        <div id="view_slot_area_bc_penet_4">
+                          @if(!empty($photos['area_bc_penet_4']))
+                            <img src="{{ asset($photos['area_bc_penet_4']) }}" alt="Penetrant 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_bc_penet_4" onclick="removeSlotPhoto('area_bc_penet_4')" style="{{ !empty($photos['area_bc_penet_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- LEMBAR 3 -->
+            <div class="area-photo-section">
+              <div class="area-photo-section-header">
+                <span><i data-lucide="file-text"></i> Lembar 3 &mdash; OD Area "D", Penetrant "D" & OD Area "F"</span>
+                <span class="photo-tag">Lembar 3 (12 Slot)</span>
+              </div>
+              <div class="area-photo-section-body">
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>1. OD Area "D" — Foto Visual</span>
+                    <span class="subgroup-tag">4 Slot</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_d_visual_1']) ? 'has-image' : '' }}" id="card_slot_area_d_visual_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_d_visual_1')" id="dropzone_slot_area_d_visual_1">
+                        <input type="file" id="input_slot_area_d_visual_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_d_visual_1')">
+                        <div id="view_slot_area_d_visual_1">
+                          @if(!empty($photos['area_d_visual_1']))
+                            <img src="{{ asset($photos['area_d_visual_1']) }}" alt="Foto 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_d_visual_1" onclick="removeSlotPhoto('area_d_visual_1')" style="{{ !empty($photos['area_d_visual_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_d_visual_2']) ? 'has-image' : '' }}" id="card_slot_area_d_visual_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_d_visual_2')" id="dropzone_slot_area_d_visual_2">
+                        <input type="file" id="input_slot_area_d_visual_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_d_visual_2')">
+                        <div id="view_slot_area_d_visual_2">
+                          @if(!empty($photos['area_d_visual_2']))
+                            <img src="{{ asset($photos['area_d_visual_2']) }}" alt="Foto 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_d_visual_2" onclick="removeSlotPhoto('area_d_visual_2')" style="{{ !empty($photos['area_d_visual_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_d_visual_3']) ? 'has-image' : '' }}" id="card_slot_area_d_visual_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_d_visual_3')" id="dropzone_slot_area_d_visual_3">
+                        <input type="file" id="input_slot_area_d_visual_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_d_visual_3')">
+                        <div id="view_slot_area_d_visual_3">
+                          @if(!empty($photos['area_d_visual_3']))
+                            <img src="{{ asset($photos['area_d_visual_3']) }}" alt="Foto 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_d_visual_3" onclick="removeSlotPhoto('area_d_visual_3')" style="{{ !empty($photos['area_d_visual_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_d_visual_4']) ? 'has-image' : '' }}" id="card_slot_area_d_visual_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_d_visual_4')" id="dropzone_slot_area_d_visual_4">
+                        <input type="file" id="input_slot_area_d_visual_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_d_visual_4')">
+                        <div id="view_slot_area_d_visual_4">
+                          @if(!empty($photos['area_d_visual_4']))
+                            <img src="{{ asset($photos['area_d_visual_4']) }}" alt="Foto 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_d_visual_4" onclick="removeSlotPhoto('area_d_visual_4')" style="{{ !empty($photos['area_d_visual_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>2. Penetrant Check OD Area "D"</span>
+                    <span class="subgroup-tag">4 Slot (NDT)</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_d_penet_1']) ? 'has-image' : '' }}" id="card_slot_area_d_penet_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_d_penet_1')" id="dropzone_slot_area_d_penet_1">
+                        <input type="file" id="input_slot_area_d_penet_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_d_penet_1')">
+                        <div id="view_slot_area_d_penet_1">
+                          @if(!empty($photos['area_d_penet_1']))
+                            <img src="{{ asset($photos['area_d_penet_1']) }}" alt="Penetrant 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_d_penet_1" onclick="removeSlotPhoto('area_d_penet_1')" style="{{ !empty($photos['area_d_penet_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_d_penet_2']) ? 'has-image' : '' }}" id="card_slot_area_d_penet_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_d_penet_2')" id="dropzone_slot_area_d_penet_2">
+                        <input type="file" id="input_slot_area_d_penet_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_d_penet_2')">
+                        <div id="view_slot_area_d_penet_2">
+                          @if(!empty($photos['area_d_penet_2']))
+                            <img src="{{ asset($photos['area_d_penet_2']) }}" alt="Penetrant 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_d_penet_2" onclick="removeSlotPhoto('area_d_penet_2')" style="{{ !empty($photos['area_d_penet_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_d_penet_3']) ? 'has-image' : '' }}" id="card_slot_area_d_penet_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_d_penet_3')" id="dropzone_slot_area_d_penet_3">
+                        <input type="file" id="input_slot_area_d_penet_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_d_penet_3')">
+                        <div id="view_slot_area_d_penet_3">
+                          @if(!empty($photos['area_d_penet_3']))
+                            <img src="{{ asset($photos['area_d_penet_3']) }}" alt="Penetrant 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_d_penet_3" onclick="removeSlotPhoto('area_d_penet_3')" style="{{ !empty($photos['area_d_penet_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_d_penet_4']) ? 'has-image' : '' }}" id="card_slot_area_d_penet_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_d_penet_4')" id="dropzone_slot_area_d_penet_4">
+                        <input type="file" id="input_slot_area_d_penet_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_d_penet_4')">
+                        <div id="view_slot_area_d_penet_4">
+                          @if(!empty($photos['area_d_penet_4']))
+                            <img src="{{ asset($photos['area_d_penet_4']) }}" alt="Penetrant 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_d_penet_4" onclick="removeSlotPhoto('area_d_penet_4')" style="{{ !empty($photos['area_d_penet_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>3. OD Area "F" — Foto Visual</span>
+                    <span class="subgroup-tag">4 Slot</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_f_visual_1']) ? 'has-image' : '' }}" id="card_slot_area_f_visual_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_f_visual_1')" id="dropzone_slot_area_f_visual_1">
+                        <input type="file" id="input_slot_area_f_visual_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_f_visual_1')">
+                        <div id="view_slot_area_f_visual_1">
+                          @if(!empty($photos['area_f_visual_1']))
+                            <img src="{{ asset($photos['area_f_visual_1']) }}" alt="Foto 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_f_visual_1" onclick="removeSlotPhoto('area_f_visual_1')" style="{{ !empty($photos['area_f_visual_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_f_visual_2']) ? 'has-image' : '' }}" id="card_slot_area_f_visual_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_f_visual_2')" id="dropzone_slot_area_f_visual_2">
+                        <input type="file" id="input_slot_area_f_visual_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_f_visual_2')">
+                        <div id="view_slot_area_f_visual_2">
+                          @if(!empty($photos['area_f_visual_2']))
+                            <img src="{{ asset($photos['area_f_visual_2']) }}" alt="Foto 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_f_visual_2" onclick="removeSlotPhoto('area_f_visual_2')" style="{{ !empty($photos['area_f_visual_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_f_visual_3']) ? 'has-image' : '' }}" id="card_slot_area_f_visual_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_f_visual_3')" id="dropzone_slot_area_f_visual_3">
+                        <input type="file" id="input_slot_area_f_visual_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_f_visual_3')">
+                        <div id="view_slot_area_f_visual_3">
+                          @if(!empty($photos['area_f_visual_3']))
+                            <img src="{{ asset($photos['area_f_visual_3']) }}" alt="Foto 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_f_visual_3" onclick="removeSlotPhoto('area_f_visual_3')" style="{{ !empty($photos['area_f_visual_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_f_visual_4']) ? 'has-image' : '' }}" id="card_slot_area_f_visual_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_f_visual_4')" id="dropzone_slot_area_f_visual_4">
+                        <input type="file" id="input_slot_area_f_visual_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_f_visual_4')">
+                        <div id="view_slot_area_f_visual_4">
+                          @if(!empty($photos['area_f_visual_4']))
+                            <img src="{{ asset($photos['area_f_visual_4']) }}" alt="Foto 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_f_visual_4" onclick="removeSlotPhoto('area_f_visual_4')" style="{{ !empty($photos['area_f_visual_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- LEMBAR 4 -->
+            <div class="area-photo-section">
+              <div class="area-photo-section-header">
+                <span><i data-lucide="file-text"></i> Lembar 4 &mdash; Penetrant Area "F", OD Area "H" & Penetrant "H"</span>
+                <span class="photo-tag">Lembar 4 (12 Slot)</span>
+              </div>
+              <div class="area-photo-section-body">
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>1. Penetrant Check OD Area "F"</span>
+                    <span class="subgroup-tag">4 Slot (NDT)</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_f_penet_1']) ? 'has-image' : '' }}" id="card_slot_area_f_penet_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_f_penet_1')" id="dropzone_slot_area_f_penet_1">
+                        <input type="file" id="input_slot_area_f_penet_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_f_penet_1')">
+                        <div id="view_slot_area_f_penet_1">
+                          @if(!empty($photos['area_f_penet_1']))
+                            <img src="{{ asset($photos['area_f_penet_1']) }}" alt="Penetrant 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_f_penet_1" onclick="removeSlotPhoto('area_f_penet_1')" style="{{ !empty($photos['area_f_penet_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_f_penet_2']) ? 'has-image' : '' }}" id="card_slot_area_f_penet_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_f_penet_2')" id="dropzone_slot_area_f_penet_2">
+                        <input type="file" id="input_slot_area_f_penet_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_f_penet_2')">
+                        <div id="view_slot_area_f_penet_2">
+                          @if(!empty($photos['area_f_penet_2']))
+                            <img src="{{ asset($photos['area_f_penet_2']) }}" alt="Penetrant 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_f_penet_2" onclick="removeSlotPhoto('area_f_penet_2')" style="{{ !empty($photos['area_f_penet_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_f_penet_3']) ? 'has-image' : '' }}" id="card_slot_area_f_penet_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_f_penet_3')" id="dropzone_slot_area_f_penet_3">
+                        <input type="file" id="input_slot_area_f_penet_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_f_penet_3')">
+                        <div id="view_slot_area_f_penet_3">
+                          @if(!empty($photos['area_f_penet_3']))
+                            <img src="{{ asset($photos['area_f_penet_3']) }}" alt="Penetrant 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_f_penet_3" onclick="removeSlotPhoto('area_f_penet_3')" style="{{ !empty($photos['area_f_penet_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_f_penet_4']) ? 'has-image' : '' }}" id="card_slot_area_f_penet_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_f_penet_4')" id="dropzone_slot_area_f_penet_4">
+                        <input type="file" id="input_slot_area_f_penet_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_f_penet_4')">
+                        <div id="view_slot_area_f_penet_4">
+                          @if(!empty($photos['area_f_penet_4']))
+                            <img src="{{ asset($photos['area_f_penet_4']) }}" alt="Penetrant 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_f_penet_4" onclick="removeSlotPhoto('area_f_penet_4')" style="{{ !empty($photos['area_f_penet_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>2. OD Area "H" — Foto Visual</span>
+                    <span class="subgroup-tag">4 Slot</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_h_visual_1']) ? 'has-image' : '' }}" id="card_slot_area_h_visual_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_h_visual_1')" id="dropzone_slot_area_h_visual_1">
+                        <input type="file" id="input_slot_area_h_visual_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_h_visual_1')">
+                        <div id="view_slot_area_h_visual_1">
+                          @if(!empty($photos['area_h_visual_1']))
+                            <img src="{{ asset($photos['area_h_visual_1']) }}" alt="Foto 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_h_visual_1" onclick="removeSlotPhoto('area_h_visual_1')" style="{{ !empty($photos['area_h_visual_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_h_visual_2']) ? 'has-image' : '' }}" id="card_slot_area_h_visual_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_h_visual_2')" id="dropzone_slot_area_h_visual_2">
+                        <input type="file" id="input_slot_area_h_visual_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_h_visual_2')">
+                        <div id="view_slot_area_h_visual_2">
+                          @if(!empty($photos['area_h_visual_2']))
+                            <img src="{{ asset($photos['area_h_visual_2']) }}" alt="Foto 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_h_visual_2" onclick="removeSlotPhoto('area_h_visual_2')" style="{{ !empty($photos['area_h_visual_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_h_visual_3']) ? 'has-image' : '' }}" id="card_slot_area_h_visual_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_h_visual_3')" id="dropzone_slot_area_h_visual_3">
+                        <input type="file" id="input_slot_area_h_visual_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_h_visual_3')">
+                        <div id="view_slot_area_h_visual_3">
+                          @if(!empty($photos['area_h_visual_3']))
+                            <img src="{{ asset($photos['area_h_visual_3']) }}" alt="Foto 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_h_visual_3" onclick="removeSlotPhoto('area_h_visual_3')" style="{{ !empty($photos['area_h_visual_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_h_visual_4']) ? 'has-image' : '' }}" id="card_slot_area_h_visual_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_h_visual_4')" id="dropzone_slot_area_h_visual_4">
+                        <input type="file" id="input_slot_area_h_visual_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_h_visual_4')">
+                        <div id="view_slot_area_h_visual_4">
+                          @if(!empty($photos['area_h_visual_4']))
+                            <img src="{{ asset($photos['area_h_visual_4']) }}" alt="Foto 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_h_visual_4" onclick="removeSlotPhoto('area_h_visual_4')" style="{{ !empty($photos['area_h_visual_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>3. Penetrant Check OD Area "H"</span>
+                    <span class="subgroup-tag">4 Slot (NDT)</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_h_penet_1']) ? 'has-image' : '' }}" id="card_slot_area_h_penet_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_h_penet_1')" id="dropzone_slot_area_h_penet_1">
+                        <input type="file" id="input_slot_area_h_penet_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_h_penet_1')">
+                        <div id="view_slot_area_h_penet_1">
+                          @if(!empty($photos['area_h_penet_1']))
+                            <img src="{{ asset($photos['area_h_penet_1']) }}" alt="Penetrant 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_h_penet_1" onclick="removeSlotPhoto('area_h_penet_1')" style="{{ !empty($photos['area_h_penet_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_h_penet_2']) ? 'has-image' : '' }}" id="card_slot_area_h_penet_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_h_penet_2')" id="dropzone_slot_area_h_penet_2">
+                        <input type="file" id="input_slot_area_h_penet_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_h_penet_2')">
+                        <div id="view_slot_area_h_penet_2">
+                          @if(!empty($photos['area_h_penet_2']))
+                            <img src="{{ asset($photos['area_h_penet_2']) }}" alt="Penetrant 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_h_penet_2" onclick="removeSlotPhoto('area_h_penet_2')" style="{{ !empty($photos['area_h_penet_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_h_penet_3']) ? 'has-image' : '' }}" id="card_slot_area_h_penet_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_h_penet_3')" id="dropzone_slot_area_h_penet_3">
+                        <input type="file" id="input_slot_area_h_penet_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_h_penet_3')">
+                        <div id="view_slot_area_h_penet_3">
+                          @if(!empty($photos['area_h_penet_3']))
+                            <img src="{{ asset($photos['area_h_penet_3']) }}" alt="Penetrant 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_h_penet_3" onclick="removeSlotPhoto('area_h_penet_3')" style="{{ !empty($photos['area_h_penet_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_h_penet_4']) ? 'has-image' : '' }}" id="card_slot_area_h_penet_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_h_penet_4')" id="dropzone_slot_area_h_penet_4">
+                        <input type="file" id="input_slot_area_h_penet_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_h_penet_4')">
+                        <div id="view_slot_area_h_penet_4">
+                          @if(!empty($photos['area_h_penet_4']))
+                            <img src="{{ asset($photos['area_h_penet_4']) }}" alt="Penetrant 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_h_penet_4" onclick="removeSlotPhoto('area_h_penet_4')" style="{{ !empty($photos['area_h_penet_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- LEMBAR 5 -->
+            <div class="area-photo-section">
+              <div class="area-photo-section-header">
+                <span><i data-lucide="file-text"></i> Lembar 5 &mdash; OD Area "G" & Spline, Penetrant Spline & Diagram TIR</span>
+                <span class="photo-tag">Lembar 5 (9 Slot)</span>
+              </div>
+              <div class="area-photo-section-body">
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>1. OD Area "G" and OD Spline — Foto Visual</span>
+                    <span class="subgroup-tag">4 Slot</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_g_visual_1']) ? 'has-image' : '' }}" id="card_slot_area_g_visual_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_g_visual_1')" id="dropzone_slot_area_g_visual_1">
+                        <input type="file" id="input_slot_area_g_visual_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_g_visual_1')">
+                        <div id="view_slot_area_g_visual_1">
+                          @if(!empty($photos['area_g_visual_1']))
+                            <img src="{{ asset($photos['area_g_visual_1']) }}" alt="Foto 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_g_visual_1" onclick="removeSlotPhoto('area_g_visual_1')" style="{{ !empty($photos['area_g_visual_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_g_visual_2']) ? 'has-image' : '' }}" id="card_slot_area_g_visual_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_g_visual_2')" id="dropzone_slot_area_g_visual_2">
+                        <input type="file" id="input_slot_area_g_visual_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_g_visual_2')">
+                        <div id="view_slot_area_g_visual_2">
+                          @if(!empty($photos['area_g_visual_2']))
+                            <img src="{{ asset($photos['area_g_visual_2']) }}" alt="Foto 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_g_visual_2" onclick="removeSlotPhoto('area_g_visual_2')" style="{{ !empty($photos['area_g_visual_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_g_visual_3']) ? 'has-image' : '' }}" id="card_slot_area_g_visual_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_g_visual_3')" id="dropzone_slot_area_g_visual_3">
+                        <input type="file" id="input_slot_area_g_visual_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_g_visual_3')">
+                        <div id="view_slot_area_g_visual_3">
+                          @if(!empty($photos['area_g_visual_3']))
+                            <img src="{{ asset($photos['area_g_visual_3']) }}" alt="Foto 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_g_visual_3" onclick="removeSlotPhoto('area_g_visual_3')" style="{{ !empty($photos['area_g_visual_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_g_visual_4']) ? 'has-image' : '' }}" id="card_slot_area_g_visual_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_g_visual_4')" id="dropzone_slot_area_g_visual_4">
+                        <input type="file" id="input_slot_area_g_visual_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_g_visual_4')">
+                        <div id="view_slot_area_g_visual_4">
+                          @if(!empty($photos['area_g_visual_4']))
+                            <img src="{{ asset($photos['area_g_visual_4']) }}" alt="Foto 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Foto 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_g_visual_4" onclick="removeSlotPhoto('area_g_visual_4')" style="{{ !empty($photos['area_g_visual_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>2. Penetrant Check Area OD Spline</span>
+                    <span class="subgroup-tag">4 Slot (NDT)</span>
+                  </div>
+                  <div class="slot-grid-4">
+                    <div class="slot-item-card {{ !empty($photos['area_g_penet_1']) ? 'has-image' : '' }}" id="card_slot_area_g_penet_1">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_g_penet_1')" id="dropzone_slot_area_g_penet_1">
+                        <input type="file" id="input_slot_area_g_penet_1" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_g_penet_1')">
+                        <div id="view_slot_area_g_penet_1">
+                          @if(!empty($photos['area_g_penet_1']))
+                            <img src="{{ asset($photos['area_g_penet_1']) }}" alt="Penetrant 1">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 1</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_g_penet_1" onclick="removeSlotPhoto('area_g_penet_1')" style="{{ !empty($photos['area_g_penet_1']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_g_penet_2']) ? 'has-image' : '' }}" id="card_slot_area_g_penet_2">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_g_penet_2')" id="dropzone_slot_area_g_penet_2">
+                        <input type="file" id="input_slot_area_g_penet_2" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_g_penet_2')">
+                        <div id="view_slot_area_g_penet_2">
+                          @if(!empty($photos['area_g_penet_2']))
+                            <img src="{{ asset($photos['area_g_penet_2']) }}" alt="Penetrant 2">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 2</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_g_penet_2" onclick="removeSlotPhoto('area_g_penet_2')" style="{{ !empty($photos['area_g_penet_2']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_g_penet_3']) ? 'has-image' : '' }}" id="card_slot_area_g_penet_3">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_g_penet_3')" id="dropzone_slot_area_g_penet_3">
+                        <input type="file" id="input_slot_area_g_penet_3" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_g_penet_3')">
+                        <div id="view_slot_area_g_penet_3">
+                          @if(!empty($photos['area_g_penet_3']))
+                            <img src="{{ asset($photos['area_g_penet_3']) }}" alt="Penetrant 3">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 3</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_g_penet_3" onclick="removeSlotPhoto('area_g_penet_3')" style="{{ !empty($photos['area_g_penet_3']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                    <div class="slot-item-card {{ !empty($photos['area_g_penet_4']) ? 'has-image' : '' }}" id="card_slot_area_g_penet_4">
+                      <div class="slot-item-dropzone" onclick="triggerFileInput('input_slot_area_g_penet_4')" id="dropzone_slot_area_g_penet_4">
+                        <input type="file" id="input_slot_area_g_penet_4" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'area_g_penet_4')">
+                        <div id="view_slot_area_g_penet_4">
+                          @if(!empty($photos['area_g_penet_4']))
+                            <img src="{{ asset($photos['area_g_penet_4']) }}" alt="Penetrant 4">
+                          @else
+                            <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>
+                          @endif
+                        </div>
+                      </div>
+                      <div class="slot-item-label">Penetrant 4</div>
+                      <button type="button" class="slot-item-btn-remove" id="btn_rem_slot_area_g_penet_4" onclick="removeSlotPhoto('area_g_penet_4')" style="{{ !empty($photos['area_g_penet_4']) ? '' : 'display:none;' }}" title="Hapus Foto">
+                        <i data-lucide="x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <!-- TIR Diagram -->
+                <div class="area-subgroup">
+                  <div class="area-subgroup-title">
+                    <span>3. Diagram Titik Pengukuran TIR (Runout Acuan)</span>
+                    <span class="subgroup-tag">1 Slot</span>
+                  </div>
+                  <div class="slot-large-card {{ !empty($photos['tir_diagram']) ? 'has-image' : '' }}" id="card_slot_tir_diagram">
+                    <div class="slot-large-dropzone" onclick="triggerFileInput('input_slot_tir_diagram')" id="dropzone_slot_tir_diagram">
+                      <input type="file" id="input_slot_tir_diagram" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'tir_diagram')">
+                      <div id="view_slot_tir_diagram">
+                        @if(!empty($photos['tir_diagram']))
+                          <img src="{{ asset($photos['tir_diagram']) }}" alt="TIR Diagram">
+                        @else
+                          <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser file gambar diagram titik pengukuran runout</span></div>
+                        @endif
+                      </div>
+                    </div>
+                    <div class="slot-quick-action">
+                      <button type="button" class="btn btn-secondary btn-xs" onclick="useDefaultBlueprint('tir_diagram')">
+                        <i data-lucide="copy"></i> Gunakan Standar Diagram TIR
+                      </button>
+                      <button type="button" class="btn btn-secondary btn-xs" id="btn_rem_slot_tir_diagram" onclick="removeSlotPhoto('tir_diagram')" style="{{ !empty($photos['tir_diagram']) ? '' : 'display:none;' }}">
+                        <i data-lucide="trash-2"></i> Hapus
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
           <!-- TAB 4: RUNOUT / TIR -->
@@ -873,7 +1697,7 @@
       </div>
     </div>
 
-    <!-- RIGHT COLUMN: Real-Time Official Document Preview (FORM-QC-002) -->
+        <!-- RIGHT COLUMN: Real-Time Official Document Preview (FORM-QC-002) -->
     <div class="studio-preview-pane">
       <div class="preview-toolbar">
         <div class="preview-title">
@@ -958,8 +1782,12 @@
 
           <!-- Drawing / Pictures / Dimension -->
           <div class="p-bar-grey">Drawing / Pictures / Dimension</div>
-          <div class="p-blueprint-box">
-            <img src="{{ asset('images/doc_assets/shaft_blueprint.png') }}" alt="Technical Drawing Shaft">
+          <div class="p-blueprint-box" id="prev_slot_drawing_dimension">
+            @if(!empty($photos['drawing_dimension']))
+              <img src="{{ asset($photos['drawing_dimension']) }}" alt="Drawing Dimensi">
+            @else
+              <div class="empty-blueprint-msg">[ Gambar Drawing / Pictures / Dimension Belum Diunggah ]</div>
+            @endif
           </div>
 
           <!-- Finding Section -->
@@ -976,8 +1804,12 @@
               <tr>
                 <td style="text-align:center; font-weight:700;">00</td>
                 <td>
-                  <div class="p-finding-img-wrap" id="prev_img_full">
-                    <img src="{{ asset('images/doc_assets/p1_Image23.jpg') }}" alt="Full Component Shaft">
+                  <div class="p-finding-img-wrap" id="prev_slot_finding_component">
+                    @if(!empty($photos['finding_component']))
+                      <img src="{{ asset($photos['finding_component']) }}" alt="Foto Komponen Utuh">
+                    @else
+                      <span class="empty-finding-msg">[ Foto Komponen Utuh Belum Diunggah ]</span>
+                    @endif
                   </div>
                 </td>
                 <td style="vertical-align:top; padding:4px;" id="prev_finding_desc">
@@ -993,10 +1825,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of OD Spline</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_item01"><img src="{{ asset('images/doc_assets/p1_Image24.jpg') }}" alt="Spline 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p1_Image25.jpg') }}" alt="Spline 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p1_Image26.jpg') }}" alt="Spline 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p1_Image27.jpg') }}" alt="Spline 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_a_visual_1">{!! $renderSlot('area_a_visual_1', 'Foto 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_a_visual_2">{!! $renderSlot('area_a_visual_2', 'Foto 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_a_visual_3">{!! $renderSlot('area_a_visual_3', 'Foto 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_a_visual_4">{!! $renderSlot('area_a_visual_4', 'Foto 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1044,10 +1876,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of Penetrant Check OD Area "A" and OD Spline</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_penet01"><img src="{{ asset('images/doc_assets/p2_Image30.jpg') }}" alt="Penetrant A 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p2_Image31.jpg') }}" alt="Penetrant A 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p2_Image32.jpg') }}" alt="Penetrant A 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p2_Image33.jpg') }}" alt="Penetrant A 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_a_penet_1">{!! $renderSlot('area_a_penet_1', 'Penetrant 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_a_penet_2">{!! $renderSlot('area_a_penet_2', 'Penetrant 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_a_penet_3">{!! $renderSlot('area_a_penet_3', 'Penetrant 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_a_penet_4">{!! $renderSlot('area_a_penet_4', 'Penetrant 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1068,10 +1900,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of OD Area "B and C"</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_item02"><img src="{{ asset('images/doc_assets/p2_Image34.jpg') }}" alt="BC 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p2_Image35.jpg') }}" alt="BC 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p2_Image36.jpg') }}" alt="BC 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p2_Image37.jpg') }}" alt="BC 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_bc_visual_1">{!! $renderSlot('area_bc_visual_1', 'Foto 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_bc_visual_2">{!! $renderSlot('area_bc_visual_2', 'Foto 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_bc_visual_3">{!! $renderSlot('area_bc_visual_3', 'Foto 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_bc_visual_4">{!! $renderSlot('area_bc_visual_4', 'Foto 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1119,10 +1951,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of Penetrant Check OD Area "B and C"</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_penet02"><img src="{{ asset('images/doc_assets/p2_Image38.jpg') }}" alt="Penetrant BC 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p2_Image39.jpg') }}" alt="Penetrant BC 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p2_Image40.jpg') }}" alt="Penetrant BC 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p2_Image41.jpg') }}" alt="Penetrant BC 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_bc_penet_1">{!! $renderSlot('area_bc_penet_1', 'Penetrant 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_bc_penet_2">{!! $renderSlot('area_bc_penet_2', 'Penetrant 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_bc_penet_3">{!! $renderSlot('area_bc_penet_3', 'Penetrant 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_bc_penet_4">{!! $renderSlot('area_bc_penet_4', 'Penetrant 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1149,10 +1981,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of OD Area "D"</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_item03"><img src="{{ asset('images/doc_assets/p3_Image44.jpg') }}" alt="Area D 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p3_Image45.jpg') }}" alt="Area D 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p3_Image46.jpg') }}" alt="Area D 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p3_Image47.jpg') }}" alt="Area D 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_d_visual_1">{!! $renderSlot('area_d_visual_1', 'Foto 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_d_visual_2">{!! $renderSlot('area_d_visual_2', 'Foto 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_d_visual_3">{!! $renderSlot('area_d_visual_3', 'Foto 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_d_visual_4">{!! $renderSlot('area_d_visual_4', 'Foto 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1195,10 +2027,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of Penetrant Check OD Area "D"</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_penet03"><img src="{{ asset('images/doc_assets/p3_Image50.jpg') }}" alt="Penetrant D 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p3_Image51.jpg') }}" alt="Penetrant D 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p3_Image52.jpg') }}" alt="Penetrant D 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p3_Image53.jpg') }}" alt="Penetrant D 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_d_penet_1">{!! $renderSlot('area_d_penet_1', 'Penetrant 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_d_penet_2">{!! $renderSlot('area_d_penet_2', 'Penetrant 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_d_penet_3">{!! $renderSlot('area_d_penet_3', 'Penetrant 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_d_penet_4">{!! $renderSlot('area_d_penet_4', 'Penetrant 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1219,10 +2051,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of OD Area "F"</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_item04"><img src="{{ asset('images/doc_assets/p3_Image54.jpg') }}" alt="Area F 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p3_Image55.jpg') }}" alt="Area F 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p3_Image56.jpg') }}" alt="Area F 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p3_Image57.jpg') }}" alt="Area F 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_f_visual_1">{!! $renderSlot('area_f_visual_1', 'Foto 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_f_visual_2">{!! $renderSlot('area_f_visual_2', 'Foto 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_f_visual_3">{!! $renderSlot('area_f_visual_3', 'Foto 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_f_visual_4">{!! $renderSlot('area_f_visual_4', 'Foto 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1272,10 +2104,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of Penetrant Check OD Area "F"</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_penet04"><img src="{{ asset('images/doc_assets/p4_Image60.jpg') }}" alt="Penetrant F 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p4_Image61.jpg') }}" alt="Penetrant F 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p4_Image62.jpg') }}" alt="Penetrant F 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p4_Image63.jpg') }}" alt="Penetrant F 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_f_penet_1">{!! $renderSlot('area_f_penet_1', 'Penetrant 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_f_penet_2">{!! $renderSlot('area_f_penet_2', 'Penetrant 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_f_penet_3">{!! $renderSlot('area_f_penet_3', 'Penetrant 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_f_penet_4">{!! $renderSlot('area_f_penet_4', 'Penetrant 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1296,10 +2128,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of OD Area "H"</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_item05"><img src="{{ asset('images/doc_assets/p4_Image64.jpg') }}" alt="Area H 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p4_Image65.jpg') }}" alt="Area H 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p4_Image66.jpg') }}" alt="Area H 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p4_Image67.jpg') }}" alt="Area H 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_h_visual_1">{!! $renderSlot('area_h_visual_1', 'Foto 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_h_visual_2">{!! $renderSlot('area_h_visual_2', 'Foto 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_h_visual_3">{!! $renderSlot('area_h_visual_3', 'Foto 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_h_visual_4">{!! $renderSlot('area_h_visual_4', 'Foto 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1343,10 +2175,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of Penetrant Check OD Area "H"</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_penet05"><img src="{{ asset('images/doc_assets/p4_Image68.jpg') }}" alt="Penetrant H 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p4_Image69.jpg') }}" alt="Penetrant H 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p4_Image70.jpg') }}" alt="Penetrant H 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p4_Image71.jpg') }}" alt="Penetrant H 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_h_penet_1">{!! $renderSlot('area_h_penet_1', 'Penetrant 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_h_penet_2">{!! $renderSlot('area_h_penet_2', 'Penetrant 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_h_penet_3">{!! $renderSlot('area_h_penet_3', 'Penetrant 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_h_penet_4">{!! $renderSlot('area_h_penet_4', 'Penetrant 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1373,10 +2205,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of OD Spline</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_item06"><img src="{{ asset('images/doc_assets/p5_Image75.jpg') }}" alt="Area G 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p5_Image76.jpg') }}" alt="Area G 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p5_Image77.jpg') }}" alt="Area G 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p5_Image78.jpg') }}" alt="Area G 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_g_visual_1">{!! $renderSlot('area_g_visual_1', 'Foto 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_g_visual_2">{!! $renderSlot('area_g_visual_2', 'Foto 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_g_visual_3">{!! $renderSlot('area_g_visual_3', 'Foto 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_g_visual_4">{!! $renderSlot('area_g_visual_4', 'Foto 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1418,10 +2250,10 @@
             <div class="p-split-left">
               <div class="p-col-header">Image of Penetrant Check Area OD Spline</div>
               <div class="p-photo-grid-2x2">
-                <div class="p-photo-slot" id="prev_img_penet06"><img src="{{ asset('images/doc_assets/p5_Image79.jpg') }}" alt="Penetrant G 1"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p5_Image80.jpg') }}" alt="Penetrant G 2"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p5_Image81.jpg') }}" alt="Penetrant G 3"></div>
-                <div class="p-photo-slot"><img src="{{ asset('images/doc_assets/p5_Image82.jpg') }}" alt="Penetrant G 4"></div>
+                <div class="p-photo-slot" id="prev_slot_area_g_penet_1">{!! $renderSlot('area_g_penet_1', 'Penetrant 1') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_g_penet_2">{!! $renderSlot('area_g_penet_2', 'Penetrant 2') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_g_penet_3">{!! $renderSlot('area_g_penet_3', 'Penetrant 3') !!}</div>
+                <div class="p-photo-slot" id="prev_slot_area_g_penet_4">{!! $renderSlot('area_g_penet_4', 'Penetrant 4') !!}</div>
               </div>
             </div>
             <div class="p-split-right">
@@ -1438,8 +2270,12 @@
 
           <!-- Check TIR -->
           <div class="p-bar-yellow">Check TIR</div>
-          <div class="p-blueprint-box" style="padding:4px 10px;">
-            <img src="{{ asset('images/doc_assets/shaft_tir_blueprint.png') }}" alt="Shaft TIR Blueprint">
+          <div class="p-blueprint-box" id="prev_slot_tir_diagram" style="padding:4px 10px;">
+            @if(!empty($photos['tir_diagram']))
+              <img src="{{ asset($photos['tir_diagram']) }}" alt="Shaft TIR Blueprint">
+            @else
+              <div class="empty-blueprint-msg">[ Gambar Diagram Titik Ukur TIR Belum Diunggah ]</div>
+            @endif
           </div>
           <table class="p-tir-table">
             <thead>
@@ -1549,4 +2385,3 @@
 @section('scripts')
   <script src="{{ asset('js/app.js') }}"></script>
 @endsection
-
