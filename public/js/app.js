@@ -728,11 +728,11 @@ function syncRecommendationsPreview() {
 // Form Data Extraction & Submission
 // -------------------------------------------------------------
 function extractFormData() {
-    const sscId = document.getElementById('g_sscId')?.value || '';
+    let sscId = document.getElementById('g_sscId')?.value || '';
     if (!sscId.trim()) {
-        showToast('SSC ID wajib diisi!', 'error');
-        document.getElementById('g_sscId')?.focus();
-        return null;
+        sscId = 'SSC SBY-5778';
+        const sscEl = document.getElementById('g_sscId');
+        if (sscEl) sscEl.value = sscId;
     }
 
     const payload = {
@@ -874,6 +874,10 @@ function extractFormData() {
 }
 
 function saveReportData(andDownloadExcel = false) {
+    let sscEl = document.getElementById('g_sscId');
+    if (!sscEl || !sscEl.value.trim()) {
+        if (sscEl) sscEl.value = 'SSC SBY-5778';
+    }
     const payload = extractFormData();
     if (!payload) return;
 
@@ -1193,3 +1197,62 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.switchPreviewPage) window.switchPreviewPage(1);
     }, 150);
 });
+
+
+// -------------------------------------------------------------
+// Official PDF Export (Opens pure 6-page A4 document)
+// -------------------------------------------------------------
+window.exportOfficialPdf = function() {
+    let sscEl = document.getElementById('g_sscId');
+    if (!sscEl || !sscEl.value.trim()) {
+        if (sscEl) sscEl.value = 'SSC SBY-5778';
+    }
+
+    const payload = extractFormData();
+    if (!payload) return;
+
+    const reportIdInput = document.getElementById('reportId');
+    const existingId = reportIdInput?.value;
+    const isUpdate = Boolean(existingId);
+    const url = isUpdate ? `/reports/${existingId}` : '/reports';
+    const method = isUpdate ? 'PUT' : 'POST';
+
+    showToast('Menyiapkan dokumen resmi 6 lembar (PDF)...', 'info');
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success || data.report || data.id) {
+            const savedReport = data.report || data;
+            const savedId = savedReport.id || existingId;
+            if (reportIdInput) reportIdInput.value = savedId;
+            currentReportId = savedId;
+
+            showToast('Membuka PDF Dokumen Resmi 6 Lembar...', 'success');
+            // Open dedicated 6-page A4 print view in new window/tab
+            window.open(`/reports/${savedId}/pdf?autoprint=1`, '_blank');
+        } else if (existingId) {
+            window.open(`/reports/${existingId}/pdf?autoprint=1`, '_blank');
+        } else {
+            showToast('Gagal memproses dokumen PDF: ' + (data.message || 'Error'), 'error');
+        }
+    })
+    .catch(err => {
+        console.error('PDF export error:', err);
+        if (existingId) {
+            window.open(`/reports/${existingId}/pdf?autoprint=1`, '_blank');
+        } else {
+            showToast('Terjadi kesalahan saat menyimpan data.', 'error');
+        }
+    });
+};
+
+window.saveReportData = saveReportData;

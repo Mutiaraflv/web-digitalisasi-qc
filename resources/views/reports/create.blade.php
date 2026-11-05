@@ -8,13 +8,13 @@
     <a href="{{ route('reports.index') }}" class="btn btn-secondary btn-sm">
       <i data-lucide="arrow-left"></i> Kembali ke Riwayat
     </a>
-    <button type="button" id="btnTopSave" class="btn btn-secondary btn-sm">
+    <button type="button" id="btnTopSave" class="btn btn-secondary btn-sm" onclick="window.saveReportData(false)">
       <i data-lucide="save"></i> Simpan Data
     </button>
-    <button type="button" id="btnTopExportPdf" class="btn btn-primary btn-sm" title="Ekspor 6 Lembar PDF Resmi">
+    <button type="button" id="btnTopExportPdf" class="btn btn-primary btn-sm" title="Ekspor 6 Lembar PDF Resmi" onclick="window.exportOfficialPdf()">
       <i data-lucide="file-text"></i> Ekspor PDF Resmi (6 Lembar)
     </button>
-    <button type="button" id="btnTopExportExcel" class="btn btn-secondary btn-sm">
+    <button type="button" id="btnTopExportExcel" class="btn btn-secondary btn-sm" onclick="window.saveReportData(true)">
       <i data-lucide="file-spreadsheet"></i> Unduh Excel (.xlsx)
     </button>
   </div>
@@ -155,12 +155,12 @@
             <div class="form-grid-2">
               <div class="form-group">
                 <label>SSC ID <span class="required">*</span></label>
-                <input type="text" id="g_sscId" required placeholder="Contoh: SSC SBY-5778" class="mono-input" value="{{ $report->ssc_id ?? '' }}">
+                <input type="text" id="g_sscId" required placeholder="Contoh: SSC SBY-5778" class="mono-input" value="{{ $report->ssc_id ?? 'SSC SBY-5778' }}">
                 <small class="helper-text">Nomor identitas unik unit workshop</small>
               </div>
               <div class="form-group">
                 <label>No. Laporan</label>
-                <input type="text" id="g_reportNo" placeholder="Contoh: 0742" class="mono-input" value="{{ $report->report_no ?? '' }}">
+                <input type="text" id="g_reportNo" placeholder="Contoh: 0742" class="mono-input" value="{{ $report->report_no ?? '0742' }}">
               </div>
               <div class="form-group">
                 <label>Tanggal Inspeksi</label>
@@ -175,7 +175,7 @@
               </div>
               <div class="form-group full-width">
                 <label>Customer / Perusahaan</label>
-                <input type="text" id="g_customer" placeholder="Nama Perusahaan Pelanggan" value="{{ $report->customer ?? '' }}">
+                <input type="text" id="g_customer" placeholder="Nama Perusahaan Pelanggan" value="{{ $report->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}">
               </div>
               <div class="form-group">
                 <label>Nama Komponen (Part Name)</label>
@@ -1688,13 +1688,13 @@
             </button>
           </div>
           <div class="footer-right">
-            <button type="button" class="btn btn-secondary" id="btnBottomSave">
+            <button type="button" class="btn btn-secondary" id="btnBottomSave" onclick="window.saveReportData(false)">
               <i data-lucide="save"></i> Simpan Data
             </button>
-            <button type="button" class="btn btn-primary" id="btnBottomExportPdf" title="Simpan data dan ekspor PDF resmi 6 lembar">
+            <button type="button" class="btn btn-primary" id="btnBottomExportPdf" title="Simpan data dan ekspor PDF resmi 6 lembar" onclick="window.exportOfficialPdf()">
               <i data-lucide="file-text"></i> Simpan &amp; Ekspor PDF
             </button>
-            <button type="button" class="btn btn-secondary" id="btnBottomExportExcel">
+            <button type="button" class="btn btn-secondary" id="btnBottomExportExcel" onclick="window.saveReportData(true)">
               <i data-lucide="download"></i> Simpan &amp; Unduh Excel
             </button>
           </div>
@@ -1711,7 +1711,7 @@
           <span>Live Document Preview &mdash; <strong>COMPONENT CONDITION REPORT (6 Lembar)</strong></span>
         </div>
         <div class="preview-actions">
-          <button type="button" class="btn btn-secondary btn-xs" id="btnPrintPreview" title="Cetak / Unduh PDF">
+          <button type="button" class="btn btn-secondary btn-xs" id="btnPrintPreview" title="Cetak / Unduh PDF" onclick="window.exportOfficialPdf()">
             <i data-lucide="printer"></i> Cetak / PDF (6 Lembar)
           </button>
         </div>

@@ -1346,5 +1346,12 @@
 
   </div><!-- /page 6 -->
 
+  <script>
+    if (new URLSearchParams(window.location.search).get('autoprint') === '1') {
+      window.addEventListener('load', () => {
+        setTimeout(() => window.print(), 500);
+      });
+    }
+  </script>
 </body>
 </html>
