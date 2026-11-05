@@ -16,7 +16,7 @@
     <aside class="app-sidebar" id="appSidebar">
       <!-- Sidebar Header -->
       <div class="sidebar-header">
-        <img src="{{ asset('images/logo.png') }}" alt="Logo SSC" class="sidebar-logo">
+        <img src="{{ asset('images/logo.png') }}" alt="Logo SSC Works" class="sidebar-logo">
         <div class="sidebar-brand-text">
           <h2>QCMS</h2>
           <p>PT SSC Works</p>
@@ -25,44 +25,42 @@
 
       <!-- Navigation Links -->
       <nav class="sidebar-nav">
-        <div class="nav-section-title">Operasional</div>
+        <div class="nav-section-title">Menu Utama</div>
         
+        <a href="{{ route('inspection.create') }}" class="nav-item {{ request()->routeIs('inspection.create') || request()->routeIs('reports.create') || request()->routeIs('reports.edit') ? 'active' : '' }}">
+          <i data-lucide="file-plus-2"></i>
+          <span>Input Inspeksi Baru</span>
+        </a>
+
+        <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.index') && !request()->has('create') ? 'active' : '' }}">
+          <i data-lucide="archive"></i>
+          <span>Riwayat Laporan</span>
+        </a>
+
+        <a href="{{ route('templates.index') }}" class="nav-item {{ request()->routeIs('templates.*') || request()->routeIs('parts.*') ? 'active' : '' }}">
+          <i data-lucide="file-spreadsheet"></i>
+          <span>Template Komponen</span>
+        </a>
+
         <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-          <i data-lucide="layout-grid"></i>
-          <span>Dashboard</span>
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard Ringkas</span>
         </a>
 
-        <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') && !request()->has('create') ? 'active' : '' }}">
-          <i data-lucide="file-check-2"></i>
-          <span>Daftar Laporan QC</span>
-        </a>
-
-        <a href="{{ route('reports.index', ['create' => 1]) }}" class="nav-item {{ request()->has('create') ? 'active' : '' }}">
-          <i data-lucide="file-plus"></i>
-          <span>Form Input QC Baru</span>
-        </a>
-
-        <a href="{{ route('ncrs.index') }}" class="nav-item {{ request()->routeIs('ncrs.*') ? 'active' : '' }}">
-          <i data-lucide="alert-circle"></i>
-          <span>Temuan & NCR</span>
-        </a>
-
-        <div class="nav-section-title" style="margin-top: 0.75rem;">Master Data</div>
-
-        <a href="{{ route('parts.index') }}" class="nav-item {{ request()->routeIs('parts.*') ? 'active' : '' }}">
-          <i data-lucide="package"></i>
-          <span>Katalog Komponen</span>
-        </a>
+        <div class="nav-section-title" style="margin-top: 1.25rem;">Modul Pendukung</div>
 
         <a href="{{ route('customers.index') }}" class="nav-item {{ request()->routeIs('customers.*') ? 'active' : '' }}">
           <i data-lucide="building"></i>
-          <span>Pelanggan</span>
+          <span>Data Pelanggan</span>
         </a>
 
-        <div class="nav-section-title" style="margin-top: 0.75rem;">Peralatan</div>
+        <a href="{{ route('ncrs.index') }}" class="nav-item {{ request()->routeIs('ncrs.*') ? 'active' : '' }}">
+          <i data-lucide="alert-octagon"></i>
+          <span>Temuan & NCR</span>
+        </a>
 
         <a href="{{ route('calibration.index') }}" class="nav-item {{ request()->routeIs('calibration.*') ? 'active' : '' }}">
-          <i data-lucide="sliders-horizontal"></i>
+          <i data-lucide="ruler"></i>
           <span>Kalibrasi Alat</span>
         </a>
       </nav>
@@ -71,8 +69,8 @@
       <div class="sidebar-footer">
         <div class="user-avatar">QC</div>
         <div class="user-info">
-          <h4>Inspector</h4>
-          <p>Workshop QC Team</p>
+          <h4>Tim QC Workshop</h4>
+          <p>PT SSC Works</p>
         </div>
       </div>
     </aside>

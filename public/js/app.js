@@ -1,122 +1,144 @@
-// Laravel CCR QC System Frontend App - Resilient Corporate Edition
+// PT SSC Works - Quality Control Digitalization System (QCMS)
+// Frontend Controller & Real-Time Live Preview Engine
+
 let defaultTemplate = null;
-let currentEditingId = null;
+let currentReportId = null;
+let reportPhotos = {
+    item01: null,
+    item02: null,
+    item03: null,
+    item04: null,
+    item05: null,
+    item06: null,
+    penetrant: null,
+    defect: null
+};
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-// Embedded fallback template
-const fallbackDefaultTemplate = {
-  general: {
-    docNo: "FORM-QC-002",
-    rev: "04",
-    reportNo: "",
-    date: "",
-    customer: "",
-    partName: "OUTPUT SHAFT",
-    inspectionType: "Pre",
-    jobNo: "-",
-    modelUnit: "HT051",
-    sscId: "",
-    quoteNo: "-",
-    partNo: "-"
-  },
-  sections: {
-    item01: {
-      title: "OD Area \"A\" and OD Spline",
-      spec: "Ø79 ± 0.25",
-      x: 79.0, y: 79.0, z: 79.0, ar: "A",
-      remark1: "Actual measurement OD area \"A\" in good condition",
-      lengthItem: "L", lengthSpec: "N/A", lengthResult: 724.0, lengthAr: "-",
-      penetrantRemark: "No indication crack at OD area \"A\" and OD spline after penetrant check"
+// Blank Template (Zero fake measurement data)
+const blankDefaultTemplate = {
+    general: {
+        docNo: "FORM-QC-002",
+        rev: "04",
+        reportNo: "",
+        date: new Date().toISOString().split('T')[0],
+        customer: "",
+        partName: "OUTPUT SHAFT",
+        inspectionType: "Pre",
+        jobNo: "-",
+        modelUnit: "HT051",
+        sscId: "",
+        quoteNo: "-",
+        partNo: "-"
     },
-    item02: {
-      title: "OD Area \"B and C\"",
-      itemB: {
-        spec: "Ø82 ± 0.25",
-        row1: { x: 82.0, y: 82.0, z: 82.0, ar: "A" },
-        row2: { x: 82.0, y: 82.0, z: 82.0, ar: "A" },
-        row3: { x: 82.0, y: 82.0, z: 82.0, ar: "A" }
-      },
-      itemC: {
-        spec: "Ø77 ± 0.25",
-        row1: { x: 77.0, y: 77.0, z: 77.0, ar: "A" },
-        row2: { x: 77.0, y: 77.0, z: 77.0, ar: "A" },
-        row3: { x: 77.0, y: 77.0, z: 77.0, ar: "A" }
-      },
-      remarks: ["Actual measurement OD area \"B and C\" in good condition"],
-      penetrantRemark: "No indication crack at OD Area \"B and C\" after penetrant check"
+    sections: {
+        item01: {
+            title: "OD Area \"A\" and OD Spline",
+            spec: "Ø79 ± 0.25",
+            x: "", y: "", z: "", ar: "A",
+            remark1: "Actual measurement OD area \"A\" in good condition",
+            lengthItem: "L", lengthSpec: "N/A", lengthResult: "", lengthAr: "-",
+            penetrantRemark: "No indication crack at OD area \"A\" and OD spline after penetrant check"
+        },
+        item02: {
+            title: "OD Area \"B and C\"",
+            itemB: {
+                spec: "Ø82 ± 0.25",
+                row1: { x: "", y: "", z: "", ar: "A" },
+                row2: { x: "", y: "", z: "", ar: "A" },
+                row3: { x: "", y: "", z: "", ar: "A" }
+            },
+            itemC: {
+                spec: "Ø77 ± 0.25",
+                row1: { x: "", y: "", z: "", ar: "A" },
+                row2: { x: "", y: "", z: "", ar: "A" },
+                row3: { x: "", y: "", z: "", ar: "A" }
+            },
+            remarks: ["Actual measurement OD area \"B and C\" in good condition"],
+            penetrantRemark: "No indication crack at OD Area \"B and C\" after penetrant check"
+        },
+        item03: {
+            title: "OD Area \"D\"",
+            itemD: { spec: "Ø118 ± 0.5", x: "", y: "", z: "", ar: "A" },
+            distanceE: { spec: "13 ± 0.5", x: "", y: "", z: "", ar: "A" },
+            remarks: ["Actual measurement OD area \"D\" in good condition", "Actual distance area \"E\" in good condition"],
+            penetrantRemark: "No indication crack at OD area \"D\" after penetrant check"
+        },
+        item04: {
+            title: "OD Area \"F\"",
+            itemF: {
+                spec: "Ø100,01 ± 0,008",
+                row1: { x: "", y: "", z: "", ar: "A" },
+                row2: { x: "", y: "", z: "", ar: "A" },
+                row3: { x: "", y: "", z: "", ar: "A" }
+            },
+            distanceK: { spec: "N/A", result: "", ar: "-" },
+            remarks: ["Actual measurement OD area \"F\" in good condition"],
+            penetrantRemark: "No indication crack at area OD area \"F\" after penetrant check"
+        },
+        item05: {
+            title: "OD Area \"H\"",
+            itemH: {
+                spec: "Ø94 ± 0,013",
+                row1: { x: "", y: "", z: "", ar: "A" },
+                row2: { x: "", y: "", z: "", ar: "A" },
+                row3: { x: "", y: "", z: "", ar: "A" }
+            },
+            distanceJ: { spec: "N/A", result: "", ar: "-" },
+            remarks: ["Actual measurement OD area \"H\" in good condition"],
+            penetrantRemark: "No indication crack at area OD area \"H\" after penetrant check"
+        },
+        item06: {
+            title: "OD Area \"G\" and OD Spline",
+            itemG: { spec: "Ø84,2 ± 0,13", x: "", y: "", z: "", ar: "A" },
+            distanceI: { spec: "N/A", result: "", ar: "-" },
+            remarks: ["Actual measurement OD area \"G\" in good condition"],
+            penetrantRemark: "No indication crack at area OD spline after penetrant check"
+        }
     },
-    item03: {
-      title: "OD Area \"D\"",
-      itemD: { spec: "Ø118 ± 0.5", x: 118.0, y: 118.0, z: 118.0, ar: "A" },
-      distanceE: { spec: "13 ± 0.5", x: 13.0, y: 13.0, z: 13.0, ar: "A" },
-      remarks: ["Actual measurement OD area \"D\" in good condition", "Actual distance area \"E\" in good condition"],
-      penetrantRemark: "No indication crack at OD area \"D\" after penetrant check"
+    tir: {
+        spec: "Max 0,2",
+        datum: "Datum at item \"B and E\"",
+        items: [
+            { item: "A", d0: "", d90: "", d180: "", d270: "", ar: "A" },
+            { item: "B", d0: "", d90: "", d180: "", d270: "", ar: "A" },
+            { item: "C", d0: "", d90: "", d180: "", d270: "", ar: "A" },
+            { item: "D", d0: "", d90: "", d180: "", d270: "", ar: "A" },
+            { item: "E", d0: "", d90: "", d180: "", d270: "", ar: "A" },
+            { item: "F", d0: "", d90: "", d180: "", d270: "", ar: "A" }
+        ]
     },
-    item04: {
-      title: "OD Area \"F\"",
-      itemF: {
-        spec: "Ø100,01 ± 0,008",
-        row1: { x: 100.01, y: 100.01, z: 100.01, ar: "A" },
-        row2: { x: 100.01, y: 100.01, z: 100.01, ar: "A" },
-        row3: { x: 100.01, y: 100.01, z: 100.01, ar: "A" }
-      },
-      distanceK: { spec: "N/A", result: 188.55, ar: "-" },
-      remarks: ["Actual measurement OD area \"F\" in good condition"],
-      penetrantRemark: "No indication crack at area OD area \"F\" after penetrant check"
+    recommendations: [
+        { item: "01", remarks: "Cleaning and polish OD area \"A\"", recommendation: "Cleaning and polish OD area \"A\"" }
+    ],
+    photos: {
+        item01: null, item02: null, item03: null, item04: null,
+        item05: null, item06: null, penetrant: null, defect: null
     },
-    item05: {
-      title: "OD Area \"H\"",
-      itemH: {
-        spec: "Ø94 ± 0,013",
-        row1: { x: 94.0, y: 94.0, z: 94.0, ar: "A" },
-        row2: { x: 94.0, y: 94.0, z: 94.0, ar: "A" },
-        row3: { x: 94.0, y: 94.0, z: 94.0, ar: "A" }
-      },
-      distanceJ: { spec: "N/A", result: 142.8, ar: "-" },
-      remarks: ["Actual measurement OD area \"H\" in good condition"],
-      penetrantRemark: "No indication crack at area OD area \"H\" after penetrant check"
-    },
-    item06: {
-      title: "OD Area \"G\" and OD Spline",
-      itemG: { spec: "Ø84,2 ± 0,13", x: 84.2, y: 84.2, z: 84.2, ar: "A" },
-      distanceI: { spec: "N/A", result: 98.78, ar: "-" },
-      remarks: ["Actual measurement OD area \"G\" in good condition"],
-      penetrantRemark: "No indication crack at area OD spline after penetrant check"
+    signatures: {
+        checkedBy: { name: "Faqih S A A", title: "QC Inspector", date: "" },
+        createdBy: { name: "M Kevin S", title: "QC Inspector", date: "" },
+        reviewedBy: { name: "Agus Riyanto", title: "Leader QC", date: "" }
     }
-  },
-  tir: {
-    spec: "Max 0,2",
-    datum: "Datum at item \"B and E\"",
-    items: [
-      { item: "A", d0: "0", d90: "0", d180: "0", d270: "0", ar: "A" },
-      { item: "B", d0: "0", d90: "0", d180: "0", d270: "0", ar: "A" },
-      { item: "C", d0: "0", d90: "0", d180: "0", d270: "0", ar: "A" },
-      { item: "D", d0: "0", d90: "0", d180: "0", d270: "0", ar: "A" },
-      { item: "E", d0: "0", d90: "0", d180: "0", d270: "0", ar: "A" },
-      { item: "F", d0: "0", d90: "0", d180: "0", d270: "0", ar: "A" }
-    ]
-  },
-  recommendations: [
-    { item: "01", remarks: "Cleaning and polish OD area \"A\"", recommendation: "Cleaning and polish OD area \"A\"" }
-  ],
-  signatures: {
-    checkedBy: { name: "Faqih S A A", title: "QC Inspector", date: "" },
-    createdBy: { name: "M Kevin S", title: "QC Inspector", date: "" },
-    reviewedBy: { name: "Agus Riyanto", title: "Leader QC", date: "" }
-  }
 };
 
 function initApp() {
     if (window.lucide) lucide.createIcons();
-    setupEventListeners();
-    setupToleranceAutoEvaluation();
-    fetchDefaultTemplate();
+    setupStudioTabs();
+    setupLivePreviewSync();
+    setupButtonActions();
 
-    // Check URL parameters for direct modal open (?create=1 or ?new=1)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('create') === '1' || urlParams.get('new') === '1' || window.location.hash === '#create') {
-        setTimeout(() => openCreateModal(), 60);
+    // Check if we are on inspection create/edit page
+    const reportIdInput = document.getElementById('reportId');
+    if (reportIdInput) {
+        if (reportIdInput.value) {
+            currentReportId = reportIdInput.value;
+            loadReportForEdit(currentReportId);
+        } else {
+            // New blank inspection
+            loadDefaultBlankForm();
+        }
     }
 }
 
@@ -126,914 +148,807 @@ if (document.readyState === 'loading') {
     initApp();
 }
 
-function setupEventListeners() {
-    // Tabs Navigation
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+// -------------------------------------------------------------
+// Tabs Switching
+// -------------------------------------------------------------
+function setupStudioTabs() {
+    const tabButtons = document.querySelectorAll('.s-tab-btn');
+    tabButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            const targetId = btn.getAttribute('data-tab');
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const targetId = btn.getAttribute('data-target');
+            tabButtons.forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.s-tab-content').forEach(c => c.classList.remove('active'));
+
             btn.classList.add('active');
-            const targetEl = document.getElementById(targetId);
-            if (targetEl) targetEl.classList.add('active');
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) targetContent.classList.add('active');
         });
-    });
-
-    // Blueprint Schematic Toggle
-    const toggleBlueprint = document.getElementById('toggleBlueprint');
-    const blueprintContent = document.getElementById('blueprintContent');
-    const blueprintToggleText = document.getElementById('blueprintToggleText');
-    if (toggleBlueprint && blueprintContent) {
-        toggleBlueprint.addEventListener('click', () => {
-            const isHidden = blueprintContent.style.display === 'none';
-            blueprintContent.style.display = isHidden ? 'block' : 'none';
-            if (blueprintToggleText) {
-                blueprintToggleText.textContent = isHidden ? 'Sembunyikan' : 'Tampilkan';
-            }
-        });
-    }
-
-    // Modal controls
-    const btnCreateNew = document.getElementById('btnCreateNew');
-    const btnModalClose = document.getElementById('btnModalClose');
-    const btnCancelModal = document.getElementById('btnCancelModal');
-    const btnSaveOnly = document.getElementById('btnSaveOnly');
-    const btnSubmitAndDownload = document.getElementById('btnSubmitAndDownload');
-    const btnAddRecRow = document.getElementById('btnAddRecRow');
-    const searchInput = document.getElementById('searchInput');
-    const typeFilter = document.getElementById('typeFilter');
-    const btnRefresh = document.getElementById('btnRefresh');
-
-    if (btnCreateNew) btnCreateNew.addEventListener('click', (e) => { e.preventDefault(); openCreateModal(); });
-    if (btnModalClose) btnModalClose.addEventListener('click', (e) => { e.preventDefault(); closeModal(); });
-    if (btnCancelModal) btnCancelModal.addEventListener('click', (e) => { e.preventDefault(); closeModal(); });
-
-    // Filter controls
-    if (searchInput) {
-        let timer;
-        searchInput.addEventListener('input', () => {
-            clearTimeout(timer);
-            timer = setTimeout(() => filterTableLocally(), 150);
-        });
-    }
-    if (typeFilter) {
-        typeFilter.addEventListener('change', () => filterTableLocally());
-    }
-    if (btnRefresh) {
-        btnRefresh.addEventListener('click', () => window.location.reload());
-    }
-
-    // Dynamic recommendations
-    if (btnAddRecRow) {
-        btnAddRecRow.addEventListener('click', () => addRecommendationRow('', '', ''));
-    }
-
-    // Modal save buttons
-    if (btnSaveOnly) btnSaveOnly.addEventListener('click', () => handleSave(false));
-    if (btnSubmitAndDownload) btnSubmitAndDownload.addEventListener('click', () => handleSave(true));
-}
-
-// Live Tolerance Auto-Evaluation
-function setupToleranceAutoEvaluation() {
-    document.querySelectorAll('.auto-eval').forEach(input => {
-        input.addEventListener('input', () => evaluateDimensionInput(input));
-    });
-
-    document.querySelectorAll('.tir-eval').forEach(input => {
-        input.addEventListener('input', () => evaluateTirInput(input));
-    });
-
-    document.querySelectorAll('.meas-table select').forEach(sel => {
-        sel.addEventListener('change', () => recalculateAllTabStatuses());
     });
 }
 
-function evaluateDimensionInput(input) {
-    const nominal = parseFloat(input.dataset.specNominal);
-    const tol = parseFloat(input.dataset.specTol);
-    const val = parseFloat(input.value);
+// -------------------------------------------------------------
+// Live Preview Synchronization
+// -------------------------------------------------------------
+function setupLivePreviewSync() {
+    const form = document.getElementById('qcMainForm');
+    if (!form) return;
 
-    if (isNaN(val) || input.value === '') {
-        input.classList.remove('is-in-spec', 'is-out-of-spec');
-        recalculateAllTabStatuses();
-        return;
-    }
+    // Attach listener to all inputs, selects, textareas
+    form.addEventListener('input', updateLivePreview);
+    form.addEventListener('change', updateLivePreview);
 
-    const min = nominal - tol;
-    const max = nominal + tol;
-    const inSpec = (val >= (min - 0.0001)) && (val <= (max + 0.0001));
-
-    if (inSpec) {
-        input.classList.add('is-in-spec');
-        input.classList.remove('is-out-of-spec');
-    } else {
-        input.classList.add('is-out-of-spec');
-        input.classList.remove('is-in-spec');
-
-        const row = input.closest('tr');
-        if (row) {
-            const selectAr = row.querySelector('select');
-            if (selectAr) selectAr.value = 'R';
-        }
-    }
-
-    recalculateAllTabStatuses();
+    // Initial sync
+    setTimeout(updateLivePreview, 100);
 }
 
-function evaluateTirInput(input) {
-    const val = parseFloat(input.value);
-    if (isNaN(val) || input.value === '') {
-        input.classList.remove('is-in-spec', 'is-out-of-spec');
-        recalculateAllTabStatuses();
-        return;
-    }
+function updateLivePreview() {
+    // 1. General Info
+    const sscId = document.getElementById('g_sscId')?.value || '-';
+    const reportNo = document.getElementById('g_reportNo')?.value || '-';
+    const date = document.getElementById('g_date')?.value || '-';
+    const customer = document.getElementById('g_customer')?.value || '-';
+    const partName = document.getElementById('g_partName')?.value || 'OUTPUT SHAFT';
+    const inspectionType = document.getElementById('g_inspectionType')?.value || 'Pre';
+    const modelUnit = document.getElementById('g_modelUnit')?.value || 'HT051';
+    const jobNo = document.getElementById('g_jobNo')?.value || '-';
+    const quoteNo = document.getElementById('g_quoteNo')?.value || '-';
+    const partNo = document.getElementById('g_partNo')?.value || '-';
 
-    const inSpec = val <= 0.2001;
-    if (inSpec) {
-        input.classList.add('is-in-spec');
-        input.classList.remove('is-out-of-spec');
-    } else {
-        input.classList.add('is-out-of-spec');
-        input.classList.remove('is-in-spec');
+    setPreviewText('prev_sscId', sscId);
+    setPreviewText('prev_reportNo', reportNo);
+    setPreviewText('prev_metaDate', date);
+    setPreviewText('prev_customer', customer);
+    setPreviewText('prev_partName', partName);
+    setPreviewText('prev_inspectionType', inspectionType);
+    setPreviewText('prev_modelUnit', modelUnit);
+    setPreviewText('prev_jobNo', jobNo);
+    setPreviewText('prev_quoteNo', quoteNo);
+    setPreviewText('prev_partNo', partNo);
 
-        const row = input.closest('tr');
-        if (row) {
-            const selectAr = row.querySelector('select');
-            if (selectAr) selectAr.value = 'R';
-        }
-    }
+    // 2. Section 01
+    setPreviewText('prev_i1_x', document.getElementById('i1_x')?.value || '-');
+    setPreviewText('prev_i1_y', document.getElementById('i1_y')?.value || '-');
+    setPreviewText('prev_i1_z', document.getElementById('i1_z')?.value || '-');
+    const i1Ar = document.getElementById('i1_ar')?.value || 'A';
+    setPreviewText('prev_i1_ar', i1Ar);
+    colorStatusCell('prev_i1_ar', i1Ar);
 
-    recalculateAllTabStatuses();
+    // 3. Section 02
+    setPreviewText('prev_i2_b1_x', document.getElementById('i2_b1_x')?.value || '-');
+    setPreviewText('prev_i2_b1_y', document.getElementById('i2_b1_y')?.value || '-');
+    setPreviewText('prev_i2_b1_z', document.getElementById('i2_b1_z')?.value || '-');
+    const b1Ar = document.getElementById('i2_b1_ar')?.value || 'A';
+    setPreviewText('prev_i2_b1_ar', b1Ar);
+    colorStatusCell('prev_i2_b1_ar', b1Ar);
+
+    setPreviewText('prev_i2_c1_x', document.getElementById('i2_c1_x')?.value || '-');
+    setPreviewText('prev_i2_c1_y', document.getElementById('i2_c1_y')?.value || '-');
+    setPreviewText('prev_i2_c1_z', document.getElementById('i2_c1_z')?.value || '-');
+    const c1Ar = document.getElementById('i2_c1_ar')?.value || 'A';
+    setPreviewText('prev_i2_c1_ar', c1Ar);
+    colorStatusCell('prev_i2_c1_ar', c1Ar);
+
+    // 4. Section 03
+    setPreviewText('prev_i3_d_x', document.getElementById('i3_d_x')?.value || '-');
+    setPreviewText('prev_i3_d_y', document.getElementById('i3_d_y')?.value || '-');
+    setPreviewText('prev_i3_d_z', document.getElementById('i3_d_z')?.value || '-');
+    const dAr = document.getElementById('i3_d_ar')?.value || 'A';
+    setPreviewText('prev_i3_d_ar', dAr);
+    colorStatusCell('prev_i3_d_ar', dAr);
+
+    // 5. Section 04
+    setPreviewText('prev_i4_f1_x', document.getElementById('i4_f1_x')?.value || '-');
+    setPreviewText('prev_i4_f1_y', document.getElementById('i4_f1_y')?.value || '-');
+    setPreviewText('prev_i4_f1_z', document.getElementById('i4_f1_z')?.value || '-');
+    const f1Ar = document.getElementById('i4_f1_ar')?.value || 'A';
+    setPreviewText('prev_i4_f1_ar', f1Ar);
+    colorStatusCell('prev_i4_f1_ar', f1Ar);
+
+    // 6. Section 05
+    setPreviewText('prev_i5_h1_x', document.getElementById('i5_h1_x')?.value || '-');
+    setPreviewText('prev_i5_h1_y', document.getElementById('i5_h1_y')?.value || '-');
+    setPreviewText('prev_i5_h1_z', document.getElementById('i5_h1_z')?.value || '-');
+    const h1Ar = document.getElementById('i5_h1_ar')?.value || 'A';
+    setPreviewText('prev_i5_h1_ar', h1Ar);
+    colorStatusCell('prev_i5_h1_ar', h1Ar);
+
+    // 7. Section 06
+    setPreviewText('prev_i6_x', document.getElementById('i6_x')?.value || '-');
+    setPreviewText('prev_i6_y', document.getElementById('i6_y')?.value || '-');
+    setPreviewText('prev_i6_z', document.getElementById('i6_z')?.value || '-');
+    const gAr = document.getElementById('i6_ar')?.value || 'A';
+    setPreviewText('prev_i6_ar', gAr);
+    colorStatusCell('prev_i6_ar', gAr);
+
+    // 8. TIR Points
+    syncTirPreview();
+
+    // 9. Signatures
+    setPreviewText('prev_sigCheckedName', document.getElementById('sig_checkedName')?.value || 'Faqih S A A');
+    setPreviewText('prev_sigCheckedTitle', document.getElementById('sig_checkedTitle')?.value || 'QC Inspector');
+    setPreviewText('prev_sigCheckedDate', document.getElementById('sig_checkedDate')?.value || '-');
+
+    setPreviewText('prev_sigCreatedName', document.getElementById('sig_createdName')?.value || 'M Kevin S');
+    setPreviewText('prev_sigCreatedTitle', document.getElementById('sig_createdTitle')?.value || 'QC Inspector');
+    setPreviewText('prev_sigCreatedDate', document.getElementById('sig_createdDate')?.value || '-');
+
+    setPreviewText('prev_sigReviewedName', document.getElementById('sig_reviewedName')?.value || 'Agus Riyanto');
+    setPreviewText('prev_sigReviewedTitle', document.getElementById('sig_reviewedTitle')?.value || 'Leader QC');
+    setPreviewText('prev_sigReviewedDate', document.getElementById('sig_reviewedDate')?.value || '-');
+
+    // 10. Check Overall Verdict
+    evaluateOverallStatus();
 }
 
-function recalculateAllTabStatuses() {
-    const checkTab = (contentId, dotId) => {
-        const content = document.getElementById(contentId);
-        const dot = document.getElementById(dotId);
-        if (!content || !dot) return;
+function syncTirPreview() {
+    const points = ['a', 'b', 'c', 'd', 'e', 'f'];
+    points.forEach(pt => {
+        const v0 = parseFloat(document.getElementById(`tir_${pt}_0`)?.value) || 0;
+        const v90 = parseFloat(document.getElementById(`tir_${pt}_90`)?.value) || 0;
+        const v180 = parseFloat(document.getElementById(`tir_${pt}_180`)?.value) || 0;
+        const v270 = parseFloat(document.getElementById(`tir_${pt}_270`)?.value) || 0;
+        const maxVal = Math.max(v0, v90, v180, v270);
+        
+        const resStr = maxVal > 0 ? maxVal.toFixed(2) : '-';
+        setPreviewText(`prev_tir_${pt}`, resStr);
 
-        const hasOutOfSpec = content.querySelector('.is-out-of-spec') !== null;
-        let hasRejectSelect = false;
-        content.querySelectorAll('select').forEach(s => {
-            if (s.value === 'R') hasRejectSelect = true;
-        });
+        const status = document.getElementById(`tir_${pt}_ar`)?.value || 'A';
+        setPreviewText(`prev_tir_${pt}_ar`, status);
+        colorStatusCell(`prev_tir_${pt}_ar`, status);
+    });
+}
 
-        dot.classList.remove('has-reject', 'all-accept');
-        if (hasOutOfSpec || hasRejectSelect) {
-            dot.classList.add('has-reject');
+function evaluateOverallStatus() {
+    let hasReject = false;
+
+    // Check all status dropdowns
+    document.querySelectorAll('.status-select').forEach(sel => {
+        if (sel.value === 'R') hasReject = true;
+    });
+
+    const stamp = document.getElementById('prev_stamp');
+    if (stamp) {
+        if (hasReject) {
+            stamp.innerText = 'REJECTED';
+            stamp.className = 'doc-stamp badge-red';
+            stamp.style.color = '#dc2626';
+            stamp.style.borderColor = '#dc2626';
         } else {
-            dot.classList.add('all-accept');
+            stamp.innerText = 'ACCEPTED';
+            stamp.className = 'doc-stamp badge-green';
+            stamp.style.color = '#16a34a';
+            stamp.style.borderColor = '#16a34a';
         }
+    }
+}
+
+function setPreviewText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = text;
+}
+
+function colorStatusCell(id, status) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.style.color = status === 'R' ? '#dc2626' : '#16a34a';
+    }
+}
+
+// -------------------------------------------------------------
+// Photo Upload and Section Handling
+// -------------------------------------------------------------
+window.triggerFileInput = function(inputId) {
+    document.getElementById(inputId)?.click();
+};
+
+window.handlePhotoSelect = function(input, section) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+
+    // Immediate local preview via FileReader
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        renderPhotoPreview(section, dataUrl);
     };
+    reader.readAsDataURL(file);
 
-    checkTab('tab-sec1', 'dot-sec1');
-    checkTab('tab-sec2', 'dot-sec2');
-    checkTab('tab-sec34', 'dot-sec34');
-    checkTab('tab-sec56', 'dot-sec56');
-    checkTab('tab-tir', 'dot-tir');
-}
+    // Asynchronously upload to server
+    const formData = new FormData();
+    formData.append('photo', file);
+    formData.append('section', section);
 
-function appendRemark(targetId, text) {
-    const el = document.getElementById(targetId);
-    if (!el) return;
-    if (!el.value) {
-        el.value = text;
-    } else if (!el.value.includes(text)) {
-        el.value += '; ' + text;
-    }
-}
+    const dropzone = input.closest('.photo-dropzone');
+    if (dropzone) dropzone.style.opacity = '0.5';
 
-function showToast(message, type = 'success') {
-    const toastContainer = document.getElementById('toastContainer');
-    if (!toastContainer) {
-        alert(message);
-        return;
-    }
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `<span>${message}</span>`;
-    toastContainer.appendChild(toast);
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 250);
-    }, 3500);
-}
-
-async function fetchDefaultTemplate() {
-    try {
-        const res = await fetch('/api/default-template');
-        if (res.ok) {
-            defaultTemplate = await res.json();
+    fetch('/reports/upload-photo', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (dropzone) dropzone.style.opacity = '1';
+        if (data.success) {
+            reportPhotos[section] = data.url;
+            renderPhotoPreview(section, data.url);
+            updatePhotoBadgeCount();
+            showToast('Foto berhasil diunggah', 'success');
+        } else {
+            showToast(data.message || 'Gagal mengunggah foto', 'error');
         }
-    } catch (err) {
-        // Fallback already ready
-    }
-}
-
-function filterTableLocally() {
-    const searchInput = document.getElementById('searchInput');
-    const typeFilter = document.getElementById('typeFilter');
-    if (!searchInput || !typeFilter) return;
-
-    const search = searchInput.value.toLowerCase().trim();
-    const type = typeFilter.value;
-    const rows = document.querySelectorAll('#reportTableBody tr');
-
-    rows.forEach(tr => {
-        const text = tr.innerText.toLowerCase();
-        const rowType = tr.getAttribute('data-type') || '';
-        const matchSearch = !search || text.includes(search);
-        const matchType = type === 'All' || rowType === type;
-        tr.style.display = (matchSearch && matchType) ? '' : 'none';
+    })
+    .catch(err => {
+        if (dropzone) dropzone.style.opacity = '1';
+        console.error('Upload photo error:', err);
+        // Fallback: keep local dataUrl for preview
+        showToast('Foto tersimpan di sesi lokal', 'success');
+        updatePhotoBadgeCount();
     });
-}
+};
 
-// Download Excel
-async function downloadExcel(id, sscId) {
-    showToast(`Mempersiapkan file Excel ${sscId}...`, 'success');
-    try {
-        const response = await fetch(`/reports/${id}/export`);
-        if (!response.ok) throw new Error('Gagal mengunduh file Excel');
+window.removePhoto = function(section) {
+    reportPhotos[section] = null;
+    
+    // Reset file input
+    const input = document.getElementById(`input_photo_${section}`);
+    if (input) input.value = '';
 
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${sscId || 'REPORT'} CCR PRE OUTPUT SHAFT.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-        showToast(`File Excel ${sscId} berhasil diunduh.`, 'success');
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
-
-// Delete Report
-async function deleteReport(id, sscId) {
-    if (!confirm(`Konfirmasi: Hapus data laporan "${sscId}"?`)) return;
-    try {
-        const res = await fetch(`/reports/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            }
-        });
-        if (!res.ok) throw new Error('Gagal menghapus laporan');
-        showToast('Laporan berhasil dihapus', 'success');
-        setTimeout(() => window.location.reload(), 500);
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
-
-// Duplicate Report
-async function duplicateReport(id) {
-    try {
-        const res = await fetch(`/reports/${id}/duplicate`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            }
-        });
-        if (!res.ok) throw new Error('Gagal menduplikat laporan');
-        showToast('Laporan berhasil diduplikat', 'success');
-        setTimeout(() => window.location.reload(), 500);
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
-
-// Open Modal Create (New Inspection Form)
-function openCreateModal() {
-    currentEditingId = null;
-    const modal = document.getElementById('reportModal');
-    const form = document.getElementById('reportForm');
-    const title = document.getElementById('modalTitle');
-    const recBody = document.getElementById('recTableBody');
-
-    if (!modal) {
-        // If not on reports page, redirect to reports with create=1
-        window.location.href = '/reports?create=1';
-        return;
-    }
-
-    if (title) title.innerText = 'Form Inspeksi Baru (FORM-QC-002)';
-    if (form) form.reset();
-    if (recBody) recBody.innerHTML = '';
-
-    // Switch to first tab
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    const firstTabBtn = document.querySelector('[data-tab="tab-general"]');
-    const firstTabContent = document.getElementById('tab-general');
-    if (firstTabBtn) firstTabBtn.classList.add('active');
-    if (firstTabContent) firstTabContent.classList.add('active');
-
-    // Populate with template
-    const templateToUse = defaultTemplate || fallbackDefaultTemplate;
-    populateForm(templateToUse);
-
-    const sscIdInput = document.getElementById('g_sscId');
-    if (sscIdInput) sscIdInput.value = `SSC SBY-${Math.floor(1000 + Math.random() * 9000)}`;
-
-    const reportNoInput = document.getElementById('g_reportNo');
-    if (reportNoInput) reportNoInput.value = `0${Math.floor(700 + Math.random() * 200)}`;
-
-    const todayStr = new Date().toISOString().split('T')[0];
-    const dateInput = document.getElementById('g_date');
-    if (dateInput) dateInput.value = todayStr;
-    const sigCheckDate = document.getElementById('sig_checkedDate');
-    if (sigCheckDate) sigCheckDate.value = todayStr;
-    const sigCreateDate = document.getElementById('sig_createdDate');
-    if (sigCreateDate) sigCreateDate.value = todayStr;
-    const sigReviewDate = document.getElementById('sig_reviewedDate');
-    if (sigReviewDate) sigReviewDate.value = todayStr;
-
-    modal.classList.add('active');
-    if (window.lucide) lucide.createIcons();
-
-    document.querySelectorAll('.auto-eval').forEach(input => evaluateDimensionInput(input));
-    document.querySelectorAll('.tir-eval').forEach(input => evaluateTirInput(input));
-}
-
-// Open Modal Edit
-async function openEditModal(id) {
-    try {
-        currentEditingId = id;
-        const modal = document.getElementById('reportModal');
-        const form = document.getElementById('reportForm');
-        const title = document.getElementById('modalTitle');
-        const recBody = document.getElementById('recTableBody');
-
-        if (!modal) return;
-        if (form) form.reset();
-        if (recBody) recBody.innerHTML = '';
-
-        const res = await fetch(`/reports/${id}`, {
-            headers: { 'Accept': 'application/json' }
-        });
-        if (!res.ok) throw new Error('Data laporan tidak ditemukan');
-        const data = await res.json();
-
-        if (title) title.innerText = `Edit Laporan: ${data.ssc_id}`;
-
-        // Switch to first tab
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        const firstTabBtn = document.querySelector('[data-tab="tab-general"]');
-        const firstTabContent = document.getElementById('tab-general');
-        if (firstTabBtn) firstTabBtn.classList.add('active');
-        if (firstTabContent) firstTabContent.classList.add('active');
-
-        populateFormFromModel(data);
-
-        modal.classList.add('active');
+    // Reset dropzone view
+    const viewContainer = document.getElementById(`view_photo_${section}`);
+    if (viewContainer) {
+        viewContainer.innerHTML = `
+            <i data-lucide="image-plus"></i>
+            <p>Klik atau geser foto</p>
+        `;
         if (window.lucide) lucide.createIcons();
-
-        document.querySelectorAll('.auto-eval').forEach(input => evaluateDimensionInput(input));
-        document.querySelectorAll('.tir-eval').forEach(input => evaluateTirInput(input));
-    } catch (err) {
-        showToast(err.message, 'error');
-    }
-}
-
-function closeModal() {
-    const modal = document.getElementById('reportModal');
-    if (modal) modal.classList.remove('active');
-}
-
-function populateFormFromModel(data) {
-    const reportId = document.getElementById('reportId');
-    if (reportId) reportId.value = data.id || '';
-
-    const setVal = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val ?? '';
-    };
-
-    setVal('g_sscId', data.ssc_id);
-    setVal('g_reportNo', data.report_no);
-    setVal('g_date', data.date ? data.date.substring(0, 10) : '');
-    setVal('g_customer', data.customer);
-    setVal('g_partName', data.part_name || 'OUTPUT SHAFT');
-    setVal('g_inspectionType', data.inspection_type || 'Pre');
-    setVal('g_jobNo', data.job_no || '-');
-    setVal('g_modelUnit', data.model_unit || 'HT051');
-    setVal('g_quoteNo', data.quote_no || '-');
-    setVal('g_partNo', data.part_no || '-');
-
-    const sec = typeof data.sections === 'string' ? JSON.parse(data.sections) : (data.sections || {});
-    populateSections(sec);
-
-    const tir = typeof data.tir === 'string' ? JSON.parse(data.tir) : (data.tir || {});
-    populateTir(tir);
-
-    const recTableBody = document.getElementById('recTableBody');
-    if (recTableBody) recTableBody.innerHTML = '';
-    const recs = typeof data.recommendations === 'string' ? JSON.parse(data.recommendations) : (data.recommendations || []);
-    if (recs.length === 0) {
-        addRecommendationRow('01', 'Cleaning and polish OD area "A"', 'Cleaning and polish OD area "A"');
-    } else {
-        recs.forEach(r => addRecommendationRow(r.item, r.remarks, r.recommendation));
     }
 
-    const sig = typeof data.signatures === 'string' ? JSON.parse(data.signatures) : (data.signatures || {});
-    populateSignatures(sig);
-}
+    // Hide remove button
+    const remBtn = document.getElementById(`btn_rem_${section}`);
+    if (remBtn) remBtn.style.display = 'none';
 
-function populateForm(data) {
-    const setVal = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val ?? '';
-    };
-
-    setVal('reportId', data.id || '');
-    const g = data.general || {};
-    setVal('g_sscId', g.sscId);
-    setVal('g_reportNo', g.reportNo);
-    setVal('g_date', g.date);
-    setVal('g_customer', g.customer);
-    setVal('g_partName', g.partName || 'OUTPUT SHAFT');
-    setVal('g_inspectionType', g.inspectionType || 'Pre');
-    setVal('g_jobNo', g.jobNo || '-');
-    setVal('g_modelUnit', g.modelUnit || 'HT051');
-    setVal('g_quoteNo', g.quoteNo || '-');
-    setVal('g_partNo', g.partNo || '-');
-
-    populateSections(data.sections || {});
-    populateTir(data.tir || {});
-
-    const recTableBody = document.getElementById('recTableBody');
-    if (recTableBody) recTableBody.innerHTML = '';
-    const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
-    if (recs.length === 0) {
-        addRecommendationRow('01', 'Cleaning and polish OD area "A"', 'Cleaning and polish OD area "A"');
-    } else {
-        recs.forEach(r => addRecommendationRow(r.item, r.remarks, r.recommendation));
+    // Reset preview sheet slot
+    const prevSlot = document.getElementById(`prev_img_${section}`);
+    if (prevSlot) {
+        prevSlot.innerHTML = `<span class="no-photo-txt">Belum Ada Foto</span>`;
     }
 
-    populateSignatures(data.signatures || {});
+    updatePhotoBadgeCount();
+    showToast('Foto dihapus', 'success');
+};
+
+function renderPhotoPreview(section, imageUrl) {
+    reportPhotos[section] = imageUrl;
+
+    // 1. Dropzone preview
+    const viewContainer = document.getElementById(`view_photo_${section}`);
+    if (viewContainer) {
+        viewContainer.innerHTML = `<img src="${imageUrl}" class="dropzone-preview-img" alt="Foto ${section}">`;
+    }
+
+    // 2. Show remove button
+    const remBtn = document.getElementById(`btn_rem_${section}`);
+    if (remBtn) remBtn.style.display = 'inline-flex';
+
+    // 3. Right-hand live document preview slot
+    const prevSlot = document.getElementById(`prev_img_${section}`);
+    if (prevSlot) {
+        prevSlot.innerHTML = `<img src="${imageUrl}" alt="Foto ${section}">`;
+    }
+
+    updatePhotoBadgeCount();
 }
 
-function populateSections(s) {
-    const setVal = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val ?? '';
-    };
-
-    const s1 = s.item01 || {};
-    setVal('s1_x', s1.x ?? 79.0);
-    setVal('s1_y', s1.y ?? 79.0);
-    setVal('s1_z', s1.z ?? 79.0);
-    setVal('s1_ar', s1.ar || 'A');
-    setVal('s1_lenResult', s1.lengthResult ?? 724.0);
-    setVal('s1_lenAr', s1.lengthAr || '-');
-    setVal('s1_rem1', s1.remark1 || '');
-    setVal('s1_rem2', s1.remark2 || '');
-    setVal('s1_rem3', s1.remark3 || '');
-    setVal('s1_rem4', s1.remark4 || '');
-    setVal('s1_rem5', s1.remark5 || '');
-    setVal('s1_rem6', s1.remark6 || '');
-    setVal('s1_penetrant', s1.penetrantRemark || '');
-
-    const s2 = s.item02 || {};
-    const b = s2.itemB || {};
-    setVal('s2_bx1', b.row1?.x ?? 82.0);
-    setVal('s2_by1', b.row1?.y ?? 82.0);
-    setVal('s2_bz1', b.row1?.z ?? 82.0);
-    setVal('s2_bar1', b.row1?.ar || 'A');
-    setVal('s2_bx2', b.row2?.x ?? 82.0);
-    setVal('s2_by2', b.row2?.y ?? 82.0);
-    setVal('s2_bz2', b.row2?.z ?? 82.0);
-    setVal('s2_bar2', b.row2?.ar || 'A');
-    setVal('s2_bx3', b.row3?.x ?? 82.0);
-    setVal('s2_by3', b.row3?.y ?? 82.0);
-    setVal('s2_bz3', b.row3?.z ?? 82.0);
-    setVal('s2_bar3', b.row3?.ar || 'A');
-
-    const c = s2.itemC || {};
-    setVal('s2_cx1', c.row1?.x ?? 77.0);
-    setVal('s2_cy1', c.row1?.y ?? 77.0);
-    setVal('s2_cz1', c.row1?.z ?? 77.0);
-    setVal('s2_car1', c.row1?.ar || 'A');
-    setVal('s2_cx2', c.row2?.x ?? 77.0);
-    setVal('s2_cy2', c.row2?.y ?? 77.0);
-    setVal('s2_cz2', c.row2?.z ?? 77.0);
-    setVal('s2_car2', c.row2?.ar || 'A');
-    setVal('s2_cx3', c.row3?.x ?? 77.0);
-    setVal('s2_cy3', c.row3?.y ?? 77.0);
-    setVal('s2_cz3', c.row3?.z ?? 77.0);
-    setVal('s2_car3', c.row3?.ar || 'A');
-
-    const s2rems = Array.isArray(s2.remarks) ? s2.remarks : [];
-    setVal('s2_rem1', s2rems[0] || '');
-    setVal('s2_rem2', s2rems[1] || '');
-    setVal('s2_rem3', s2rems[2] || '');
-    setVal('s2_rem4', s2rems[3] || '');
-    setVal('s2_penetrant', s2.penetrantRemark || '');
-
-    const s3 = s.item03 || {};
-    setVal('s3_dx', s3.itemD?.x ?? 118.0);
-    setVal('s3_dy', s3.itemD?.y ?? 118.0);
-    setVal('s3_dz', s3.itemD?.z ?? 118.0);
-    setVal('s3_dar', s3.itemD?.ar || 'A');
-    setVal('s3_ex', s3.distanceE?.x ?? 13.0);
-    setVal('s3_ey', s3.distanceE?.y ?? 13.0);
-    setVal('s3_ez', s3.distanceE?.z ?? 13.0);
-    setVal('s3_ear', s3.distanceE?.ar || 'A');
-
-    const s3rems = Array.isArray(s3.remarks) ? s3.remarks : [];
-    setVal('s3_rem1', s3rems[0] || '');
-    setVal('s3_rem2', s3rems[1] || '');
-    setVal('s3_rem3', s3rems[2] || '');
-    setVal('s3_rem4', s3rems[3] || '');
-    setVal('s3_penetrant', s3.penetrantRemark || '');
-
-    const s4 = s.item04 || {};
-    const f = s4.itemF || {};
-    setVal('s4_fx1', f.row1?.x ?? 100.01);
-    setVal('s4_fy1', f.row1?.y ?? 100.01);
-    setVal('s4_fz1', f.row1?.z ?? 100.01);
-    setVal('s4_far1', f.row1?.ar || 'A');
-    setVal('s4_fx2', f.row2?.x ?? 100.01);
-    setVal('s4_fy2', f.row2?.y ?? 100.01);
-    setVal('s4_fz2', f.row2?.z ?? 100.01);
-    setVal('s4_far2', f.row2?.ar || 'A');
-    setVal('s4_fx3', f.row3?.x ?? 100.01);
-    setVal('s4_fy3', f.row3?.y ?? 100.01);
-    setVal('s4_fz3', f.row3?.z ?? 100.01);
-    setVal('s4_far3', f.row3?.ar || 'A');
-    setVal('s4_kResult', s4.distanceK?.result ?? 188.55);
-    setVal('s4_kAr', s4.distanceK?.ar || '-');
-
-    const s4rems = Array.isArray(s4.remarks) ? s4.remarks : [];
-    setVal('s4_rem1', s4rems[0] || '');
-    setVal('s4_rem2', s4rems[1] || '');
-    setVal('s4_penetrant', s4.penetrantRemark || '');
-
-    const s5 = s.item05 || {};
-    const h = s5.itemH || {};
-    setVal('s5_hx1', h.row1?.x ?? 94.0);
-    setVal('s5_hy1', h.row1?.y ?? 94.0);
-    setVal('s5_hz1', h.row1?.z ?? 94.0);
-    setVal('s5_har1', h.row1?.ar || 'A');
-    setVal('s5_hx2', h.row2?.x ?? 94.0);
-    setVal('s5_hy2', h.row2?.y ?? 94.0);
-    setVal('s5_hz2', h.row2?.z ?? 94.0);
-    setVal('s5_har2', h.row2?.ar || 'A');
-    setVal('s5_hx3', h.row3?.x ?? 94.0);
-    setVal('s5_hy3', h.row3?.y ?? 94.0);
-    setVal('s5_hz3', h.row3?.z ?? 94.0);
-    setVal('s5_har3', h.row3?.ar || 'A');
-    setVal('s5_jResult', s5.distanceJ?.result ?? 142.80);
-    setVal('s5_jAr', s5.distanceJ?.ar || '-');
-
-    const s5rems = Array.isArray(s5.remarks) ? s5.remarks : [];
-    setVal('s5_rem1', s5rems[0] || '');
-    setVal('s5_rem2', s5rems[1] || '');
-    setVal('s5_penetrant', s5.penetrantRemark || '');
-
-    const s6 = s.item06 || {};
-    setVal('s6_gx', s6.itemG?.x ?? 84.2);
-    setVal('s6_gy', s6.itemG?.y ?? 84.2);
-    setVal('s6_gz', s6.itemG?.z ?? 84.2);
-    setVal('s6_gar', s6.itemG?.ar || 'A');
-    setVal('s6_iResult', s6.distanceI?.result ?? 98.78);
-    setVal('s6_iAr', s6.distanceI?.ar || '-');
-
-    const s6rems = Array.isArray(s6.remarks) ? s6.remarks : [];
-    setVal('s6_rem1', s6rems[0] || '');
-    setVal('s6_rem2', s6rems[1] || '');
-    setVal('s6_rem3', s6rems[2] || '');
-    setVal('s6_rem4', s6rems[3] || '');
-    setVal('s6_rem5', s6rems[4] || '');
-    setVal('s6_rem6', s6rems[5] || '');
-    setVal('s6_penetrant', s6.penetrantRemark || '');
+function updatePhotoBadgeCount() {
+    let count = 0;
+    for (const key in reportPhotos) {
+        if (reportPhotos[key]) count++;
+    }
+    const badge = document.getElementById('photoCountBadge');
+    if (badge) badge.innerText = count;
 }
 
-function populateTir(tir) {
-    const setVal = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val ?? '';
-    };
+// -------------------------------------------------------------
+// Recommendations Dynamic Table
+// -------------------------------------------------------------
+function setupRecommendations(recs) {
+    const tbody = document.getElementById('recTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
-    setVal('tir_datum', tir.datum || 'Datum at item "B and E"');
-    const tirItems = Array.isArray(tir.items) ? tir.items : [];
-    const getTir = (code) => tirItems.find(i => i.item === code) || { d0: '0', d90: '0', d180: '0', d270: '0', ar: 'A' };
-
-    ['a', 'b', 'c', 'd', 'e', 'f'].forEach(k => {
-        const itemVal = getTir(k.toUpperCase());
-        setVal(`tir_${k}_0`, itemVal.d0 ?? '0');
-        setVal(`tir_${k}_90`, itemVal.d90 ?? '0');
-        setVal(`tir_${k}_180`, itemVal.d180 ?? '0');
-        setVal(`tir_${k}_270`, itemVal.d270 ?? '0');
-        setVal(`tir_${k}_ar`, itemVal.ar || 'A');
+    const list = recs && recs.length > 0 ? recs : blankDefaultTemplate.recommendations;
+    list.forEach((r, idx) => {
+        addRecRow(r.item || sprintf('%02d', idx + 1), r.remarks || '', r.recommendation || '');
     });
 }
 
-function populateSignatures(sig) {
-    const setVal = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val ?? '';
-    };
+function addRecRow(item = '', remarks = '', recommendation = '') {
+    const tbody = document.getElementById('recTableBody');
+    if (!tbody) return;
+    const rowIdx = tbody.querySelectorAll('tr').length + 1;
+    const formattedItem = item || (rowIdx < 10 ? `0${rowIdx}` : `${rowIdx}`);
 
-    setVal('sig_checkedName', sig.checkedBy?.name || 'Faqih S A A');
-    setVal('sig_checkedTitle', sig.checkedBy?.title || 'QC Inspector');
-    setVal('sig_checkedDate', sig.checkedBy?.date ? sig.checkedBy.date.substring(0, 10) : '');
-
-    setVal('sig_createdName', sig.createdBy?.name || 'M Kevin S');
-    setVal('sig_createdTitle', sig.createdBy?.title || 'QC Inspector');
-    setVal('sig_createdDate', sig.createdBy?.date ? sig.createdBy.date.substring(0, 10) : '');
-
-    setVal('sig_reviewedName', sig.reviewedBy?.name || 'Agus Riyanto');
-    setVal('sig_reviewedTitle', sig.reviewedBy?.title || 'Leader QC');
-    setVal('sig_reviewedDate', sig.reviewedBy?.date ? sig.reviewedBy.date.substring(0, 10) : '');
-}
-
-function addRecommendationRow(item = '01', remarks = '', recommendation = '') {
-    const recTableBody = document.getElementById('recTableBody');
-    if (!recTableBody) return;
     const tr = document.createElement('tr');
     tr.innerHTML = `
-        <td><input type="text" class="rec-item mono" value="${item || '01'}" style="text-align: center; font-weight:600;"></td>
-        <td><input type="text" class="rec-remarks" value="${remarks || ''}" placeholder="Temuan visual..."></td>
-        <td><input type="text" class="rec-rec" value="${recommendation || ''}" placeholder="Rekomendasi tindakan..."></td>
+        <td><input type="text" class="rec-item mono" value="${formattedItem}" style="width:50px;"></td>
+        <td><input type="text" class="rec-remarks" value="${remarks}" placeholder="Temuan visual..."></td>
+        <td><input type="text" class="rec-rec" value="${recommendation}" placeholder="Rekomendasi tindakan..."></td>
         <td style="text-align: center;">
-            <button type="button" class="btn btn-secondary btn-icon btn-sm" onclick="this.closest('tr').remove()" title="Hapus">
-                <i data-lucide="x"></i>
+            <button type="button" class="btn btn-secondary btn-xs" onclick="this.closest('tr').remove(); syncRecommendationsPreview();">
+                &times;
             </button>
         </td>
     `;
-    recTableBody.appendChild(tr);
-    if (window.lucide) lucide.createIcons();
+    tbody.appendChild(tr);
+
+    tr.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', syncRecommendationsPreview);
+    });
+
+    syncRecommendationsPreview();
 }
 
-function collectFormData() {
-    const sscIdInput = document.getElementById('g_sscId');
-    const sscId = sscIdInput ? sscIdInput.value.trim() : '';
-    if (!sscId) {
-        showToast('Nomor SSC ID wajib diisi!', 'error');
-        const tabGen = document.querySelector('[data-tab="tab-general"]');
-        if (tabGen) tabGen.click();
-        if (sscIdInput) sscIdInput.focus();
+function syncRecommendationsPreview() {
+    const previewBody = document.getElementById('prev_recTableBody');
+    if (!previewBody) return;
+    previewBody.innerHTML = '';
+
+    const rows = document.querySelectorAll('#recTableBody tr');
+    if (rows.length === 0) {
+        previewBody.innerHTML = '<tr><td colspan="3" class="center" style="color:#94a3b8;">Tidak ada rekomendasi</td></tr>';
+        return;
+    }
+
+    rows.forEach(r => {
+        const item = r.querySelector('.rec-item')?.value || '-';
+        const remarks = r.querySelector('.rec-remarks')?.value || '-';
+        const recommendation = r.querySelector('.rec-rec')?.value || '-';
+
+        const ptr = document.createElement('tr');
+        ptr.innerHTML = `
+            <td class="center mono">${item}</td>
+            <td>${remarks}</td>
+            <td>${recommendation}</td>
+        `;
+        previewBody.appendChild(ptr);
+    });
+}
+
+// -------------------------------------------------------------
+// Form Data Extraction & Submission
+// -------------------------------------------------------------
+function extractFormData() {
+    const sscId = document.getElementById('g_sscId')?.value || '';
+    if (!sscId.trim()) {
+        showToast('SSC ID wajib diisi!', 'error');
+        document.getElementById('g_sscId')?.focus();
         return null;
     }
 
-    const getVal = (id, defaultVal = '') => {
-        const el = document.getElementById(id);
-        return el ? el.value.trim() : defaultVal;
-    };
-
-    const getNum = (id, defaultVal = 0) => {
-        const el = document.getElementById(id);
-        return el ? (parseFloat(el.value) || defaultVal) : defaultVal;
-    };
-
-    const recs = [];
-    document.querySelectorAll('#recTableBody tr').forEach(tr => {
-        const item = tr.querySelector('.rec-item')?.value.trim() || '';
-        const remarks = tr.querySelector('.rec-remarks')?.value.trim() || '';
-        const recommendation = tr.querySelector('.rec-rec')?.value.trim() || '';
-        if (remarks || recommendation) {
-            recs.push({ item, remarks, recommendation });
-        }
-    });
-
-    return {
-        ssc_id: sscId,
-        report_no: getVal('g_reportNo'),
-        date: getVal('g_date'),
-        customer: getVal('g_customer'),
-        part_name: getVal('g_partName', 'OUTPUT SHAFT'),
-        inspection_type: getVal('g_inspectionType', 'Pre'),
-        job_no: getVal('g_jobNo', '-'),
-        model_unit: getVal('g_modelUnit', 'HT051'),
-        quote_no: getVal('g_quoteNo', '-'),
-        part_no: getVal('g_partNo', '-'),
-        doc_no: 'FORM-QC-002',
-        rev: '04',
+    const payload = {
+        general: {
+            sscId: sscId.trim(),
+            reportNo: document.getElementById('g_reportNo')?.value || '',
+            date: document.getElementById('g_date')?.value || '',
+            customer: document.getElementById('g_customer')?.value || '',
+            partName: document.getElementById('g_partName')?.value || 'OUTPUT SHAFT',
+            inspectionType: document.getElementById('g_inspectionType')?.value || 'Pre',
+            modelUnit: document.getElementById('g_modelUnit')?.value || 'HT051',
+            jobNo: document.getElementById('g_jobNo')?.value || '-',
+            quoteNo: document.getElementById('g_quoteNo')?.value || '-',
+            partNo: document.getElementById('g_partNo')?.value || '-',
+            docNo: 'FORM-QC-002',
+            rev: '04'
+        },
         sections: {
             item01: {
-                title: 'OD Area "A" and OD Spline',
-                spec: 'Ø79 ± 0.25',
-                x: getNum('s1_x', 79),
-                y: getNum('s1_y', 79),
-                z: getNum('s1_z', 79),
-                ar: getVal('s1_ar', 'A'),
-                lengthItem: 'L',
-                lengthSpec: 'N/A',
-                lengthResult: getNum('s1_lenResult', 724),
-                lengthAr: getVal('s1_lenAr', '-'),
-                remark1: getVal('s1_rem1'),
-                remark2: getVal('s1_rem2'),
-                remark3: getVal('s1_rem3'),
-                remark4: getVal('s1_rem4'),
-                remark5: getVal('s1_rem5'),
-                remark6: getVal('s1_rem6'),
-                penetrantRemark: getVal('s1_penetrant')
+                title: "OD Area \"A\" and OD Spline",
+                spec: "Ø79 ± 0.25",
+                x: document.getElementById('i1_x')?.value || '',
+                y: document.getElementById('i1_y')?.value || '',
+                z: document.getElementById('i1_z')?.value || '',
+                ar: document.getElementById('i1_ar')?.value || 'A',
+                remark1: document.getElementById('i1_remark1')?.value || '',
+                lengthResult: document.getElementById('i1_length')?.value || '',
+                penetrantRemark: "No indication crack at OD area \"A\" and OD spline after penetrant check"
             },
             item02: {
-                title: 'OD Area "B and C"',
+                title: "OD Area \"B and C\"",
                 itemB: {
-                    spec: 'Ø82 ± 0.25',
-                    row1: { x: getNum('s2_bx1', 82), y: getNum('s2_by1', 82), z: getNum('s2_bz1', 82), ar: getVal('s2_bar1', 'A') },
-                    row2: { x: getNum('s2_bx2', 82), y: getNum('s2_by2', 82), z: getNum('s2_bz2', 82), ar: getVal('s2_bar2', 'A') },
-                    row3: { x: getNum('s2_bx3', 82), y: getNum('s2_by3', 82), z: getNum('s2_bz3', 82), ar: getVal('s2_bar3', 'A') }
+                    spec: "Ø82 ± 0.25",
+                    row1: { x: document.getElementById('i2_b1_x')?.value || '', y: document.getElementById('i2_b1_y')?.value || '', z: document.getElementById('i2_b1_z')?.value || '', ar: document.getElementById('i2_b1_ar')?.value || 'A' },
+                    row2: { x: document.getElementById('i2_b2_x')?.value || '', y: document.getElementById('i2_b2_y')?.value || '', z: document.getElementById('i2_b2_z')?.value || '', ar: document.getElementById('i2_b2_ar')?.value || 'A' },
+                    row3: { x: document.getElementById('i2_b3_x')?.value || '', y: document.getElementById('i2_b3_y')?.value || '', z: document.getElementById('i2_b3_z')?.value || '', ar: document.getElementById('i2_b3_ar')?.value || 'A' }
                 },
                 itemC: {
-                    spec: 'Ø77 ± 0.25',
-                    row1: { x: getNum('s2_cx1', 77), y: getNum('s2_cy1', 77), z: getNum('s2_cz1', 77), ar: getVal('s2_car1', 'A') },
-                    row2: { x: getNum('s2_cx2', 77), y: getNum('s2_cy2', 77), z: getNum('s2_cz2', 77), ar: getVal('s2_car2', 'A') },
-                    row3: { x: getNum('s2_cx3', 77), y: getNum('s2_cy3', 77), z: getNum('s2_cz3', 77), ar: getVal('s2_car3', 'A') }
+                    spec: "Ø77 ± 0.25",
+                    row1: { x: document.getElementById('i2_c1_x')?.value || '', y: document.getElementById('i2_c1_y')?.value || '', z: document.getElementById('i2_c1_z')?.value || '', ar: document.getElementById('i2_c1_ar')?.value || 'A' },
+                    row2: { x: document.getElementById('i2_c2_x')?.value || '', y: document.getElementById('i2_c2_y')?.value || '', z: document.getElementById('i2_c2_z')?.value || '', ar: document.getElementById('i2_c2_ar')?.value || 'A' },
+                    row3: { x: document.getElementById('i2_c3_x')?.value || '', y: document.getElementById('i2_c3_y')?.value || '', z: document.getElementById('i2_c3_z')?.value || '', ar: document.getElementById('i2_c3_ar')?.value || 'A' }
                 },
-                remarks: [
-                    getVal('s2_rem1'), getVal('s2_rem2'), getVal('s2_rem3'), getVal('s2_rem4')
-                ].filter(Boolean),
-                penetrantRemark: getVal('s2_penetrant')
+                remarks: ["Actual measurement OD area \"B and C\" in good condition"],
+                penetrantRemark: "No indication crack at OD Area \"B and C\" after penetrant check"
             },
             item03: {
-                title: 'OD Area "D"',
+                title: "OD Area \"D\"",
                 itemD: {
-                    spec: 'Ø118 ± 0.5',
-                    x: getNum('s3_dx', 118),
-                    y: getNum('s3_dy', 118),
-                    z: getNum('s3_dz', 118),
-                    ar: getVal('s3_dar', 'A')
+                    spec: "Ø118 ± 0.5",
+                    x: document.getElementById('i3_d_x')?.value || '',
+                    y: document.getElementById('i3_d_y')?.value || '',
+                    z: document.getElementById('i3_d_z')?.value || '',
+                    ar: document.getElementById('i3_d_ar')?.value || 'A'
                 },
                 distanceE: {
-                    spec: '13 ± 0.5',
-                    x: getNum('s3_ex', 13),
-                    y: getNum('s3_ey', 13),
-                    z: getNum('s3_ez', 13),
-                    ar: getVal('s3_ear', 'A')
+                    spec: "13 ± 0.5",
+                    x: document.getElementById('i3_e_x')?.value || '',
+                    y: document.getElementById('i3_e_y')?.value || '',
+                    z: document.getElementById('i3_e_z')?.value || '',
+                    ar: document.getElementById('i3_e_ar')?.value || 'A'
                 },
-                remarks: [
-                    getVal('s3_rem1'), getVal('s3_rem2')
-                ].filter(Boolean),
-                penetrantRemark: getVal('s3_penetrant')
+                remarks: ["Actual measurement OD area \"D\" in good condition", "Actual distance area \"E\" in good condition"],
+                penetrantRemark: "No indication crack at OD area \"D\" after penetrant check"
             },
             item04: {
-                title: 'OD Area "F"',
+                title: "OD Area \"F\"",
                 itemF: {
-                    spec: 'Ø100,01 ± 0,008',
-                    row1: { x: getNum('s4_fx1', 100.01), y: getNum('s4_fy1', 100.01), z: getNum('s4_fz1', 100.01), ar: getVal('s4_far1', 'A') },
-                    row2: { x: getNum('s4_fx2', 100.01), y: getNum('s4_fy2', 100.01), z: getNum('s4_fz2', 100.01), ar: getVal('s4_far2', 'A') },
-                    row3: { x: getNum('s4_fx3', 100.01), y: getNum('s4_fy3', 100.01), z: getNum('s4_fz3', 100.01), ar: getVal('s4_far3', 'A') }
+                    spec: "Ø100,01 ± 0,008",
+                    row1: { x: document.getElementById('i4_f1_x')?.value || '', y: document.getElementById('i4_f1_y')?.value || '', z: document.getElementById('i4_f1_z')?.value || '', ar: document.getElementById('i4_f1_ar')?.value || 'A' },
+                    row2: { x: document.getElementById('i4_f2_x')?.value || '', y: document.getElementById('i4_f2_y')?.value || '', z: document.getElementById('i4_f2_z')?.value || '', ar: document.getElementById('i4_f2_ar')?.value || 'A' },
+                    row3: { x: document.getElementById('i4_f3_x')?.value || '', y: document.getElementById('i4_f3_y')?.value || '', z: document.getElementById('i4_f3_z')?.value || '', ar: document.getElementById('i4_f3_ar')?.value || 'A' }
                 },
-                distanceK: {
-                    spec: 'N/A',
-                    result: getNum('s4_kResult', 188.55),
-                    ar: getVal('s4_kAr', '-')
-                },
-                remarks: [
-                    getVal('s4_rem1'), getVal('s4_rem2')
-                ].filter(Boolean),
-                penetrantRemark: getVal('s4_penetrant')
+                distanceK: { spec: "N/A", result: document.getElementById('i4_k_res')?.value || '', ar: "-" },
+                remarks: ["Actual measurement OD area \"F\" in good condition"],
+                penetrantRemark: "No indication crack at area OD area \"F\" after penetrant check"
             },
             item05: {
-                title: 'OD Area "H"',
+                title: "OD Area \"H\"",
                 itemH: {
-                    spec: 'Ø94 ± 0,013',
-                    row1: { x: getNum('s5_hx1', 94), y: getNum('s5_hy1', 94), z: getNum('s5_hz1', 94), ar: getVal('s5_har1', 'A') },
-                    row2: { x: getNum('s5_hx2', 94), y: getNum('s5_hy2', 94), z: getNum('s5_hz2', 94), ar: getVal('s5_har2', 'A') },
-                    row3: { x: getNum('s5_hx3', 94), y: getNum('s5_hy3', 94), z: getNum('s5_hz3', 94), ar: getVal('s5_har3', 'A') }
+                    spec: "Ø94 ± 0,013",
+                    row1: { x: document.getElementById('i5_h1_x')?.value || '', y: document.getElementById('i5_h1_y')?.value || '', z: document.getElementById('i5_h1_z')?.value || '', ar: document.getElementById('i5_h1_ar')?.value || 'A' },
+                    row2: { x: document.getElementById('i5_h2_x')?.value || '', y: document.getElementById('i5_h2_y')?.value || '', z: document.getElementById('i5_h2_z')?.value || '', ar: document.getElementById('i5_h2_ar')?.value || 'A' },
+                    row3: { x: document.getElementById('i5_h3_x')?.value || '', y: document.getElementById('i5_h3_y')?.value || '', z: document.getElementById('i5_h3_z')?.value || '', ar: document.getElementById('i5_h3_ar')?.value || 'A' }
                 },
-                distanceJ: {
-                    spec: 'N/A',
-                    result: getNum('s5_jResult', 142.8),
-                    ar: getVal('s5_jAr', '-')
-                },
-                remarks: [
-                    getVal('s5_rem1')
-                ].filter(Boolean),
-                penetrantRemark: getVal('s5_penetrant')
+                distanceJ: { spec: "N/A", result: document.getElementById('i5_j_res')?.value || '', ar: "-" },
+                remarks: ["Actual measurement OD area \"H\" in good condition"],
+                penetrantRemark: "No indication crack at area OD area \"H\" after penetrant check"
             },
             item06: {
-                title: 'OD Area "G" and OD Spline',
+                title: "OD Area \"G\" and OD Spline",
                 itemG: {
-                    spec: 'Ø84,2 ± 0,13',
-                    x: getNum('s6_gx', 84.2),
-                    y: getNum('s6_gy', 84.2),
-                    z: getNum('s6_gz', 84.2),
-                    ar: getVal('s6_gar', 'A')
+                    spec: "Ø84,2 ± 0,13",
+                    x: document.getElementById('i6_x')?.value || '',
+                    y: document.getElementById('i6_y')?.value || '',
+                    z: document.getElementById('i6_z')?.value || '',
+                    ar: document.getElementById('i6_ar')?.value || 'A'
                 },
-                distanceI: {
-                    spec: 'N/A',
-                    result: getNum('s6_iResult', 98.78),
-                    ar: getVal('s6_iAr', '-')
-                },
-                remarks: [
-                    getVal('s6_rem1')
-                ].filter(Boolean),
-                penetrantRemark: getVal('s6_penetrant')
+                distanceI: { spec: "N/A", result: document.getElementById('i6_i_res')?.value || '', ar: "-" },
+                remarks: ["Actual measurement OD area \"G\" in good condition"],
+                penetrantRemark: "No indication crack at area OD spline after penetrant check"
             }
         },
         tir: {
-            spec: 'Max 0,2',
-            datum: getVal('tir_datum', 'Datum at item "B and E"'),
-            items: ['a', 'b', 'c', 'd', 'e', 'f'].map(k => ({
-                item: k.toUpperCase(),
-                d0: getVal(`tir_${k}_0`, '0'),
-                d90: getVal(`tir_${k}_90`, '0'),
-                d180: getVal(`tir_${k}_180`, '0'),
-                d270: getVal(`tir_${k}_270`, '0'),
-                ar: getVal(`tir_${k}_ar`, 'A')
-            }))
+            spec: "Max 0,2",
+            datum: "Datum at item \"B and E\"",
+            items: [
+                { item: "A", d0: document.getElementById('tir_a_0')?.value || '', d90: document.getElementById('tir_a_90')?.value || '', d180: document.getElementById('tir_a_180')?.value || '', d270: document.getElementById('tir_a_270')?.value || '', ar: document.getElementById('tir_a_ar')?.value || 'A' },
+                { item: "B", d0: document.getElementById('tir_b_0')?.value || '', d90: document.getElementById('tir_b_90')?.value || '', d180: document.getElementById('tir_b_180')?.value || '', d270: document.getElementById('tir_b_270')?.value || '', ar: document.getElementById('tir_b_ar')?.value || 'A' },
+                { item: "C", d0: document.getElementById('tir_c_0')?.value || '', d90: document.getElementById('tir_c_90')?.value || '', d180: document.getElementById('tir_c_180')?.value || '', d270: document.getElementById('tir_c_270')?.value || '', ar: document.getElementById('tir_c_ar')?.value || 'A' },
+                { item: "D", d0: document.getElementById('tir_d_0')?.value || '', d90: document.getElementById('tir_d_90')?.value || '', d180: document.getElementById('tir_d_180')?.value || '', d270: document.getElementById('tir_d_270')?.value || '', ar: document.getElementById('tir_d_ar')?.value || 'A' },
+                { item: "E", d0: document.getElementById('tir_e_0')?.value || '', d90: document.getElementById('tir_e_90')?.value || '', d180: document.getElementById('tir_e_180')?.value || '', d270: document.getElementById('tir_e_270')?.value || '', ar: document.getElementById('tir_e_ar')?.value || 'A' },
+                { item: "F", d0: document.getElementById('tir_f_0')?.value || '', d90: document.getElementById('tir_f_90')?.value || '', d180: document.getElementById('tir_f_180')?.value || '', d270: document.getElementById('tir_f_270')?.value || '', ar: document.getElementById('tir_f_ar')?.value || 'A' }
+            ]
         },
-        recommendations: recs,
+        recommendations: [],
         signatures: {
-            checkedBy: {
-                name: getVal('sig_checkedName', 'Faqih S A A'),
-                title: getVal('sig_checkedTitle', 'QC Inspector'),
-                date: getVal('sig_checkedDate')
-            },
-            createdBy: {
-                name: getVal('sig_createdName', 'M Kevin S'),
-                title: getVal('sig_createdTitle', 'QC Inspector'),
-                date: getVal('sig_createdDate')
-            },
-            reviewedBy: {
-                name: getVal('sig_reviewedName', 'Agus Riyanto'),
-                title: getVal('sig_reviewedTitle', 'Leader QC'),
-                date: getVal('sig_reviewedDate')
-            }
-        }
+            checkedBy: { name: document.getElementById('sig_checkedName')?.value || '', title: document.getElementById('sig_checkedTitle')?.value || '', date: document.getElementById('sig_checkedDate')?.value || '' },
+            createdBy: { name: document.getElementById('sig_createdName')?.value || '', title: document.getElementById('sig_createdTitle')?.value || '', date: document.getElementById('sig_createdDate')?.value || '' },
+            reviewedBy: { name: document.getElementById('sig_reviewedName')?.value || '', title: document.getElementById('sig_reviewedTitle')?.value || '', date: document.getElementById('sig_reviewedDate')?.value || '' }
+        },
+        photos: reportPhotos
     };
+
+    // Extract dynamic recommendations
+    document.querySelectorAll('#recTableBody tr').forEach(r => {
+        const item = r.querySelector('.rec-item')?.value || '';
+        const remarks = r.querySelector('.rec-remarks')?.value || '';
+        const recommendation = r.querySelector('.rec-rec')?.value || '';
+        if (item || remarks || recommendation) {
+            payload.recommendations.push({ item, remarks, recommendation });
+        }
+    });
+
+    return payload;
 }
 
-async function handleSave(downloadDirectly = false) {
-    const payload = collectFormData();
+function saveReportData(andDownloadExcel = false) {
+    const payload = extractFormData();
     if (!payload) return;
 
-    if (downloadDirectly) {
-        showToast('Menyimpan & mengunduh Excel...', 'success');
-        try {
-            const res = await fetch('/reports/submit-and-download', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                body: JSON.stringify(payload)
-            });
+    const reportId = document.getElementById('reportId')?.value;
+    const isUpdate = Boolean(reportId);
+    const url = isUpdate ? `/reports/${reportId}` : '/reports';
+    const method = isUpdate ? 'PUT' : 'POST';
 
-            if (!res.ok) throw new Error('Gagal menyimpan laporan');
+    showToast('Menyimpan data laporan...', 'success');
 
-            const blob = await res.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${payload.ssc_id} CCR PRE OUTPUT SHAFT.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success || data.id || data.report) {
+            const savedReport = data.report || data;
+            const savedId = savedReport.id || reportId;
+            document.getElementById('reportId').value = savedId;
+            currentReportId = savedId;
 
-            showToast('Laporan berhasil disimpan dan diunduh.', 'success');
-            closeModal();
-            setTimeout(() => window.location.reload(), 600);
-        } catch (err) {
-            showToast(err.message, 'error');
-        }
-    } else {
-        try {
-            const url = currentEditingId ? `/reports/${currentEditingId}` : '/reports';
-            const method = currentEditingId ? 'PUT' : 'POST';
+            showToast(data.message || 'Laporan berhasil disimpan!', 'success');
 
-            const res = await fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.message || 'Gagal menyimpan laporan');
+            if (andDownloadExcel) {
+                // Trigger Excel download
+                window.location.href = `/reports/${savedId}/export`;
             }
-
-            showToast('Laporan berhasil disimpan.', 'success');
-            closeModal();
-            setTimeout(() => window.location.reload(), 600);
-        } catch (err) {
-            showToast(err.message, 'error');
+        } else {
+            showToast('Gagal menyimpan laporan: ' + (data.message || 'Unknown error'), 'error');
         }
-    }
+    })
+    .catch(err => {
+        console.error('Save error:', err);
+        showToast('Terjadi kesalahan koneksi saat menyimpan.', 'error');
+    });
 }
 
-// Global exports so inline onclick always works
-window.openCreateModal = openCreateModal;
-window.closeModal = closeModal;
-window.openEditModal = openEditModal;
-window.deleteReport = deleteReport;
-window.duplicateReport = duplicateReport;
-window.downloadExcel = downloadExcel;
-window.appendRemark = appendRemark;
+function setupButtonActions() {
+    // Save buttons
+    document.getElementById('btnTopSave')?.addEventListener('click', () => saveReportData(false));
+    document.getElementById('btnBottomSave')?.addEventListener('click', () => saveReportData(false));
+
+    // Save & Download Excel
+    document.getElementById('btnTopExportExcel')?.addEventListener('click', () => saveReportData(true));
+    document.getElementById('btnBottomExportExcel')?.addEventListener('click', () => saveReportData(true));
+
+    // Reset blank button
+    document.getElementById('btnResetBlank')?.addEventListener('click', () => {
+        if (confirm('Kosongkan semua nilai input dan mulai form baru?')) {
+            loadDefaultBlankForm();
+        }
+    });
+
+    // Add recommendation row button
+    document.getElementById('btnAddRecRow')?.addEventListener('click', () => {
+        addRecRow();
+    });
+
+    // Print preview button
+    document.getElementById('btnPrintPreview')?.addEventListener('click', () => {
+        const reportId = document.getElementById('reportId')?.value;
+        if (reportId) {
+            window.open(`/reports/${reportId}/pdf`, '_blank');
+        } else {
+            window.print();
+        }
+    });
+
+    // Component dropdown change
+    document.getElementById('componentSelect')?.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val !== 'output_shaft') {
+            alert('Template Excel untuk komponen ini belum tersedia. Menunggu dari divisi terkait.');
+            e.target.value = 'output_shaft';
+        }
+    });
+}
+
+// -------------------------------------------------------------
+// Form Initialization & Populating
+// -------------------------------------------------------------
+function loadDefaultBlankForm() {
+    currentReportId = null;
+    document.getElementById('reportId').value = '';
+
+    // Reset inputs
+    document.getElementById('g_sscId').value = 'SSC-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('g_reportNo').value = '';
+    document.getElementById('g_date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('g_customer').value = '';
+    document.getElementById('g_jobNo').value = '-';
+    document.getElementById('g_quoteNo').value = '-';
+    document.getElementById('g_partNo').value = '-';
+
+    // Clear dimension values
+    const dimInputs = document.querySelectorAll('.dim-input, .tir-input');
+    dimInputs.forEach(i => i.value = '');
+
+    // Reset selects to A
+    document.querySelectorAll('.status-select').forEach(s => s.value = 'A');
+
+    // Reset photos
+    for (const key in reportPhotos) {
+        removePhoto(key);
+    }
+
+    // Reset recommendations
+    setupRecommendations([
+        { item: "01", remarks: "Cleaning and polish OD area \"A\"", recommendation: "Cleaning and polish OD area \"A\"" }
+    ]);
+
+    updateLivePreview();
+    showToast('Form baru telah disiapkan dengan data kosong', 'success');
+}
+
+function loadReportForEdit(id) {
+    showToast('Memuat data laporan...', 'success');
+    fetch(`/reports/${id}`, {
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        populateFormWithData(data);
+        showToast(`Laporan ${data.ssc_id} berhasil dimuat`, 'success');
+    })
+    .catch(err => {
+        console.error('Load report error:', err);
+        showToast('Gagal memuat data laporan', 'error');
+    });
+}
+
+function populateFormWithData(data) {
+    if (!data) return;
+
+    // General
+    setValue('g_sscId', data.ssc_id);
+    setValue('g_reportNo', data.report_no);
+    setValue('g_date', data.date ? data.date.split('T')[0] : '');
+    setValue('g_customer', data.customer);
+    setValue('g_partName', data.part_name || 'OUTPUT SHAFT');
+    setValue('g_inspectionType', data.inspection_type || 'Pre');
+    setValue('g_modelUnit', data.model_unit || 'HT051');
+    setValue('g_jobNo', data.job_no || '-');
+    setValue('g_quoteNo', data.quote_no || '-');
+    setValue('g_partNo', data.part_no || '-');
+
+    const sec = typeof data.sections === 'string' ? JSON.parse(data.sections) : (data.sections || {});
+
+    // Item 01
+    if (sec.item01) {
+        setValue('i1_x', sec.item01.x);
+        setValue('i1_y', sec.item01.y);
+        setValue('i1_z', sec.item01.z);
+        setValue('i1_ar', sec.item01.ar || 'A');
+        setValue('i1_length', sec.item01.lengthResult);
+        setValue('i1_remark1', sec.item01.remark1);
+    }
+
+    // Item 02
+    if (sec.item02) {
+        const b = sec.item02.itemB;
+        if (b) {
+            setValue('i2_b1_x', b.row1?.x); setValue('i2_b1_y', b.row1?.y); setValue('i2_b1_z', b.row1?.z); setValue('i2_b1_ar', b.row1?.ar || 'A');
+            setValue('i2_b2_x', b.row2?.x); setValue('i2_b2_y', b.row2?.y); setValue('i2_b2_z', b.row2?.z); setValue('i2_b2_ar', b.row2?.ar || 'A');
+            setValue('i2_b3_x', b.row3?.x); setValue('i2_b3_y', b.row3?.y); setValue('i2_b3_z', b.row3?.z); setValue('i2_b3_ar', b.row3?.ar || 'A');
+        }
+        const c = sec.item02.itemC;
+        if (c) {
+            setValue('i2_c1_x', c.row1?.x); setValue('i2_c1_y', c.row1?.y); setValue('i2_c1_z', c.row1?.z); setValue('i2_c1_ar', c.row1?.ar || 'A');
+            setValue('i2_c2_x', c.row2?.x); setValue('i2_c2_y', c.row2?.y); setValue('i2_c2_z', c.row2?.z); setValue('i2_c2_ar', c.row2?.ar || 'A');
+            setValue('i2_c3_x', c.row3?.x); setValue('i2_c3_y', c.row3?.y); setValue('i2_c3_z', c.row3?.z); setValue('i2_c3_ar', c.row3?.ar || 'A');
+        }
+    }
+
+    // Item 03
+    if (sec.item03) {
+        setValue('i3_d_x', sec.item03.itemD?.x); setValue('i3_d_y', sec.item03.itemD?.y); setValue('i3_d_z', sec.item03.itemD?.z); setValue('i3_d_ar', sec.item03.itemD?.ar || 'A');
+        setValue('i3_e_x', sec.item03.distanceE?.x); setValue('i3_e_y', sec.item03.distanceE?.y); setValue('i3_e_z', sec.item03.distanceE?.z); setValue('i3_e_ar', sec.item03.distanceE?.ar || 'A');
+    }
+
+    // Item 04
+    if (sec.item04) {
+        const f = sec.item04.itemF;
+        if (f) {
+            setValue('i4_f1_x', f.row1?.x); setValue('i4_f1_y', f.row1?.y); setValue('i4_f1_z', f.row1?.z); setValue('i4_f1_ar', f.row1?.ar || 'A');
+            setValue('i4_f2_x', f.row2?.x); setValue('i4_f2_y', f.row2?.y); setValue('i4_f2_z', f.row2?.z); setValue('i4_f2_ar', f.row2?.ar || 'A');
+            setValue('i4_f3_x', f.row3?.x); setValue('i4_f3_y', f.row3?.y); setValue('i4_f3_z', f.row3?.z); setValue('i4_f3_ar', f.row3?.ar || 'A');
+        }
+        setValue('i4_k_res', sec.item04.distanceK?.result);
+    }
+
+    // Item 05
+    if (sec.item05) {
+        const h = sec.item05.itemH;
+        if (h) {
+            setValue('i5_h1_x', h.row1?.x); setValue('i5_h1_y', h.row1?.y); setValue('i5_h1_z', h.row1?.z); setValue('i5_h1_ar', h.row1?.ar || 'A');
+            setValue('i5_h2_x', h.row2?.x); setValue('i5_h2_y', h.row2?.y); setValue('i5_h2_z', h.row2?.z); setValue('i5_h2_ar', h.row2?.ar || 'A');
+            setValue('i5_h3_x', h.row3?.x); setValue('i5_h3_y', h.row3?.y); setValue('i5_h3_z', h.row3?.z); setValue('i5_h3_ar', h.row3?.ar || 'A');
+        }
+        setValue('i5_j_res', sec.item05.distanceJ?.result);
+    }
+
+    // Item 06
+    if (sec.item06) {
+        setValue('i6_x', sec.item06.itemG?.x); setValue('i6_y', sec.item06.itemG?.y); setValue('i6_z', sec.item06.itemG?.z); setValue('i6_ar', sec.item06.itemG?.ar || 'A');
+        setValue('i6_i_res', sec.item06.distanceI?.result);
+    }
+
+    // TIR
+    const tir = typeof data.tir === 'string' ? JSON.parse(data.tir) : (data.tir || {});
+    if (tir.items && Array.isArray(tir.items)) {
+        const pts = ['a', 'b', 'c', 'd', 'e', 'f'];
+        tir.items.forEach((item, idx) => {
+            if (idx < pts.length) {
+                const pt = pts[idx];
+                setValue(`tir_${pt}_0`, item.d0);
+                setValue(`tir_${pt}_90`, item.d90);
+                setValue(`tir_${pt}_180`, item.d180);
+                setValue(`tir_${pt}_270`, item.d270);
+                setValue(`tir_${pt}_ar`, item.ar || 'A');
+            }
+        });
+    }
+
+    // Recommendations
+    const recs = typeof data.recommendations === 'string' ? JSON.parse(data.recommendations) : (data.recommendations || []);
+    setupRecommendations(recs);
+
+    // Signatures
+    const sig = typeof data.signatures === 'string' ? JSON.parse(data.signatures) : (data.signatures || {});
+    if (sig.checkedBy) {
+        setValue('sig_checkedName', sig.checkedBy.name);
+        setValue('sig_checkedTitle', sig.checkedBy.title);
+        setValue('sig_checkedDate', sig.checkedBy.date);
+    }
+    if (sig.createdBy) {
+        setValue('sig_createdName', sig.createdBy.name);
+        setValue('sig_createdTitle', sig.createdBy.title);
+        setValue('sig_createdDate', sig.createdBy.date);
+    }
+    if (sig.reviewedBy) {
+        setValue('sig_reviewedName', sig.reviewedBy.name);
+        setValue('sig_reviewedTitle', sig.reviewedBy.title);
+        setValue('sig_reviewedDate', sig.reviewedBy.date);
+    }
+
+    // Photos
+    const photos = typeof data.photos === 'string' ? JSON.parse(data.photos) : (data.photos || {});
+    for (const key in photos) {
+        if (photos[key]) {
+            renderPhotoPreview(key, photos[key]);
+        }
+    }
+
+    updateLivePreview();
+}
+
+function setValue(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = (val !== null && val !== undefined) ? val : '';
+}
+
+// -------------------------------------------------------------
+// Toast Notifications
+// -------------------------------------------------------------
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}

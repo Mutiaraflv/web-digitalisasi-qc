@@ -4,8 +4,8 @@
 @section('page_title', 'Dashboard')
 
 @section('top_actions')
-  <a href="{{ route('reports.index', ['create' => 1]) }}" class="btn btn-primary btn-sm">
-    <i data-lucide="plus"></i> Inspeksi Baru
+  <a href="{{ route('inspection.create') }}" class="btn btn-primary btn-sm">
+    <i data-lucide="plus"></i> Input Inspeksi Baru
   </a>
 @endsection
 
@@ -13,11 +13,11 @@
   <div class="page-header">
     <div class="page-title">
       <h1>Ringkasan Mutu & Inspeksi</h1>
-      <p>Data aktivitas inspeksi komponen dan kepatuhan standar toleransi workshop.</p>
+      <p>Data aktivitas inspeksi komponen dan kepatuhan standar toleransi workshop PT SSC Works.</p>
     </div>
   </div>
 
-  <!-- Corporate KPI Grid (Simple, Flat, No AI icon bubbles) -->
+  <!-- Corporate KPI Grid -->
   <div class="stats-grid">
     <div class="stat-card">
       <p>Total Inspeksi</p>
@@ -40,7 +40,7 @@
     <div class="stat-card">
       <p>First Pass Yield</p>
       <h3>{{ $yieldRate }}%</h3>
-      <div class="stat-sub">Tingkat kelulusan</div>
+      <div class="stat-sub">Tingkat kelulusan mutu</div>
     </div>
   </div>
 
@@ -100,20 +100,20 @@
     <!-- Quick Links -->
     <div class="card">
       <div class="card-header">
-        <h3>Menu Cepat</h3>
+        <h3>Menu Cepat Operasional</h3>
       </div>
       <div class="card-body" style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <a href="{{ route('reports.index', ['create' => 1]) }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
-          <i data-lucide="file-plus"></i> Input Inspeksi Komponen
+        <a href="{{ route('inspection.create') }}" class="btn btn-primary btn-sm" style="justify-content: flex-start;">
+          <i data-lucide="file-plus-2"></i> Input Inspeksi Komponen Baru
+        </a>
+        <a href="{{ route('reports.index') }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
+          <i data-lucide="archive"></i> Riwayat & Arsip Laporan QC
+        </a>
+        <a href="{{ route('templates.index') }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
+          <i data-lucide="file-spreadsheet"></i> Status Template Komponen Antar Divisi
         </a>
         <a href="{{ route('ncrs.index') }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
-          <i data-lucide="alert-circle"></i> Daftar Temuan NCR
-        </a>
-        <a href="{{ route('parts.index') }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
-          <i data-lucide="package"></i> Katalog & Toleransi Gambar
-        </a>
-        <a href="{{ route('calibration.index') }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
-          <i data-lucide="check-circle-2"></i> Jadwal Kalibrasi Alat
+          <i data-lucide="alert-octagon"></i> Log Temuan Non-Conformance (NCR)
         </a>
       </div>
     </div>

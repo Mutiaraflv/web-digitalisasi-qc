@@ -26,6 +26,7 @@ class Report extends Model
         'tir',
         'recommendations',
         'signatures',
+        'photos',
         'has_rejects'
     ];
 
@@ -34,8 +35,8 @@ class Report extends Model
         'tir' => 'array',
         'recommendations' => 'array',
         'signatures' => 'array',
+        'photos' => 'array',
         'has_rejects' => 'boolean',
         'date' => 'date:Y-m-d'
     ];
 }
-

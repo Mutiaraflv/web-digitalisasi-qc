@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Services\ExcelReportService;
+use Illuminate\Support\Facades\File;
 
 class ReportController extends Controller
 {
@@ -51,6 +52,28 @@ class ReportController extends Controller
     }
 
     /**
+     * Show the Inspection Studio workspace for creating a new QC report
+     */
+    public function create()
+    {
+        return view('reports.create', [
+            'report' => null,
+            'isEdit' => false
+        ]);
+    }
+
+    /**
+     * Show the Inspection Studio workspace for editing an existing QC report
+     */
+    public function edit(Report $report)
+    {
+        return view('reports.create', [
+            'report' => $report,
+            'isEdit' => true
+        ]);
+    }
+
+    /**
      * Return single report JSON
      */
     public function show(Report $report)
@@ -64,14 +87,16 @@ class ReportController extends Controller
     public function store(Request $request)
     {
         $data = $this->extractReportData($request);
-
-        $hasRejects = $this->checkHasRejects($data);
-        $data['has_rejects'] = $hasRejects;
+        $data['has_rejects'] = $this->checkHasRejects($data);
 
         $report = Report::create($data);
 
         if ($request->wantsJson() || $request->is('api/*')) {
-            return response()->json($report, 201);
+            return response()->json([
+                'success' => true,
+                'message' => "Laporan {$report->ssc_id} berhasil disimpan!",
+                'report' => $report
+            ], 201);
         }
 
         return redirect()->route('reports.index')->with('success', "Laporan {$report->ssc_id} berhasil dibuat!");
@@ -83,14 +108,16 @@ class ReportController extends Controller
     public function update(Request $request, Report $report)
     {
         $data = $this->extractReportData($request);
-
-        $hasRejects = $this->checkHasRejects($data);
-        $data['has_rejects'] = $hasRejects;
+        $data['has_rejects'] = $this->checkHasRejects($data);
 
         $report->update($data);
 
         if ($request->wantsJson() || $request->is('api/*')) {
-            return response()->json($report);
+            return response()->json([
+                'success' => true,
+                'message' => "Laporan {$report->ssc_id} berhasil diperbarui!",
+                'report' => $report
+            ]);
         }
 
         return redirect()->route('reports.index')->with('success', "Laporan {$report->ssc_id} berhasil diperbarui!");
@@ -127,6 +154,42 @@ class ReportController extends Controller
         }
 
         return redirect()->route('reports.index')->with('success', "Laporan berhasil diduplikat menjadi {$replica->ssc_id}!");
+    }
+
+    /**
+     * Upload photo for an inspection section
+     */
+    public function uploadPhoto(Request $request)
+    {
+        $request->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg,webp|max:10240', // 10MB max
+            'section' => 'nullable|string'
+        ]);
+
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $uploadPath = public_path('uploads/reports/photos');
+            
+            if (!File::isDirectory($uploadPath)) {
+                File::makeDirectory($uploadPath, 0755, true, true);
+            }
+
+            $section = preg_replace('/[^a-zA-Z0-9_-]/', '_', $request->input('section', 'sec'));
+            $filename = 'qc_' . $section . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadPath, $filename);
+
+            $url = asset('uploads/reports/photos/' . $filename);
+
+            return response()->json([
+                'success' => true,
+                'url' => $url,
+                'path' => '/uploads/reports/photos/' . $filename,
+                'filename' => $filename,
+                'section' => $request->input('section')
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Tidak ada file foto yang diunggah'], 400);
     }
 
     /**
@@ -168,6 +231,14 @@ class ReportController extends Controller
     }
 
     /**
+     * Printable view of official FORM-QC-002 document (for direct printing or Save as PDF)
+     */
+    public function pdf(Report $report)
+    {
+        return view('reports.print', compact('report'));
+    }
+
+    /**
      * Extract report payload safely
      */
     private function extractReportData(Request $request): array
@@ -191,6 +262,7 @@ class ReportController extends Controller
         $tir = $request->input('tir', []);
         $recommendations = $request->input('recommendations', []);
         $signatures = $request->input('signatures', []);
+        $photos = $request->input('photos', []);
 
         return [
             'ssc_id' => trim($sscId),
@@ -209,6 +281,7 @@ class ReportController extends Controller
             'tir' => $tir,
             'recommendations' => $recommendations,
             'signatures' => $signatures,
+            'photos' => $photos,
         ];
     }
 
@@ -242,4 +315,3 @@ class ReportController extends Controller
         return false;
     }
 }
-

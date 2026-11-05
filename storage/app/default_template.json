@@ -17,9 +17,9 @@
     "item01": {
       "title": "OD Area \"A\" and OD Spline",
       "spec": "Ø79 ± 0.25",
-      "x": 79.0,
-      "y": 79.0,
-      "z": 79.0,
+      "x": "",
+      "y": "",
+      "z": "",
       "ar": "A",
       "remark1": "Actual measurement OD area \"A\" in good condition",
       "remark2": "",
@@ -29,7 +29,7 @@
       "remark6": "",
       "lengthItem": "L",
       "lengthSpec": "N/A",
-      "lengthResult": 724.0,
+      "lengthResult": "",
       "lengthAr": "-",
       "penetrantRemark": "No indication crack at OD area \"A\" and OD spline after penetrant check"
     },
@@ -37,15 +37,15 @@
       "title": "OD Area \"B and C\"",
       "itemB": {
         "spec": "Ø82 ± 0.25",
-        "row1": { "x": 82.0, "y": 82.0, "z": 82.0, "ar": "A" },
-        "row2": { "x": 82.0, "y": 82.0, "z": 82.0, "ar": "A" },
-        "row3": { "x": 82.0, "y": 82.0, "z": 82.0, "ar": "A" }
+        "row1": { "x": "", "y": "", "z": "", "ar": "A" },
+        "row2": { "x": "", "y": "", "z": "", "ar": "A" },
+        "row3": { "x": "", "y": "", "z": "", "ar": "A" }
       },
       "itemC": {
         "spec": "Ø77 ± 0.25",
-        "row1": { "x": 77.0, "y": 77.0, "z": 77.0, "ar": "A" },
-        "row2": { "x": 77.0, "y": 77.0, "z": 77.0, "ar": "A" },
-        "row3": { "x": 77.0, "y": 77.0, "z": 77.0, "ar": "A" }
+        "row1": { "x": "", "y": "", "z": "", "ar": "A" },
+        "row2": { "x": "", "y": "", "z": "", "ar": "A" },
+        "row3": { "x": "", "y": "", "z": "", "ar": "A" }
       },
       "remarks": [
         "Actual measurement OD area \"B and C\" in good condition"
@@ -56,16 +56,16 @@
       "title": "OD Area \"D\"",
       "itemD": {
         "spec": "Ø118 ± 0.5",
-        "x": 118.0,
-        "y": 118.0,
-        "z": 118.0,
+        "x": "",
+        "y": "",
+        "z": "",
         "ar": "A"
       },
       "distanceE": {
         "spec": "13 ± 0.5",
-        "x": 13.0,
-        "y": 13.0,
-        "z": 13.0,
+        "x": "",
+        "y": "",
+        "z": "",
         "ar": "A"
       },
       "remarks": [
@@ -78,13 +78,13 @@
       "title": "OD Area \"F\"",
       "itemF": {
         "spec": "Ø100,01 ± 0,008",
-        "row1": { "x": 100.01, "y": 100.01, "z": 100.01, "ar": "A" },
-        "row2": { "x": 100.01, "y": 100.01, "z": 100.01, "ar": "A" },
-        "row3": { "x": 100.01, "y": 100.01, "z": 100.01, "ar": "A" }
+        "row1": { "x": "", "y": "", "z": "", "ar": "A" },
+        "row2": { "x": "", "y": "", "z": "", "ar": "A" },
+        "row3": { "x": "", "y": "", "z": "", "ar": "A" }
       },
       "distanceK": {
         "spec": "N/A",
-        "result": 188.55,
+        "result": "",
         "ar": "-"
       },
       "remarks": [
@@ -96,13 +96,13 @@
       "title": "OD Area \"H\"",
       "itemH": {
         "spec": "Ø94 ± 0,013",
-        "row1": { "x": 94.0, "y": 94.0, "z": 94.0, "ar": "A" },
-        "row2": { "x": 94.0, "y": 94.0, "z": 94.0, "ar": "A" },
-        "row3": { "x": 94.0, "y": 94.0, "z": 94.0, "ar": "A" }
+        "row1": { "x": "", "y": "", "z": "", "ar": "A" },
+        "row2": { "x": "", "y": "", "z": "", "ar": "A" },
+        "row3": { "x": "", "y": "", "z": "", "ar": "A" }
       },
       "distanceJ": {
         "spec": "N/A",
-        "result": 142.8,
+        "result": "",
         "ar": "-"
       },
       "remarks": [
@@ -114,14 +114,14 @@
       "title": "OD Area \"G\" and OD Spline",
       "itemG": {
         "spec": "Ø84,2 ± 0,13",
-        "x": 84.2,
-        "y": 84.2,
-        "z": 84.2,
+        "x": "",
+        "y": "",
+        "z": "",
         "ar": "A"
       },
       "distanceI": {
         "spec": "N/A",
-        "result": 98.78,
+        "result": "",
         "ar": "-"
       },
       "remarks": [
@@ -134,21 +134,30 @@
     "spec": "Max 0,2",
     "datum": "Datum at item \"B and E\"",
     "items": [
-      { "item": "A", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" },
-      { "item": "B", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" },
-      { "item": "C", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" },
-      { "item": "D", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" },
-      { "item": "E", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" },
-      { "item": "F", "d0": "0", "d90": "0", "d180": "0", "d270": "0", "ar": "A" }
+      { "item": "A", "d0": "", "d90": "", "d180": "", "d270": "", "ar": "A" },
+      { "item": "B", "d0": "", "d90": "", "d180": "", "d270": "", "ar": "A" },
+      { "item": "C", "d0": "", "d90": "", "d180": "", "d270": "", "ar": "A" },
+      { "item": "D", "d0": "", "d90": "", "d180": "", "d270": "", "ar": "A" },
+      { "item": "E", "d0": "", "d90": "", "d180": "", "d270": "", "ar": "A" },
+      { "item": "F", "d0": "", "d90": "", "d180": "", "d270": "", "ar": "A" }
     ]
   },
   "recommendations": [
-    { "item": "01", "remarks": "Cleaning and polish OD area \"A\"", "recommendation": "Cleaning and polish OD area \"A\"" }
+    { "item": "01", "remarks": "", "recommendation": "" }
   ],
+  "photos": {
+    "item01": null,
+    "item02": null,
+    "item03": null,
+    "item04": null,
+    "item05": null,
+    "item06": null,
+    "penetrant": null,
+    "defect": null
+  },
   "signatures": {
     "checkedBy": { "name": "Faqih S A A", "title": "QC Inspector", "date": "" },
     "createdBy": { "name": "M Kevin S", "title": "QC Inspector", "date": "" },
     "reviewedBy": { "name": "Agus Riyanto", "title": "Leader QC", "date": "" }
   }
 }
-
