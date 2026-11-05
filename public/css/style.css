@@ -1585,154 +1585,295 @@ body {
 
 /* Doc Header */
 .doc-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  border-bottom: 1.5px solid #000;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+  gap: 8px;
   align-items: center;
-  gap: 0.75rem;
-  border-bottom: 2px solid #0f172a;
-  padding-bottom: 0.6rem;
-  margin-bottom: 0.65rem;
 }
 
 .doc-logo-img {
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   object-fit: contain;
 }
 
 .doc-header-title {
-  flex: 1;
+  text-align: center;
 }
 
-.doc-header-title h2 {
-  font-size: 10.5pt;
+.doc-company-name {
+  font-size: 7.8pt;
   font-weight: 800;
   color: #1e3a8a;
-  margin: 0;
   letter-spacing: 0.5px;
 }
 
-.doc-header-title h3 {
-  font-size: 9pt;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 2px 0 0 0;
-}
-
-.doc-header-title p {
-  font-size: 6.8pt;
-  color: #64748b;
-  margin: 1px 0 0 0;
+.doc-main-title {
+  font-size: 11pt;
+  font-weight: 900;
+  color: #000;
+  letter-spacing: 0.5px;
+  margin-top: 1px;
 }
 
 .doc-header-meta table {
-  font-size: 7.2pt;
+  font-size: 6.8pt;
   border-collapse: collapse;
 }
 
 .doc-header-meta td {
-  padding: 1px 4px;
+  border: 1px solid #000;
+  padding: 1.5px 4px;
 }
 
 .doc-header-meta td.bold {
   font-weight: 700;
 }
 
-/* Doc Meta Table */
-.doc-meta-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 7.6pt;
-  margin-bottom: 0.65rem;
+/* Info Grid (Rows 5-7) */
+.doc-info-grid {
   border: 1px solid #000;
+  font-size: 7pt;
+  margin-bottom: 4px;
 }
 
-.doc-meta-table td {
-  border: 1px solid #000;
-  padding: 2.5px 5px;
+.doc-info-row {
+  display: grid;
+  border-bottom: 1px solid #000;
 }
 
-.doc-meta-table .lbl {
-  background: #f1f5f9;
+.doc-info-row:last-child {
+  border-bottom: none;
+}
+
+.dic {
+  padding: 2px 4px;
+  border-right: 1px solid #000;
   font-weight: 700;
-  width: 14%;
-  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.doc-meta-table .val {
-  width: 20%;
+.dic:last-child {
+  border-right: none;
 }
 
-.doc-meta-table .bold {
-  font-weight: 700;
+.dic.val {
+  font-weight: 400;
+  font-family: inherit;
 }
 
-.doc-stamp-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 0.5rem;
+.dic.center {
+  text-align: center;
 }
 
-.doc-stamp {
-  font-size: 8.5pt;
-  font-weight: 900;
-  padding: 2px 10px;
-  border: 1.5px solid currentColor;
-  border-radius: 3px;
-  letter-spacing: 1px;
-}
-
-/* Sections in doc */
-.doc-section-head {
+/* Section Banners */
+.doc-section-banner {
   background: #1e3a8a;
-  color: #ffffff;
-  font-size: 7.4pt;
+  color: #fff;
+  font-size: 7pt;
   font-weight: 700;
-  padding: 2.5px 6px;
-  margin-bottom: 3px;
+  padding: 2px 6px;
+  margin-top: 4px;
   letter-spacing: 0.5px;
 }
 
-.doc-table {
+/* Finding Section */
+.doc-finding-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 7.2pt;
-  margin-bottom: 0.5rem;
-}
-
-.doc-table th, .doc-table td {
+  font-size: 7pt;
   border: 1px solid #000;
-  padding: 2.5px 4px;
+  margin-bottom: 4px;
 }
 
-.doc-table th {
-  background: #f1f5f9;
-  font-weight: 700;
+.doc-finding-table th {
+  background: #dbeafe;
+  border: 1px solid #000;
+  padding: 2px 4px;
   text-align: center;
-}
-
-.doc-table .center {
-  text-align: center;
-}
-
-.doc-table .bold {
   font-weight: 700;
+}
+
+.doc-finding-table td {
+  border: 1px solid #000;
+  padding: 2px 4px;
+}
+
+/* Inspection Blocks (per-area) */
+.doc-insp-section {
+  border: 1px solid #000;
+  margin-bottom: 4px;
+  font-size: 6.8pt;
+}
+
+.doc-insp-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #eff6ff;
+  border-bottom: 1px solid #000;
+  font-weight: 700;
+  font-size: 7pt;
+}
+
+.doc-insp-hdr-left {
+  padding: 2px 5px;
+  border-right: 1px solid #000;
+}
+
+.doc-insp-hdr-right {
+  padding: 2px 5px;
+}
+
+.doc-insp-body {
+  display: grid;
+  grid-template-columns: 40% 60%;
+  border-bottom: 1px solid #000;
+}
+
+.doc-insp-photo-col {
+  border-right: 1px solid #000;
+  padding: 3px;
+}
+
+.doc-insp-meas-col {
+  padding: 3px;
+}
+
+.doc-meas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 6.7pt;
+}
+
+.doc-meas-table th {
+  background: #dbeafe;
+  border: 1px solid #000;
+  padding: 1.5px 3px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.doc-meas-table td {
+  border: 1px solid #000;
+  padding: 1.5px 3px;
+  text-align: center;
+  font-family: monospace;
+}
+
+.doc-meas-table td:first-child {
+  text-align: left;
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.doc-insp-remark {
+  font-size: 6.5pt;
+  margin-top: 3px;
+  color: #374151;
+}
+
+/* Penetrant Row */
+.doc-penetrant-row {
+  display: grid;
+  grid-template-columns: 40% 60%;
+}
+
+.doc-penet-left {
+  border-right: 1px solid #000;
+  padding: 3px;
+}
+
+.doc-penet-right {
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+}
+
+.doc-ar-legend {
+  font-size: 6.2pt;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.doc-penet-remark {
+  font-size: 6.5pt;
+  font-style: italic;
+  color: #374151;
+}
+
+/* TIR Section */
+.doc-tir-section {
+  border: 1px solid #000;
+  margin-bottom: 4px;
+}
+
+.doc-tir-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 6px;
+  font-size: 6.8pt;
+  background: #f0f9ff;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.doc-tir-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 6.8pt;
+}
+
+.doc-tir-table th {
+  background: #dbeafe;
+  border: 1px solid #000;
+  padding: 2px 3px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.doc-tir-table td {
+  border: 1px solid #000;
+  padding: 2px 3px;
+  text-align: center;
+  font-family: monospace;
+}
+
+.doc-tir-table td:first-child {
+  text-align: left;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+/* Rec Section */
+.doc-rec-section {
+  border: 1px solid #000;
+  margin-bottom: 4px;
+}
+
+.doc-rec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 6.8pt;
+}
+
+.doc-rec-table th {
+  background: #dbeafe;
+  border: 1px solid #000;
+  padding: 2px 4px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.doc-rec-table td {
+  border: 1px solid #000;
+  padding: 2px 4px;
 }
 
 /* Photos inside Doc Preview */
-.doc-photo-gallery {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  margin-bottom: 0.6rem;
-}
-
-.doc-photo-slot {
-  border: 1px solid #000;
-  background: #fafafa;
-  display: flex;
-  flex-direction: column;
-}
-
 .doc-photo-wrapper {
   height: 65px;
   display: flex;
@@ -1740,6 +1881,7 @@ body {
   justify-content: center;
   overflow: hidden;
   background: #f8fafc;
+  border: 1px solid #cbd5e1;
 }
 
 .doc-photo-wrapper img {
@@ -1749,23 +1891,25 @@ body {
 }
 
 .no-photo-txt {
-  font-size: 6.5pt;
+  font-size: 6.2pt;
   color: #94a3b8;
   font-style: italic;
   text-align: center;
-  padding: 4px;
+  padding: 3px;
 }
 
 .doc-photo-caption {
-  font-size: 6.8pt;
+  font-size: 6.4pt;
   font-weight: 600;
   text-align: center;
   background: #f1f5f9;
-  padding: 2px 2px;
-  border-top: 1px solid #000;
+  padding: 1.5px 2px;
+  border: 1px solid #cbd5e1;
+  border-top: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #475569;
 }
 
 /* Signatures */

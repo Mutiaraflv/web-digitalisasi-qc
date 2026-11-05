@@ -205,6 +205,13 @@ function updateLivePreview() {
     setPreviewText('prev_jobNo', jobNo);
     setPreviewText('prev_quoteNo', quoteNo);
     setPreviewText('prev_partNo', partNo);
+    setPreviewText('prev_metaDate2', date);
+
+    const isPre = inspectionType === 'Pre';
+    const preEl = document.getElementById('prev_preCheck');
+    const postEl = document.getElementById('prev_postCheck');
+    if (preEl) preEl.innerHTML = isPre ? 'Pre &#9745;' : 'Pre &#9744;';
+    if (postEl) postEl.innerHTML = !isPre ? 'Post &#9745;' : 'Post &#9744;';
 
     // 2. Section 01
     setPreviewText('prev_i1_x', document.getElementById('i1_x')?.value || '-');
@@ -213,53 +220,67 @@ function updateLivePreview() {
     const i1Ar = document.getElementById('i1_ar')?.value || 'A';
     setPreviewText('prev_i1_ar', i1Ar);
     colorStatusCell('prev_i1_ar', i1Ar);
+    setPreviewText('prev_i1_len', document.getElementById('i1_length')?.value || '-');
+    setPreviewText('prev_i1_rem', document.getElementById('i1_remark1')?.value || 'Actual measurement OD area "A" in good condition');
 
-    // 3. Section 02
-    setPreviewText('prev_i2_b1_x', document.getElementById('i2_b1_x')?.value || '-');
-    setPreviewText('prev_i2_b1_y', document.getElementById('i2_b1_y')?.value || '-');
-    setPreviewText('prev_i2_b1_z', document.getElementById('i2_b1_z')?.value || '-');
-    const b1Ar = document.getElementById('i2_b1_ar')?.value || 'A';
-    setPreviewText('prev_i2_b1_ar', b1Ar);
-    colorStatusCell('prev_i2_b1_ar', b1Ar);
+    // 3. Section 02 (B & C)
+    ['1', '2', '3'].forEach(r => {
+        ['x', 'y', 'z'].forEach(axis => {
+            setPreviewText(`prev_i2_b${r}_${axis}`, document.getElementById(`i2_b${r}_${axis}`)?.value || '-');
+            setPreviewText(`prev_i2_c${r}_${axis}`, document.getElementById(`i2_c${r}_${axis}`)?.value || '-');
+        });
+        const bAr = document.getElementById(`i2_b${r}_ar`)?.value || 'A';
+        setPreviewText(`prev_i2_b${r}_ar`, bAr);
+        colorStatusCell(`prev_i2_b${r}_ar`, bAr);
 
-    setPreviewText('prev_i2_c1_x', document.getElementById('i2_c1_x')?.value || '-');
-    setPreviewText('prev_i2_c1_y', document.getElementById('i2_c1_y')?.value || '-');
-    setPreviewText('prev_i2_c1_z', document.getElementById('i2_c1_z')?.value || '-');
-    const c1Ar = document.getElementById('i2_c1_ar')?.value || 'A';
-    setPreviewText('prev_i2_c1_ar', c1Ar);
-    colorStatusCell('prev_i2_c1_ar', c1Ar);
+        const cAr = document.getElementById(`i2_c${r}_ar`)?.value || 'A';
+        setPreviewText(`prev_i2_c${r}_ar`, cAr);
+        colorStatusCell(`prev_i2_c${r}_ar`, cAr);
+    });
 
-    // 4. Section 03
-    setPreviewText('prev_i3_d_x', document.getElementById('i3_d_x')?.value || '-');
-    setPreviewText('prev_i3_d_y', document.getElementById('i3_d_y')?.value || '-');
-    setPreviewText('prev_i3_d_z', document.getElementById('i3_d_z')?.value || '-');
+    // 4. Section 03 (D & E)
+    ['x', 'y', 'z'].forEach(axis => {
+        setPreviewText(`prev_i3_d_${axis}`, document.getElementById(`i3_d_${axis}`)?.value || '-');
+        setPreviewText(`prev_i3_e_${axis}`, document.getElementById(`i3_e_${axis}`)?.value || '-');
+    });
     const dAr = document.getElementById('i3_d_ar')?.value || 'A';
     setPreviewText('prev_i3_d_ar', dAr);
     colorStatusCell('prev_i3_d_ar', dAr);
 
-    // 5. Section 04
-    setPreviewText('prev_i4_f1_x', document.getElementById('i4_f1_x')?.value || '-');
-    setPreviewText('prev_i4_f1_y', document.getElementById('i4_f1_y')?.value || '-');
-    setPreviewText('prev_i4_f1_z', document.getElementById('i4_f1_z')?.value || '-');
-    const f1Ar = document.getElementById('i4_f1_ar')?.value || 'A';
-    setPreviewText('prev_i4_f1_ar', f1Ar);
-    colorStatusCell('prev_i4_f1_ar', f1Ar);
+    const eAr = document.getElementById('i3_e_ar')?.value || 'A';
+    setPreviewText('prev_i3_e_ar', eAr);
+    colorStatusCell('prev_i3_e_ar', eAr);
 
-    // 6. Section 05
-    setPreviewText('prev_i5_h1_x', document.getElementById('i5_h1_x')?.value || '-');
-    setPreviewText('prev_i5_h1_y', document.getElementById('i5_h1_y')?.value || '-');
-    setPreviewText('prev_i5_h1_z', document.getElementById('i5_h1_z')?.value || '-');
-    const h1Ar = document.getElementById('i5_h1_ar')?.value || 'A';
-    setPreviewText('prev_i5_h1_ar', h1Ar);
-    colorStatusCell('prev_i5_h1_ar', h1Ar);
+    // 5. Section 04 (F & K)
+    ['1', '2', '3'].forEach(r => {
+        ['x', 'y', 'z'].forEach(axis => {
+            setPreviewText(`prev_i4_f${r}_${axis}`, document.getElementById(`i4_f${r}_${axis}`)?.value || '-');
+        });
+        const fAr = document.getElementById(`i4_f${r}_ar`)?.value || 'A';
+        setPreviewText(`prev_i4_f${r}_ar`, fAr);
+        colorStatusCell(`prev_i4_f${r}_ar`, fAr);
+    });
+    setPreviewText('prev_i4_k', document.getElementById('i4_k_res')?.value || '-');
 
-    // 7. Section 06
-    setPreviewText('prev_i6_x', document.getElementById('i6_x')?.value || '-');
-    setPreviewText('prev_i6_y', document.getElementById('i6_y')?.value || '-');
-    setPreviewText('prev_i6_z', document.getElementById('i6_z')?.value || '-');
+    // 6. Section 05 (H & J)
+    ['1', '2', '3'].forEach(r => {
+        ['x', 'y', 'z'].forEach(axis => {
+            setPreviewText(`prev_i5_h${r}_${axis}`, document.getElementById(`i5_h${r}_${axis}`)?.value || '-');
+        });
+        const hAr = document.getElementById(`i5_h${r}_ar`)?.value || 'A';
+        setPreviewText(`prev_i5_h${r}_ar`, hAr);
+        colorStatusCell(`prev_i5_h${r}_ar`, hAr);
+    });
+    setPreviewText('prev_i5_j', document.getElementById('i5_j_res')?.value || '-');
+
+    // 7. Section 06 (G & I)
+    ['x', 'y', 'z'].forEach(axis => {
+        setPreviewText(`prev_i6_${axis}`, document.getElementById(`i6_${axis}`)?.value || '-');
+    });
     const gAr = document.getElementById('i6_ar')?.value || 'A';
     setPreviewText('prev_i6_ar', gAr);
     colorStatusCell('prev_i6_ar', gAr);
+    setPreviewText('prev_i6_i', document.getElementById('i6_i_res')?.value || '-');
 
     // 8. TIR Points
     syncTirPreview();
@@ -284,16 +305,16 @@ function updateLivePreview() {
 function syncTirPreview() {
     const points = ['a', 'b', 'c', 'd', 'e', 'f'];
     points.forEach(pt => {
-        const v0 = parseFloat(document.getElementById(`tir_${pt}_0`)?.value) || 0;
-        const v90 = parseFloat(document.getElementById(`tir_${pt}_90`)?.value) || 0;
-        const v180 = parseFloat(document.getElementById(`tir_${pt}_180`)?.value) || 0;
-        const v270 = parseFloat(document.getElementById(`tir_${pt}_270`)?.value) || 0;
-        const maxVal = Math.max(v0, v90, v180, v270);
-        
-        const resStr = maxVal > 0 ? maxVal.toFixed(2) : '-';
-        setPreviewText(`prev_tir_${pt}`, resStr);
-
+        const v0 = document.getElementById(`tir_${pt}_0`)?.value || '-';
+        const v90 = document.getElementById(`tir_${pt}_90`)?.value || '-';
+        const v180 = document.getElementById(`tir_${pt}_180`)?.value || '-';
+        const v270 = document.getElementById(`tir_${pt}_270`)?.value || '-';
         const status = document.getElementById(`tir_${pt}_ar`)?.value || 'A';
+
+        setPreviewText(`prev_tir_${pt}_0`, v0);
+        setPreviewText(`prev_tir_${pt}_90`, v90);
+        setPreviewText(`prev_tir_${pt}_180`, v180);
+        setPreviewText(`prev_tir_${pt}_270`, v270);
         setPreviewText(`prev_tir_${pt}_ar`, status);
         colorStatusCell(`prev_tir_${pt}_ar`, status);
     });
@@ -495,28 +516,42 @@ function addRecRow(item = '', remarks = '', recommendation = '') {
 
 function syncRecommendationsPreview() {
     const previewBody = document.getElementById('prev_recTableBody');
-    if (!previewBody) return;
-    previewBody.innerHTML = '';
-
+    const findingDesc = document.getElementById('prev_finding_desc');
     const rows = document.querySelectorAll('#recTableBody tr');
-    if (rows.length === 0) {
-        previewBody.innerHTML = '<tr><td colspan="3" class="center" style="color:#94a3b8;">Tidak ada rekomendasi</td></tr>';
-        return;
+
+    if (previewBody) {
+        previewBody.innerHTML = '';
+        if (rows.length === 0) {
+            previewBody.innerHTML = '<tr><td colspan="4" class="center" style="color:#94a3b8; padding:4px;">Tidak ada rekomendasi</td></tr>';
+        } else {
+            rows.forEach((r, idx) => {
+                const item = r.querySelector('.rec-item')?.value || (idx < 9 ? `0${idx + 1}` : `${idx + 1}`);
+                const remarks = r.querySelector('.rec-remarks')?.value || '-';
+                const recommendation = r.querySelector('.rec-rec')?.value || '-';
+
+                const ptr = document.createElement('tr');
+                ptr.innerHTML = `
+                    <td class="center mono">${item}</td>
+                    <td>${remarks}</td>
+                    <td>${remarks}</td>
+                    <td>${recommendation}</td>
+                `;
+                previewBody.appendChild(ptr);
+            });
+        }
     }
 
-    rows.forEach(r => {
-        const item = r.querySelector('.rec-item')?.value || '-';
-        const remarks = r.querySelector('.rec-remarks')?.value || '-';
-        const recommendation = r.querySelector('.rec-rec')?.value || '-';
-
-        const ptr = document.createElement('tr');
-        ptr.innerHTML = `
-            <td class="center mono">${item}</td>
-            <td>${remarks}</td>
-            <td>${recommendation}</td>
-        `;
-        previewBody.appendChild(ptr);
-    });
+    if (findingDesc) {
+        if (rows.length === 0) {
+            findingDesc.innerHTML = '<span style="color:#9ca3af; font-style:italic;">— Temuan akan muncul dari tab Rekomendasi —</span>';
+        } else {
+            const listItems = Array.from(rows).map((r, i) => {
+                const remarks = r.querySelector('.rec-remarks')?.value || '';
+                return remarks ? `<div style="margin-bottom:2px;"><strong>${i + 1}.</strong> ${remarks}</div>` : '';
+            }).filter(Boolean);
+            findingDesc.innerHTML = listItems.length > 0 ? listItems.join('') : '<span style="color:#9ca3af; font-style:italic;">— Belum ada temuan visual diisi —</span>';
+        }
+    }
 }
 
 // -------------------------------------------------------------

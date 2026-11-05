@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', isset($isEdit) && $isEdit ? 'Edit Laporan QC' : 'Input Inspeksi Baru')
 @section('page_title', isset($isEdit) && $isEdit ? 'Edit Laporan QC' : 'Input Inspeksi Baru')
@@ -833,228 +833,318 @@
         </div>
       </div>
 
-      <!-- The Official Sheet Replica -->
+      <!-- The Official Sheet Replica — COMPONENT CONDITION REPORT -->
       <div class="sheet-container" id="printableSheet">
         <div class="sheet-paper">
-          
-          <!-- Sheet Header -->
+
+          <!-- DOCUMENT HEADER -->
           <div class="doc-header">
             <div class="doc-header-logo">
               <img src="{{ asset('images/logo.png') }}" alt="PT SSC Works" class="doc-logo-img">
             </div>
             <div class="doc-header-title">
-              <h2>PT. SUKSES SARI COATING WORKS</h2>
-              <h3>DIMENSIONAL INSPECTION REPORT</h3>
-              <p>PRECISION WORKSHOP & QUALITY CONTROL DIVISION</p>
+              <div class="doc-company-name">PT. SUKSES SARI COATING WORKS</div>
+              <div class="doc-main-title">COMPONENT CONDITION REPORT</div>
             </div>
             <div class="doc-header-meta">
               <table>
-                <tr><td>Doc No:</td><td class="bold">FORM-QC-002</td></tr>
-                <tr><td>Rev:</td><td class="bold">04</td></tr>
-                <tr><td>Date:</td><td class="bold" id="prev_metaDate">-</td></tr>
+                <tr><td>Document No</td><td>:</td><td class="bold">FORM-QC-002</td><td>Responsibility</td><td>:</td><td>QC Inspector</td></tr>
+                <tr><td>Effective Date.</td><td>:</td><td id="prev_metaDate">-</td><td>Rev.</td><td>:</td><td class="bold">04</td></tr>
+                <tr><td>Page</td><td>:</td><td>1</td><td></td><td></td><td></td></tr>
               </table>
             </div>
           </div>
 
-          <!-- Doc Info Table -->
-          <table class="doc-meta-table">
-            <tr>
-              <td class="lbl">Report No.</td>
-              <td class="val mono" id="prev_reportNo">-</td>
-              <td class="lbl">Customer</td>
-              <td class="val" id="prev_customer">-</td>
-              <td class="lbl">Part Name</td>
-              <td class="val bold" id="prev_partName">OUTPUT SHAFT</td>
-            </tr>
-            <tr>
-              <td class="lbl">SSC ID</td>
-              <td class="val mono bold" style="color: var(--primary);" id="prev_sscId">-</td>
-              <td class="lbl">Job No.</td>
-              <td class="val" id="prev_jobNo">-</td>
-              <td class="lbl">Model Unit</td>
-              <td class="val" id="prev_modelUnit">HT051</td>
-            </tr>
-            <tr>
-              <td class="lbl">Type</td>
-              <td class="val" id="prev_inspectionType">Pre</td>
-              <td class="lbl">Quote No.</td>
-              <td class="val" id="prev_quoteNo">-</td>
-              <td class="lbl">Part No.</td>
-              <td class="val" id="prev_partNo">-</td>
-            </tr>
-          </table>
-
-          <!-- Overall Status Stamp -->
-          <div class="doc-stamp-container">
-            <div class="doc-stamp badge-green" id="prev_stamp">ACCEPTED</div>
-          </div>
-
-          <!-- Dimensional Summary Table -->
-          <div class="doc-section-head">I. PEMERIKSAAN DIMENSI (DIMENSIONAL INSPECTION)</div>
-          <table class="doc-table">
-            <thead>
-              <tr>
-                <th style="width: 35px;">No</th>
-                <th>Area / Bagian Ukur</th>
-                <th>Target Spec (mm)</th>
-                <th>X (mm)</th>
-                <th>Y (mm)</th>
-                <th>Z (mm)</th>
-                <th style="width: 50px;">A / R</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>01</td>
-                <td>OD Area "A" & Spline</td>
-                <td class="mono">Ø79 ± 0.25</td>
-                <td class="mono" id="prev_i1_x">-</td>
-                <td class="mono" id="prev_i1_y">-</td>
-                <td class="mono" id="prev_i1_z">-</td>
-                <td class="center bold" id="prev_i1_ar">A</td>
-              </tr>
-              <tr>
-                <td>02</td>
-                <td>OD Area "B" (Row 1)</td>
-                <td class="mono">Ø82 ± 0.25</td>
-                <td class="mono" id="prev_i2_b1_x">-</td>
-                <td class="mono" id="prev_i2_b1_y">-</td>
-                <td class="mono" id="prev_i2_b1_z">-</td>
-                <td class="center bold" id="prev_i2_b1_ar">A</td>
-              </tr>
-              <tr>
-                <td>-</td>
-                <td>OD Area "C" (Row 1)</td>
-                <td class="mono">Ø77 ± 0.25</td>
-                <td class="mono" id="prev_i2_c1_x">-</td>
-                <td class="mono" id="prev_i2_c1_y">-</td>
-                <td class="mono" id="prev_i2_c1_z">-</td>
-                <td class="center bold" id="prev_i2_c1_ar">A</td>
-              </tr>
-              <tr>
-                <td>03</td>
-                <td>OD Area "D"</td>
-                <td class="mono">Ø118 ± 0.5</td>
-                <td class="mono" id="prev_i3_d_x">-</td>
-                <td class="mono" id="prev_i3_d_y">-</td>
-                <td class="mono" id="prev_i3_d_z">-</td>
-                <td class="center bold" id="prev_i3_d_ar">A</td>
-              </tr>
-              <tr>
-                <td>04</td>
-                <td>OD Area "F" (Row 1)</td>
-                <td class="mono">Ø100.01 ± 0.008</td>
-                <td class="mono" id="prev_i4_f1_x">-</td>
-                <td class="mono" id="prev_i4_f1_y">-</td>
-                <td class="mono" id="prev_i4_f1_z">-</td>
-                <td class="center bold" id="prev_i4_f1_ar">A</td>
-              </tr>
-              <tr>
-                <td>05</td>
-                <td>OD Area "H" (Row 1)</td>
-                <td class="mono">Ø94 ± 0.013</td>
-                <td class="mono" id="prev_i5_h1_x">-</td>
-                <td class="mono" id="prev_i5_h1_y">-</td>
-                <td class="mono" id="prev_i5_h1_z">-</td>
-                <td class="center bold" id="prev_i5_h1_ar">A</td>
-              </tr>
-              <tr>
-                <td>06</td>
-                <td>OD Area "G" & Spline</td>
-                <td class="mono">Ø84.2 ± 0.13</td>
-                <td class="mono" id="prev_i6_x">-</td>
-                <td class="mono" id="prev_i6_y">-</td>
-                <td class="mono" id="prev_i6_z">-</td>
-                <td class="center bold" id="prev_i6_ar">A</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <!-- TIR / Runout Table -->
-          <div class="doc-section-head" style="margin-top: 0.6rem;">II. PENGUKURAN RUNOUT (TIR) &mdash; DATUM AT B & E</div>
-          <table class="doc-table">
-            <thead>
-              <tr>
-                <th>Titik Ukur</th>
-                <th>A</th>
-                <th>B</th>
-                <th>C</th>
-                <th>D</th>
-                <th>E</th>
-                <th>F</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Hasil Max</strong></td>
-                <td class="mono" id="prev_tir_a">-</td>
-                <td class="mono" id="prev_tir_b">-</td>
-                <td class="mono" id="prev_tir_c">-</td>
-                <td class="mono" id="prev_tir_d">-</td>
-                <td class="mono" id="prev_tir_e">-</td>
-                <td class="mono" id="prev_tir_f">-</td>
-              </tr>
-              <tr>
-                <td><strong>Status A/R</strong></td>
-                <td class="center bold" id="prev_tir_a_ar">A</td>
-                <td class="center bold" id="prev_tir_b_ar">A</td>
-                <td class="center bold" id="prev_tir_c_ar">A</td>
-                <td class="center bold" id="prev_tir_d_ar">A</td>
-                <td class="center bold" id="prev_tir_e_ar">A</td>
-                <td class="center bold" id="prev_tir_f_ar">A</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <!-- Visual & Photos Grid inside Document Preview -->
-          <div class="doc-section-head" style="margin-top: 0.6rem;">III. DOKUMENTASI FOTO PEMERIKSAAN & NDT (LIQUID PENETRANT CHECK)</div>
-          <div class="doc-photo-gallery">
-            <div class="doc-photo-slot">
-              <div class="doc-photo-wrapper" id="prev_img_item01">
-                <span class="no-photo-txt">Belum Ada Foto Area A</span>
-              </div>
-              <div class="doc-photo-caption">Area A & Spline</div>
+          <!-- Info Grid -->
+          <div class="doc-info-grid">
+            <div class="doc-info-row">
+              <div class="dic"><span class="lbl">No.</span></div><div class="dic val mono" id="prev_reportNo">-</div>
+              <div class="dic"><span class="lbl">Date</span></div><div class="dic val" id="prev_metaDate2">-</div>
+              <div class="dic"><span class="lbl">Customer</span></div><div class="dic val" id="prev_customer">-</div>
+              <div class="dic"><span class="lbl">Part Name</span></div><div class="dic val bold" id="prev_partName">OUTPUT SHAFT</div>
+              <div class="dic center" id="prev_preCheck">Pre &#9744;</div>
+              <div class="dic center" id="prev_postCheck">Post &#9744;</div>
             </div>
-            <div class="doc-photo-slot">
-              <div class="doc-photo-wrapper" id="prev_img_item02">
-                <span class="no-photo-txt">Belum Ada Foto Area B/C</span>
-              </div>
-              <div class="doc-photo-caption">Area B & C</div>
-            </div>
-            <div class="doc-photo-slot">
-              <div class="doc-photo-wrapper" id="prev_img_penetrant">
-                <span class="no-photo-txt">Belum Ada Foto Penetrant</span>
-              </div>
-              <div class="doc-photo-caption" style="color: #b91c1c; font-weight:600;">Dye Penetrant Crack Test</div>
-            </div>
-            <div class="doc-photo-slot">
-              <div class="doc-photo-wrapper" id="prev_img_defect">
-                <span class="no-photo-txt">Belum Ada Foto Dial/Cacat</span>
-              </div>
-              <div class="doc-photo-caption">Dial Indicator / Temuan</div>
+            <div class="doc-info-row doc-info-row-2">
+              <div class="dic bold">SSC ID</div><div class="dic val mono bold" id="prev_sscId" style="color:#1e3a8a;">-</div>
+              <div class="dic">Job No.</div><div class="dic val" id="prev_jobNo">-</div>
+              <div class="dic">Model/Unit</div><div class="dic val" id="prev_modelUnit">-</div>
+              <div class="dic">Quote No.</div><div class="dic val" id="prev_quoteNo">-</div>
+              <div class="dic">Part No. <span id="prev_partNo" style="font-weight:400;">-</span></div>
             </div>
           </div>
 
-          <!-- Recommendations Table -->
-          <div class="doc-section-head" style="margin-top: 0.6rem;">IV. TEMUAN & REKOMENDASI TINDAKAN MUTU</div>
-          <table class="doc-table">
+          <!-- FINDING SECTION -->
+          <div class="doc-section-banner">FINDING &mdash; DRAWING / PICTURES / DIMENSION</div>
+          <table class="doc-finding-table">
             <thead>
-              <tr>
-                <th style="width: 40px;">No</th>
-                <th>Remarks / Kondisi Bagian</th>
-                <th>Rekomendasi Tindakan</th>
-              </tr>
+              <tr><th style="width:28px;">NO</th><th style="width:38%;">IMAGE</th><th>DESCRIPTION</th></tr>
             </thead>
-            <tbody id="prev_recTableBody">
+            <tbody>
               <tr>
-                <td>01</td>
-                <td>Cleaning and polish OD area "A"</td>
-                <td>Cleaning and polish OD area "A"</td>
+                <td class="center">01</td>
+                <td>
+                  <div class="doc-photo-wrapper" style="height:80px;" id="prev_img_full">
+                    <span class="no-photo-txt">Full image received component OUTPUT SHAFT</span>
+                  </div>
+                </td>
+                <td id="prev_finding_desc" style="font-size:0.68rem; vertical-align:top; padding:3px;">
+                  <span style="color:#9ca3af; font-style:italic;">&#8212; Temuan akan muncul dari tab Rekomendasi &#8212;</span>
+                </td>
               </tr>
             </tbody>
           </table>
 
-          <!-- Signatures Table -->
+          <!-- ITEM 01 — OD Area "A" and OD Spline -->
+          <div class="doc-insp-section">
+            <div class="doc-insp-header">
+              <div class="doc-insp-hdr-left">01 | OD Area "A" and OD Spline</div>
+              <div class="doc-insp-hdr-right">Actual Measurement &mdash; OD Spline</div>
+            </div>
+            <div class="doc-insp-body">
+              <div class="doc-insp-photo-col">
+                <div class="doc-photo-wrapper" id="prev_img_item01"><span class="no-photo-txt">Image of OD Area "A" and OD Spline</span></div>
+                <div class="doc-photo-caption">Image of OD Area "A" and OD Spline</div>
+              </div>
+              <div class="doc-insp-meas-col">
+                <table class="doc-meas-table">
+                  <thead><tr><th>Item</th><th>Spec</th><th>X</th><th>Y</th><th>Z</th><th>A/R</th></tr></thead>
+                  <tbody>
+                    <tr><td>OD Area "A"</td><td>O79 &plusmn; 0,25</td><td id="prev_i1_x">-</td><td id="prev_i1_y">-</td><td id="prev_i1_z">-</td><td class="center bold" id="prev_i1_ar">A</td></tr>
+                    <tr><td>Actual Length L</td><td>N/A</td><td colspan="3" id="prev_i1_len">-</td><td>-</td></tr>
+                  </tbody>
+                </table>
+                <div class="doc-insp-remark">Remarks: <span id="prev_i1_rem">Actual measurement OD area "A" in good condition</span></div>
+              </div>
+            </div>
+            <div class="doc-penetrant-row">
+              <div class="doc-penet-left">
+                <div class="doc-ar-legend">A : Accept &nbsp;|&nbsp; R : Reject</div>
+                <div class="doc-photo-wrapper" style="height:68px;" id="prev_img_penet01"><span class="no-photo-txt">Penetrant Check OD Area "A"</span></div>
+                <div class="doc-photo-caption">Penetrant Check OD Area "A" and OD Spline</div>
+              </div>
+              <div class="doc-penet-right">
+                <div class="doc-penet-remark" id="prev_i1_prem">No indication crack at OD area "A" and OD spline after penetrant check</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ITEM 02 — OD Area "B and C" -->
+          <div class="doc-insp-section">
+            <div class="doc-insp-header">
+              <div class="doc-insp-hdr-left">02 | OD Area "B and C"</div>
+              <div class="doc-insp-hdr-right">Actual Measurement</div>
+            </div>
+            <div class="doc-insp-body">
+              <div class="doc-insp-photo-col">
+                <div class="doc-photo-wrapper" id="prev_img_item02"><span class="no-photo-txt">Image of OD Area "B and C"</span></div>
+                <div class="doc-photo-caption">Image of OD Area "B and C"</div>
+              </div>
+              <div class="doc-insp-meas-col">
+                <table class="doc-meas-table">
+                  <thead><tr><th>Item</th><th>Spec</th><th>X</th><th>Y</th><th>Z</th><th>A/R</th></tr></thead>
+                  <tbody>
+                    <tr><td>B &mdash; Row 1</td><td>O82 &plusmn; 0,25</td><td id="prev_i2_b1_x">-</td><td id="prev_i2_b1_y">-</td><td id="prev_i2_b1_z">-</td><td class="center bold" id="prev_i2_b1_ar">A</td></tr>
+                    <tr><td>B &mdash; Row 2</td><td>O82 &plusmn; 0,25</td><td id="prev_i2_b2_x">-</td><td id="prev_i2_b2_y">-</td><td id="prev_i2_b2_z">-</td><td class="center bold" id="prev_i2_b2_ar">A</td></tr>
+                    <tr><td>B &mdash; Row 3</td><td>O82 &plusmn; 0,25</td><td id="prev_i2_b3_x">-</td><td id="prev_i2_b3_y">-</td><td id="prev_i2_b3_z">-</td><td class="center bold" id="prev_i2_b3_ar">A</td></tr>
+                    <tr><td>C &mdash; Row 1</td><td>O77 &plusmn; 0,25</td><td id="prev_i2_c1_x">-</td><td id="prev_i2_c1_y">-</td><td id="prev_i2_c1_z">-</td><td class="center bold" id="prev_i2_c1_ar">A</td></tr>
+                    <tr><td>C &mdash; Row 2</td><td>O77 &plusmn; 0,25</td><td id="prev_i2_c2_x">-</td><td id="prev_i2_c2_y">-</td><td id="prev_i2_c2_z">-</td><td class="center bold" id="prev_i2_c2_ar">A</td></tr>
+                    <tr><td>C &mdash; Row 3</td><td>O77 &plusmn; 0,25</td><td id="prev_i2_c3_x">-</td><td id="prev_i2_c3_y">-</td><td id="prev_i2_c3_z">-</td><td class="center bold" id="prev_i2_c3_ar">A</td></tr>
+                  </tbody>
+                </table>
+                <div class="doc-insp-remark">Remarks: <span id="prev_i2_rem">Actual measurement OD area "B and C" in good condition</span></div>
+              </div>
+            </div>
+            <div class="doc-penetrant-row">
+              <div class="doc-penet-left">
+                <div class="doc-ar-legend">A : Accept &nbsp;|&nbsp; R : Reject</div>
+                <div class="doc-photo-wrapper" style="height:68px;" id="prev_img_penet02"><span class="no-photo-txt">Penetrant Check OD Area "B and C"</span></div>
+                <div class="doc-photo-caption">Penetrant Check OD Area "B and C"</div>
+              </div>
+              <div class="doc-penet-right">
+                <div class="doc-penet-remark" id="prev_i2_prem">No indication crack at OD Area "B and C" after penetrant check</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ITEM 03 — OD Area "D" -->
+          <div class="doc-insp-section">
+            <div class="doc-insp-header">
+              <div class="doc-insp-hdr-left">03 | OD Area "D"</div>
+              <div class="doc-insp-hdr-right">Actual Measurement</div>
+            </div>
+            <div class="doc-insp-body">
+              <div class="doc-insp-photo-col">
+                <div class="doc-photo-wrapper" id="prev_img_item03"><span class="no-photo-txt">Image of OD Area "D"</span></div>
+                <div class="doc-photo-caption">Image of OD Area "D"</div>
+              </div>
+              <div class="doc-insp-meas-col">
+                <table class="doc-meas-table">
+                  <thead><tr><th>Item</th><th>Spec</th><th>X</th><th>Y</th><th>Z</th><th>A/R</th></tr></thead>
+                  <tbody>
+                    <tr><td>OD Area "D"</td><td>O118 &plusmn; 0,5</td><td id="prev_i3_d_x">-</td><td id="prev_i3_d_y">-</td><td id="prev_i3_d_z">-</td><td class="center bold" id="prev_i3_d_ar">A</td></tr>
+                    <tr><td>Actual Distance E</td><td>13 &plusmn; 0,5</td><td id="prev_i3_e_x">-</td><td id="prev_i3_e_y">-</td><td id="prev_i3_e_z">-</td><td class="center bold" id="prev_i3_e_ar">A</td></tr>
+                  </tbody>
+                </table>
+                <div class="doc-insp-remark">Remarks: <span id="prev_i3_rem">Actual measurement OD area "D" in good condition</span></div>
+              </div>
+            </div>
+            <div class="doc-penetrant-row">
+              <div class="doc-penet-left">
+                <div class="doc-ar-legend">A : Accept &nbsp;|&nbsp; R : Reject</div>
+                <div class="doc-photo-wrapper" style="height:68px;" id="prev_img_penet03"><span class="no-photo-txt">Penetrant Check OD Area "D"</span></div>
+                <div class="doc-photo-caption">Penetrant Check OD Area "D"</div>
+              </div>
+              <div class="doc-penet-right">
+                <div class="doc-penet-remark" id="prev_i3_prem">No indication crack at OD area "D" after penetrant check</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ITEM 04 — OD Area "F" -->
+          <div class="doc-insp-section">
+            <div class="doc-insp-header">
+              <div class="doc-insp-hdr-left">04 | OD Area "F"</div>
+              <div class="doc-insp-hdr-right">Actual Measurement</div>
+            </div>
+            <div class="doc-insp-body">
+              <div class="doc-insp-photo-col">
+                <div class="doc-photo-wrapper" id="prev_img_item04"><span class="no-photo-txt">Image of OD Area "F"</span></div>
+                <div class="doc-photo-caption">Image of OD Area "F"</div>
+              </div>
+              <div class="doc-insp-meas-col">
+                <table class="doc-meas-table">
+                  <thead><tr><th>Item</th><th>Spec</th><th>X</th><th>Y</th><th>Z</th><th>A/R</th></tr></thead>
+                  <tbody>
+                    <tr><td>F &mdash; Row 1</td><td>O100,01 &plusmn; 0,008</td><td id="prev_i4_f1_x">-</td><td id="prev_i4_f1_y">-</td><td id="prev_i4_f1_z">-</td><td class="center bold" id="prev_i4_f1_ar">A</td></tr>
+                    <tr><td>F &mdash; Row 2</td><td>O100,01 &plusmn; 0,008</td><td id="prev_i4_f2_x">-</td><td id="prev_i4_f2_y">-</td><td id="prev_i4_f2_z">-</td><td class="center bold" id="prev_i4_f2_ar">A</td></tr>
+                    <tr><td>F &mdash; Row 3</td><td>O100,01 &plusmn; 0,008</td><td id="prev_i4_f3_x">-</td><td id="prev_i4_f3_y">-</td><td id="prev_i4_f3_z">-</td><td class="center bold" id="prev_i4_f3_ar">A</td></tr>
+                    <tr><td>Actual Distance K</td><td>N/A</td><td colspan="3" id="prev_i4_k">-</td><td>-</td></tr>
+                  </tbody>
+                </table>
+                <div class="doc-insp-remark">Remarks: <span id="prev_i4_rem">Actual measurement OD area "F" in good condition</span></div>
+              </div>
+            </div>
+            <div class="doc-penetrant-row">
+              <div class="doc-penet-left">
+                <div class="doc-ar-legend">A : Accept &nbsp;|&nbsp; R : Reject</div>
+                <div class="doc-photo-wrapper" style="height:68px;" id="prev_img_penet04"><span class="no-photo-txt">Penetrant Check OD Area "F"</span></div>
+                <div class="doc-photo-caption">Penetrant Check OD Area "F"</div>
+              </div>
+              <div class="doc-penet-right">
+                <div class="doc-penet-remark" id="prev_i4_prem">No indication crack at area OD area "F" after penetrant check</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ITEM 05 — OD Area "H" -->
+          <div class="doc-insp-section">
+            <div class="doc-insp-header">
+              <div class="doc-insp-hdr-left">05 | OD Area "H"</div>
+              <div class="doc-insp-hdr-right">Actual Measurement</div>
+            </div>
+            <div class="doc-insp-body">
+              <div class="doc-insp-photo-col">
+                <div class="doc-photo-wrapper" id="prev_img_item05"><span class="no-photo-txt">Image of OD Area "H"</span></div>
+                <div class="doc-photo-caption">Image of OD Area "H"</div>
+              </div>
+              <div class="doc-insp-meas-col">
+                <table class="doc-meas-table">
+                  <thead><tr><th>Item</th><th>Spec</th><th>X</th><th>Y</th><th>Z</th><th>A/R</th></tr></thead>
+                  <tbody>
+                    <tr><td>H &mdash; Row 1</td><td>O94 &plusmn; 0,013</td><td id="prev_i5_h1_x">-</td><td id="prev_i5_h1_y">-</td><td id="prev_i5_h1_z">-</td><td class="center bold" id="prev_i5_h1_ar">A</td></tr>
+                    <tr><td>H &mdash; Row 2</td><td>O94 &plusmn; 0,013</td><td id="prev_i5_h2_x">-</td><td id="prev_i5_h2_y">-</td><td id="prev_i5_h2_z">-</td><td class="center bold" id="prev_i5_h2_ar">A</td></tr>
+                    <tr><td>H &mdash; Row 3</td><td>O94 &plusmn; 0,013</td><td id="prev_i5_h3_x">-</td><td id="prev_i5_h3_y">-</td><td id="prev_i5_h3_z">-</td><td class="center bold" id="prev_i5_h3_ar">A</td></tr>
+                    <tr><td>Actual Distance J</td><td>N/A</td><td colspan="3" id="prev_i5_j">-</td><td>-</td></tr>
+                  </tbody>
+                </table>
+                <div class="doc-insp-remark">Remarks: <span id="prev_i5_rem">Actual measurement OD area "H" in good condition</span></div>
+              </div>
+            </div>
+            <div class="doc-penetrant-row">
+              <div class="doc-penet-left">
+                <div class="doc-ar-legend">A : Accept &nbsp;|&nbsp; R : Reject</div>
+                <div class="doc-photo-wrapper" style="height:68px;" id="prev_img_penet05"><span class="no-photo-txt">Penetrant Check OD Area "H"</span></div>
+                <div class="doc-photo-caption">Penetrant Check OD Area "H"</div>
+              </div>
+              <div class="doc-penet-right">
+                <div class="doc-penet-remark" id="prev_i5_prem">No indication crack at area OD area "H" after penetrant check</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ITEM 06 — OD Area "G" and OD Spline -->
+          <div class="doc-insp-section">
+            <div class="doc-insp-header">
+              <div class="doc-insp-hdr-left">06 | OD Area "G" and OD Spline</div>
+              <div class="doc-insp-hdr-right">Actual Measurement &mdash; OD Spline</div>
+            </div>
+            <div class="doc-insp-body">
+              <div class="doc-insp-photo-col">
+                <div class="doc-photo-wrapper" id="prev_img_item06"><span class="no-photo-txt">Image of OD Area "G" and OD Spline</span></div>
+                <div class="doc-photo-caption">Image of OD Area "G" and OD Spline</div>
+              </div>
+              <div class="doc-insp-meas-col">
+                <table class="doc-meas-table">
+                  <thead><tr><th>Item</th><th>Spec</th><th>X</th><th>Y</th><th>Z</th><th>A/R</th></tr></thead>
+                  <tbody>
+                    <tr><td>OD Area "G"</td><td>O84,2 &plusmn; 0,13</td><td id="prev_i6_x">-</td><td id="prev_i6_y">-</td><td id="prev_i6_z">-</td><td class="center bold" id="prev_i6_ar">A</td></tr>
+                    <tr><td>Actual Distance I</td><td>N/A</td><td colspan="3" id="prev_i6_i">-</td><td>-</td></tr>
+                  </tbody>
+                </table>
+                <div class="doc-insp-remark">Remarks: <span id="prev_i6_rem">Actual measurement OD area "G" and OD spline in good condition</span></div>
+              </div>
+            </div>
+            <div class="doc-penetrant-row">
+              <div class="doc-penet-left">
+                <div class="doc-ar-legend">A : Accept &nbsp;|&nbsp; R : Reject</div>
+                <div class="doc-photo-wrapper" style="height:68px;" id="prev_img_penet06"><span class="no-photo-txt">Penetrant Check Area OD Spline</span></div>
+                <div class="doc-photo-caption">Penetrant Check Area OD Spline</div>
+              </div>
+              <div class="doc-penet-right">
+                <div class="doc-penet-remark" id="prev_i6_prem">No indication crack at area OD spline after penetrant check</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHECK TIR -->
+          <div class="doc-tir-section">
+            <div class="doc-section-banner">CHECK TIR &mdash; TOTAL INDICATOR READING</div>
+            <div class="doc-tir-info">
+              <span><strong>Datum at item "B and E"</strong></span>
+              <span>Spec: Max 0,2 mm</span>
+            </div>
+            <table class="doc-tir-table">
+              <thead>
+                <tr>
+                  <th style="width:40px;">Item</th><th>Spec</th><th>0&deg;</th><th>90&deg;</th><th>180&deg;</th><th>270&deg;</th><th style="width:38px;">A/R</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="bold">A</td><td>Max 0,2</td><td id="prev_tir_a_0">-</td><td id="prev_tir_a_90">-</td><td id="prev_tir_a_180">-</td><td id="prev_tir_a_270">-</td><td class="center bold" id="prev_tir_a_ar">A</td></tr>
+                <tr><td class="bold">B</td><td>Max 0,2</td><td id="prev_tir_b_0">-</td><td id="prev_tir_b_90">-</td><td id="prev_tir_b_180">-</td><td id="prev_tir_b_270">-</td><td class="center bold" id="prev_tir_b_ar">A</td></tr>
+                <tr><td class="bold">C</td><td>Max 0,2</td><td id="prev_tir_c_0">-</td><td id="prev_tir_c_90">-</td><td id="prev_tir_c_180">-</td><td id="prev_tir_c_270">-</td><td class="center bold" id="prev_tir_c_ar">A</td></tr>
+                <tr><td class="bold">D</td><td>Max 0,2</td><td id="prev_tir_d_0">-</td><td id="prev_tir_d_90">-</td><td id="prev_tir_d_180">-</td><td id="prev_tir_d_270">-</td><td class="center bold" id="prev_tir_d_ar">A</td></tr>
+                <tr><td class="bold">E</td><td>Max 0,2</td><td id="prev_tir_e_0">-</td><td id="prev_tir_e_90">-</td><td id="prev_tir_e_180">-</td><td id="prev_tir_e_270">-</td><td class="center bold" id="prev_tir_e_ar">A</td></tr>
+                <tr><td class="bold">F</td><td>Max 0,2</td><td id="prev_tir_f_0">-</td><td id="prev_tir_f_90">-</td><td id="prev_tir_f_180">-</td><td id="prev_tir_f_270">-</td><td class="center bold" id="prev_tir_f_ar">A</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- RECOMMENDATION TABLE -->
+          <div class="doc-rec-section">
+            <div class="doc-section-banner">RECOMENDATION</div>
+            <table class="doc-rec-table">
+              <thead>
+                <tr><th style="width:28px;">NO</th><th>DESCRIPTION</th><th>Remarks</th><th>Recomendation</th></tr>
+              </thead>
+              <tbody id="prev_recTableBody">
+                <tr><td class="center">01</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Signatures -->
           <div class="doc-sig-grid">
             <div class="doc-sig-col">
               <div class="sig-header">Checked by:</div>
@@ -1091,3 +1181,4 @@
 @section('scripts')
   <script src="{{ asset('js/app.js') }}"></script>
 @endsection
+
