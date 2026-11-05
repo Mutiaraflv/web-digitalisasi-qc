@@ -183,7 +183,24 @@ function setupLivePreviewSync() {
 }
 
 function updateLivePreview() {
-    // 1. General Info
+    // 1. General & Document Control
+    const docNo = document.getElementById('g_docNo')?.value || 'FORM-QC-002';
+    const rev = document.getElementById('g_rev')?.value || '04';
+    const responsibility = document.getElementById('g_responsibility')?.value || 'QC Inspector';
+    const effectiveDate = document.getElementById('g_effectiveDate')?.value || '-';
+    const page = document.getElementById('g_page')?.value || '1';
+
+    setPreviewText('prev_docNo', docNo);
+    setPreviewText('prev_rev', rev);
+    setPreviewText('prev_responsibility', responsibility);
+    setPreviewText('prev_effectiveDate', effectiveDate);
+    setPreviewText('prev_page', page);
+
+    // Top Bar badges
+    setPreviewText('top_badge_docNo', docNo);
+    setPreviewText('top_badge_rev', rev);
+
+    // Info Grid
     const sscId = document.getElementById('g_sscId')?.value || '-';
     const reportNo = document.getElementById('g_reportNo')?.value || '-';
     const date = document.getElementById('g_date')?.value || '-';
@@ -197,7 +214,6 @@ function updateLivePreview() {
 
     setPreviewText('prev_sscId', sscId);
     setPreviewText('prev_reportNo', reportNo);
-    setPreviewText('prev_metaDate', date);
     setPreviewText('prev_customer', customer);
     setPreviewText('prev_partName', partName);
     setPreviewText('prev_inspectionType', inspectionType);
@@ -577,8 +593,11 @@ function extractFormData() {
             jobNo: document.getElementById('g_jobNo')?.value || '-',
             quoteNo: document.getElementById('g_quoteNo')?.value || '-',
             partNo: document.getElementById('g_partNo')?.value || '-',
-            docNo: 'FORM-QC-002',
-            rev: '04'
+            docNo: document.getElementById('g_docNo')?.value || 'FORM-QC-002',
+            rev: document.getElementById('g_rev')?.value || '04',
+            responsibility: document.getElementById('g_responsibility')?.value || 'QC Inspector',
+            effectiveDate: document.getElementById('g_effectiveDate')?.value || '',
+            page: document.getElementById('g_page')?.value || '1'
         },
         sections: {
             item01: {

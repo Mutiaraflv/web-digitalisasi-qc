@@ -257,6 +257,9 @@ class ReportController extends Controller
         $partNo = $request->input('part_no') ?? ($g['partNo'] ?? ($g['part_no'] ?? '-'));
         $docNo = $request->input('doc_no') ?? ($g['docNo'] ?? 'FORM-QC-002');
         $rev = $request->input('rev') ?? ($g['rev'] ?? '04');
+        $responsibility = $request->input('responsibility') ?? ($g['responsibility'] ?? 'QC Inspector');
+        $effectiveDate = $request->input('effective_date') ?? ($g['effectiveDate'] ?? ($g['effective_date'] ?? null));
+        $page = $request->input('page') ?? ($g['page'] ?? '1');
 
         $sections = $request->input('sections', []);
         $tir = $request->input('tir', []);
@@ -277,6 +280,9 @@ class ReportController extends Controller
             'part_no' => trim($partNo),
             'doc_no' => trim($docNo),
             'rev' => trim($rev),
+            'responsibility' => trim($responsibility),
+            'effective_date' => $effectiveDate ?: null,
+            'page' => trim($page),
             'sections' => $sections,
             'tir' => $tir,
             'recommendations' => $recommendations,

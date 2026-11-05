@@ -433,23 +433,23 @@
           <tr>
             <td class="lbl">Document No</td>
             <td>:</td>
-            <td><strong>FORM-QC-002</strong></td>
+            <td><strong>{{ $report->doc_no ?? 'FORM-QC-002' }}</strong></td>
             <td class="lbl">Responsibility</td>
             <td>:</td>
-            <td><strong>QC Inspector</strong></td>
+            <td><strong>{{ $report->responsibility ?? 'QC Inspector' }}</strong></td>
           </tr>
           <tr>
             <td class="lbl">Effective Date.</td>
             <td>:</td>
-            <td>{{ $inspectionDate }}</td>
+            <td>{{ $report->effective_date ? \Carbon\Carbon::parse($report->effective_date)->format('d/m/Y') : ($report->date ? \Carbon\Carbon::parse($report->date)->format('d/m/Y') : date('d/m/Y')) }}</td>
             <td class="lbl">Rev.</td>
             <td>:</td>
-            <td><strong>04</strong></td>
+            <td><strong>{{ $report->rev ?? '04' }}</strong></td>
           </tr>
           <tr>
             <td class="lbl">Page</td>
             <td>:</td>
-            <td>1</td>
+            <td>{{ $report->page ?? '1' }}</td>
             <td></td>
             <td></td>
             <td></td>

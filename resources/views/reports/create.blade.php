@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', isset($isEdit) && $isEdit ? 'Edit Laporan QC' : 'Input Inspeksi Baru')
 @section('page_title', isset($isEdit) && $isEdit ? 'Edit Laporan QC' : 'Input Inspeksi Baru')
@@ -27,27 +27,27 @@
       <div class="selector-wrapper">
         <select id="componentSelect" class="form-select-lg">
           <option value="output_shaft" selected>
-            Output Shaft &mdash; FORM-QC-002 REV 04 (Aktif & Siap Digunakan)
+            Output Shaft (Poros Output &mdash; Aktif & Siap Digunakan)
           </option>
           <option value="hydraulic_cylinder" disabled>
-            Hydraulic Cylinder Rod &mdash; FORM-QC-005 (Menunggu Template Divisi Terkait)
+            Hydraulic Cylinder Rod (Menunggu Template Divisi Terkait)
           </option>
           <option value="drive_pinion" disabled>
-            Drive Pinion Gear &mdash; FORM-QC-008 (Menunggu Template Divisi Terkait)
+            Drive Pinion Gear (Menunggu Template Divisi Terkait)
           </option>
           <option value="bearing_journal" disabled>
-            Bearing Journal Sleeve &mdash; FORM-QC-011 (Menunggu Template Divisi Terkait)
+            Bearing Journal Sleeve (Menunggu Template Divisi Terkait)
           </option>
           <option value="connecting_rod" disabled>
-            Connecting Rod &mdash; FORM-QC-014 (Menunggu Template Divisi Terkait)
+            Connecting Rod (Menunggu Template Divisi Terkait)
           </option>
         </select>
-        <span class="badge badge-green" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;">Template Aktif</span>
+        <span class="badge badge-green" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;">Aktif</span>
       </div>
     </div>
     <div class="selector-meta">
-      <span class="meta-item"><i data-lucide="file-text"></i> No. Dok: <strong>FORM-QC-002</strong></span>
-      <span class="meta-item"><i data-lucide="git-branch"></i> Revisi: <strong>04</strong></span>
+      <span class="meta-item"><i data-lucide="file-text"></i> No. Dok: <strong id="top_badge_docNo">{{ $report->doc_no ?? 'FORM-QC-002' }}</strong></span>
+      <span class="meta-item"><i data-lucide="git-branch"></i> Rev: <strong id="top_badge_rev">{{ $report->rev ?? '04' }}</strong></span>
       <span class="meta-item"><i data-lucide="layout"></i> Live Preview: <strong style="color: var(--success);">Aktif</strong></span>
     </div>
   </div>
@@ -94,9 +94,47 @@
 
           <!-- TAB 1: IDENTITAS & JOB ORDER -->
           <div class="s-tab-content active" id="stab-identitas">
+
+            <!-- Kontrol Dokumen Form Header (Input Manual) -->
+            <div class="form-section-title">
+              <i data-lucide="file-check"></i>
+              <h4>1. Kontrol Dokumen Standar (Document Control)</h4>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-subtle); margin-bottom: 0.75rem;">
+              Parameter nomor formulir, revisi, dan penanggung jawab dapat disesuaikan manual sesuai ketentuan dokumen mutu perusahaan.
+            </p>
+
+            <div class="form-grid-2" style="background: #f8fafc; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
+              <div class="form-group">
+                <label>Document No (Nomor Dokumen)</label>
+                <input type="text" id="g_docNo" class="mono-input" placeholder="FORM-QC-002" value="{{ $report->doc_no ?? 'FORM-QC-002' }}">
+                <small class="helper-text">Contoh: FORM-QC-002, FORM-QC-005, dll.</small>
+              </div>
+              <div class="form-group">
+                <label>Responsibility (Tanggung Jawab)</label>
+                <input type="text" id="g_responsibility" placeholder="QC Inspector" value="{{ $report->responsibility ?? 'QC Inspector' }}">
+              </div>
+              <div class="form-group">
+                <label>Effective Date. (Tanggal Berlaku Dokumen)</label>
+                <input type="date" id="g_effectiveDate" value="{{ $report && $report->effective_date ? \Carbon\Carbon::parse($report->effective_date)->format('Y-m-d') : date('Y-m-d') }}">
+              </div>
+              <div class="form-group">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                  <div>
+                    <label>Rev. (Revisi)</label>
+                    <input type="text" id="g_rev" class="mono-input" placeholder="04" value="{{ $report->rev ?? '04' }}">
+                  </div>
+                  <div>
+                    <label>Page (Halaman)</label>
+                    <input type="text" id="g_page" class="mono-input" placeholder="1" value="{{ $report->page ?? '1' }}">
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="form-section-title">
               <i data-lucide="clipboard-list"></i>
-              <h4>Identitas Inspeksi & Order Kerja</h4>
+              <h4>2. Identitas Komponen & Order Kerja</h4>
             </div>
 
             <div class="form-grid-2">
@@ -125,8 +163,8 @@
                 <input type="text" id="g_customer" placeholder="Nama Perusahaan Pelanggan" value="{{ $report->customer ?? '' }}">
               </div>
               <div class="form-group">
-                <label>Nama Komponen</label>
-                <input type="text" id="g_partName" value="{{ $report->part_name ?? 'OUTPUT SHAFT' }}" readonly style="background: #f8fafc;">
+                <label>Nama Komponen (Part Name)</label>
+                <input type="text" id="g_partName" value="{{ $report->part_name ?? 'OUTPUT SHAFT' }}" placeholder="OUTPUT SHAFT">
               </div>
               <div class="form-group">
                 <label>Model Unit</label>
@@ -143,10 +181,6 @@
               <div class="form-group">
                 <label>Part No.</label>
                 <input type="text" id="g_partNo" placeholder="-" value="{{ $report->part_no ?? '-' }}">
-              </div>
-              <div class="form-group">
-                <label>No. Dokumen Standar</label>
-                <input type="text" id="g_docNo" value="FORM-QC-002" readonly style="background: #f8fafc;">
               </div>
             </div>
           </div>
@@ -848,9 +882,30 @@
             </div>
             <div class="doc-header-meta">
               <table>
-                <tr><td>Document No</td><td>:</td><td class="bold">FORM-QC-002</td><td>Responsibility</td><td>:</td><td>QC Inspector</td></tr>
-                <tr><td>Effective Date.</td><td>:</td><td id="prev_metaDate">-</td><td>Rev.</td><td>:</td><td class="bold">04</td></tr>
-                <tr><td>Page</td><td>:</td><td>1</td><td></td><td></td><td></td></tr>
+                <tr>
+                  <td>Document No</td>
+                  <td>:</td>
+                  <td class="bold" id="prev_docNo">FORM-QC-002</td>
+                  <td>Responsibility</td>
+                  <td>:</td>
+                  <td id="prev_responsibility">QC Inspector</td>
+                </tr>
+                <tr>
+                  <td>Effective Date.</td>
+                  <td>:</td>
+                  <td id="prev_effectiveDate">-</td>
+                  <td>Rev.</td>
+                  <td>:</td>
+                  <td class="bold" id="prev_rev">04</td>
+                </tr>
+                <tr>
+                  <td>Page</td>
+                  <td>:</td>
+                  <td id="prev_page">1</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
               </table>
             </div>
           </div>

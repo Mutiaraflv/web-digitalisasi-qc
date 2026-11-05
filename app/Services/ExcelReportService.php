@@ -91,6 +91,10 @@ class ExcelReportService
         }
 
         // 1. General Header
+        if ($report->doc_no !== null) $xml = self::setCellValue($xml, 'AF3', $report->doc_no);
+        if ($report->rev !== null) $xml = self::setCellValue($xml, 'AK4', 'Rev. ' . $report->rev);
+        if (!empty($report->responsibility)) $xml = self::setCellValue($xml, 'AX3', $report->responsibility);
+        if (!empty($report->page)) $xml = self::setCellValue($xml, 'AX4', $report->page);
         if ($report->report_no !== null) $xml = self::setCellValue($xml, 'H5', $report->report_no);
         if ($report->date) {
             $dateSerial = self::dateToSerial($report->date instanceof DateTime ? $report->date->format('Y-m-d') : (string) $report->date);
