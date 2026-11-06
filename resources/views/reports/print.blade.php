@@ -79,29 +79,35 @@
     }
     .header-table td {
       border: 1px solid #000;
-      padding: 2px 4px;
+      padding: 0;
       vertical-align: middle;
     }
     .header-logo-cell {
-      width: 38%;
-      padding: 2px 4px !important;
+      width: 37%;
+      padding: 4px 6px !important;
       text-align: center;
+      background: #fff;
     }
     .header-logo-cell img {
       max-width: 100%;
-      height: 38px;
+      height: 52px;
       object-fit: contain;
+      display: block;
+      margin: 0 auto;
     }
     .header-title-cell {
-      width: 32%;
       text-align: center;
       font-weight: 900;
-      font-size: 9.5pt;
-      letter-spacing: 0.3px;
+      font-size: 11pt;
+      letter-spacing: 0.8px;
+      padding: 6px 4px !important;
+      background: #fff;
+      color: #000;
+      border-bottom: 1px solid #000;
     }
     .header-ctrl-cell {
-      width: 30%;
       padding: 0 !important;
+      background: #fff;
     }
     .ctrl-table {
       width: 100%;
@@ -110,28 +116,71 @@
     }
     .ctrl-table td {
       border: 1px solid #000;
-      padding: 1.5px 3px;
+      padding: 2px 4px;
+      vertical-align: middle;
+    }
+    .ctrl-table .ctrl-lbl {
+      font-weight: 700;
+      background: #fff;
+      white-space: nowrap;
+    }
+    .ctrl-table .ctrl-colon {
+      width: 8px;
+      text-align: center;
+      padding: 0;
+      font-weight: 700;
+    }
+    .ctrl-table .ctrl-val {
+      background: #fff;
+    }
+    .ctrl-split-val {
+      display: flex;
+      width: 100%;
+      align-items: center;
+    }
+    .ctrl-date-part {
+      flex: 1;
+      text-align: center;
+      border-right: 1px solid #000;
+      padding: 1px 4px;
+    }
+    .ctrl-rev-part {
+      padding: 1px 8px;
+      text-align: center;
+      white-space: nowrap;
     }
 
     /* Metadata Table (Page 1) */
     .meta-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 7pt;
+      font-size: 6.8pt;
       border-bottom: 1.5px solid #000;
     }
     .meta-table td {
       border: 1px solid #000;
-      padding: 2px 4px;
+      padding: 2.5px 4px;
+      vertical-align: middle;
     }
     .meta-table .lbl {
       font-weight: 700;
-      background: #fff;
-      width: 13%;
+      background: #e2e8f0;
+      color: #000;
       white-space: nowrap;
     }
-    .meta-table .colon { width: 8px; text-align: center; padding: 0; }
-    .meta-table .val { width: 35%; font-family: Arial, sans-serif; }
+    .meta-table .colon {
+      width: 8px;
+      text-align: center;
+      padding: 0;
+      background: #e2e8f0;
+      font-weight: 700;
+      color: #000;
+    }
+    .meta-table .val {
+      background: #ffffff;
+      color: #000;
+      font-family: Arial, sans-serif;
+    }
 
     /* Section Bars */
     .bar-grey {
@@ -529,28 +578,41 @@
   ===================================================================== -->
   <div class="a4-page">
     
-    <!-- Header -->
+    <!-- Header (Kop Dokumen) -->
     <table class="header-table">
       <tr>
-        <td class="header-logo-cell">
-          <img src="{{ asset('images/doc_assets/header_ssc_logo.png') }}" alt="PT. SSC WORKS">
+        <td class="header-logo-cell" rowspan="2">
+          <img src="{{ asset('images/doc_assets/kop_logo_perfect.png') }}" alt="PT. SSC WORKS">
         </td>
         <td class="header-title-cell">
           COMPONENT CONDITION REPORT
         </td>
+      </tr>
+      <tr>
         <td class="header-ctrl-cell">
           <table class="ctrl-table">
             <tr>
-              <td><strong>Document No</strong></td><td>:</td><td><strong>{{ $report->doc_no ?? 'FORM-QC-002' }}</strong></td>
-              <td><strong>Responsibility</strong></td><td>:</td><td>{{ $report->responsibility ?? 'Quality Control' }}</td>
+              <td class="ctrl-lbl" style="width: 22%;">Document No</td>
+              <td class="ctrl-colon">:</td>
+              <td class="ctrl-val bold" style="width: 28%;">{{ $report->doc_no ?? 'FORM-QC-002' }}</td>
+              <td class="ctrl-lbl" style="width: 22%;">Responsibility</td>
+              <td class="ctrl-colon">:</td>
+              <td class="ctrl-val" style="width: 24%;">{{ $report->responsibility ?? 'Quality Control' }}</td>
             </tr>
             <tr>
-              <td><strong>Effective Date.</strong></td><td>:</td><td>{{ $effDateStr }}</td>
-              <td><strong>Rev.</strong></td><td>:</td><td><strong>{{ $report->rev ?? '04' }}</strong></td>
-            </tr>
-            <tr>
-              <td><strong>Page</strong></td><td>:</td><td><strong>1 &nbsp; of &nbsp; 6</strong></td>
-              <td></td><td></td><td></td>
+              <td class="ctrl-lbl">Effective Date.</td>
+              <td class="ctrl-colon">:</td>
+              <td class="ctrl-val" style="padding: 0;">
+                <div class="ctrl-split-val">
+                  <span class="ctrl-date-part bold">{{ $effDateStr }}</span>
+                  <span class="ctrl-rev-part">Rev. <strong>{{ $report->rev ?? '04' }}</strong></span>
+                </div>
+              </td>
+              <td class="ctrl-lbl">Page</td>
+              <td class="ctrl-colon">:</td>
+              <td class="ctrl-val" style="text-align: center; letter-spacing: 1px;">
+                <strong>1</strong> &nbsp; of &nbsp; <strong>6</strong>
+              </td>
             </tr>
           </table>
         </td>
@@ -560,24 +622,50 @@
     <!-- Metadata Grid -->
     <table class="meta-table">
       <tr>
-        <td class="lbl">No.</td><td class="colon">:</td><td class="val mono">{{ $report->report_no ?? '0742' }}</td>
-        <td class="lbl">Date</td><td class="colon">:</td><td class="val">{{ $dateStr }}</td>
-        <td class="lbl">Customer</td><td class="colon">:</td><td class="val" colspan="3">{{ $report->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}</td>
-        <td class="lbl">Part Name</td><td class="colon">:</td><td class="val bold">{{ $report->part_name ?? 'OUTPUT SHAFT' }}</td>
+        <td class="lbl" style="width: 9%;">No.</td>
+        <td class="colon">:</td>
+        <td class="val mono" style="width: 14%; text-align: center;">{{ $report->report_no ?? '0742' }}</td>
+        
+        <td class="lbl" style="width: 8%;">Date</td>
+        <td class="colon">:</td>
+        <td class="val" style="width: 13%; text-align: center;">{{ $dateStr }}</td>
+        
+        <td class="lbl" style="width: 11%;">Customer</td>
+        <td class="colon">:</td>
+        <td class="val bold" style="width: 20%; line-height: 1.25; font-size: 6.8pt;">{{ $report->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}</td>
+        
+        <td class="lbl" style="width: 10%;">Part Name</td>
+        <td class="colon">:</td>
+        <td class="val bold" style="width: 12%;">{{ $report->part_name ?? 'OUTPUT SHAFT' }}</td>
       </tr>
       <tr>
-        <td class="lbl">Inspection</td><td class="colon">:</td>
-        <td class="val">
-          {{ ($report->inspection_type ?? 'Pre') === 'Pre' ? '☑' : '☐' }} Pre &nbsp;
-          {{ ($report->inspection_type ?? '') === 'Post' ? '☑' : '☐' }} Post
+        <td class="lbl">Inspection</td>
+        <td class="colon">:</td>
+        <td class="val" colspan="4" style="padding-left: 6px;">
+          <span>{{ ($report->inspection_type ?? 'Pre') === 'Pre' ? '☑' : '☐' }} Pre</span> &nbsp;&nbsp;&nbsp;&nbsp;
+          <span>{{ ($report->inspection_type ?? '') === 'Post' ? '☑' : '☐' }} Post</span>
         </td>
-        <td class="lbl">Job No.</td><td class="colon">:</td><td class="val">{{ $report->job_no ?? '-' }}</td>
-        <td class="lbl">Model/Unit</td><td class="colon">:</td><td class="val" colspan="5">{{ $report->model_unit ?? 'HT051' }}</td>
+        
+        <td class="lbl">Job No.</td>
+        <td class="colon">:</td>
+        <td class="val">{{ $report->job_no ?? '-' }}</td>
+        
+        <td class="lbl">Model/Unit</td>
+        <td class="colon">:</td>
+        <td class="val">{{ $report->model_unit ?? 'HT051' }}</td>
       </tr>
       <tr>
-        <td class="lbl">SSC ID</td><td class="colon">:</td><td class="val mono bold">{{ $report->ssc_id }}</td>
-        <td class="lbl">Quote No.</td><td class="colon">:</td><td class="val">{{ $report->quote_no ?? '-' }}</td>
-        <td class="lbl">Part No.</td><td class="colon">:</td><td class="val" colspan="5">{{ $report->part_no ?? '-' }}</td>
+        <td class="lbl">SSC ID</td>
+        <td class="colon">:</td>
+        <td class="val mono bold" colspan="4" style="padding-left: 6px;">{{ $report->ssc_id }}</td>
+        
+        <td class="lbl">Quote No.</td>
+        <td class="colon">:</td>
+        <td class="val">{{ $report->quote_no ?? '-' }}</td>
+        
+        <td class="lbl">Part No.</td>
+        <td class="colon">:</td>
+        <td class="val">{{ $report->part_no ?? '-' }}</td>
       </tr>
     </table>
 

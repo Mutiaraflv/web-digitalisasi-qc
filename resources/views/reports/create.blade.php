@@ -1736,26 +1736,39 @@
         ============================================================== -->
         <div class="sheet-paper preview-sheet" id="prev_sheet_1">
           <div class="sheet-page-indicator">Halaman 1 dari 6</div>
-          <!-- Header -->
+          <!-- Header (Kop Dokumen) -->
           <table class="p-header-table">
             <tr>
-              <td class="p-logo-cell">
-                <img src="{{ asset('images/doc_assets/header_ssc_logo.png') }}" alt="PT. SSC WORKS">
+              <td class="p-logo-cell" rowspan="2">
+                <img src="{{ asset('images/doc_assets/kop_logo_perfect.png') }}" alt="PT. SSC WORKS">
               </td>
               <td class="p-title-cell">COMPONENT CONDITION REPORT</td>
+            </tr>
+            <tr>
               <td class="p-ctrl-cell">
                 <table class="p-ctrl-table">
                   <tr>
-                    <td><strong>Document No</strong></td><td>:</td><td><strong id="prev_docNo">FORM-QC-002</strong></td>
-                    <td><strong>Responsibility</strong></td><td>:</td><td id="prev_responsibility">Quality Control</td>
+                    <td class="ctrl-lbl" style="width: 22%;">Document No</td>
+                    <td class="ctrl-colon">:</td>
+                    <td class="ctrl-val bold" style="width: 28%;" id="prev_docNo">{{ $report->doc_no ?? 'FORM-QC-002' }}</td>
+                    <td class="ctrl-lbl" style="width: 22%;">Responsibility</td>
+                    <td class="ctrl-colon">:</td>
+                    <td class="ctrl-val" style="width: 24%;" id="prev_responsibility">{{ $report->responsibility ?? 'Quality Control' }}</td>
                   </tr>
                   <tr>
-                    <td><strong>Effective Date.</strong></td><td>:</td><td id="prev_effectiveDate">28-Jan-2022</td>
-                    <td><strong>Rev.</strong></td><td>:</td><td><strong id="prev_rev">04</strong></td>
-                  </tr>
-                  <tr>
-                    <td><strong>Page</strong></td><td>:</td><td><strong id="prev_page">1 &nbsp; of &nbsp; 6</strong></td>
-                    <td></td><td></td><td></td>
+                    <td class="ctrl-lbl">Effective Date.</td>
+                    <td class="ctrl-colon">:</td>
+                    <td class="ctrl-val" style="padding: 0;">
+                      <div class="ctrl-split-val">
+                        <span class="ctrl-date-part bold" id="prev_effectiveDate">{{ $effDateStr ?? '28-Jan-2022' }}</span>
+                        <span class="ctrl-rev-part">Rev. <strong id="prev_rev">{{ $report->rev ?? '04' }}</strong></span>
+                      </div>
+                    </td>
+                    <td class="ctrl-lbl">Page</td>
+                    <td class="ctrl-colon">:</td>
+                    <td class="ctrl-val" style="text-align: center; letter-spacing: 1px;" id="prev_page">
+                      <strong>1</strong> &nbsp; of &nbsp; <strong>6</strong>
+                    </td>
                   </tr>
                 </table>
               </td>
@@ -1765,24 +1778,50 @@
           <!-- Metadata Grid -->
           <table class="p-meta-table">
             <tr>
-              <td class="lbl">No.</td><td class="col-c">:</td><td class="val mono" id="prev_reportNo">0742</td>
-              <td class="lbl">Date</td><td class="col-c">:</td><td class="val" id="prev_metaDate">17-Oct-26</td>
-              <td class="lbl">Customer</td><td class="col-c">:</td><td class="val" colspan="3" id="prev_customer">AMMAN MINERAL NUSA TENGGARA, PT</td>
-              <td class="lbl">Part Name</td><td class="col-c">:</td><td class="val bold" id="prev_partName">OUTPUT SHAFT</td>
+              <td class="lbl" style="width: 9%;">No.</td>
+              <td class="col-c">:</td>
+              <td class="val mono" style="width: 14%; text-align: center;" id="prev_reportNo">{{ $report->report_no ?? '0742' }}</td>
+              
+              <td class="lbl" style="width: 8%;">Date</td>
+              <td class="col-c">:</td>
+              <td class="val" style="width: 13%; text-align: center;" id="prev_metaDate">{{ $dateStr }}</td>
+              
+              <td class="lbl" style="width: 11%;">Customer</td>
+              <td class="col-c">:</td>
+              <td class="val bold" style="width: 20%; line-height: 1.25; font-size: 6.8pt;" id="prev_customer">{{ $report->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}</td>
+              
+              <td class="lbl" style="width: 10%;">Part Name</td>
+              <td class="col-c">:</td>
+              <td class="val bold" style="width: 12%;" id="prev_partName">{{ $report->part_name ?? 'OUTPUT SHAFT' }}</td>
             </tr>
             <tr>
-              <td class="lbl">Inspection</td><td class="col-c">:</td>
-              <td class="val">
-                <span id="prev_preCheck">&#9745; Pre</span> &nbsp;
+              <td class="lbl">Inspection</td>
+              <td class="col-c">:</td>
+              <td class="val" colspan="4" style="padding-left: 6px;">
+                <span id="prev_preCheck">&#9745; Pre</span> &nbsp;&nbsp;&nbsp;&nbsp;
                 <span id="prev_postCheck">&#9744; Post</span>
               </td>
-              <td class="lbl">Job No.</td><td class="col-c">:</td><td class="val" id="prev_jobNo">-</td>
-              <td class="lbl">Model/Unit</td><td class="col-c">:</td><td class="val" colspan="5" id="prev_modelUnit">HT051</td>
+              
+              <td class="lbl">Job No.</td>
+              <td class="col-c">:</td>
+              <td class="val" id="prev_jobNo">{{ $report->job_no ?? '-' }}</td>
+              
+              <td class="lbl">Model/Unit</td>
+              <td class="col-c">:</td>
+              <td class="val" id="prev_modelUnit">{{ $report->model_unit ?? 'HT051' }}</td>
             </tr>
             <tr>
-              <td class="lbl">SSC ID</td><td class="col-c">:</td><td class="val mono bold" id="prev_sscId" style="color:#1e3a8a;">SSC SBY-5778</td>
-              <td class="lbl">Quote No.</td><td class="col-c">:</td><td class="val" id="prev_quoteNo">-</td>
-              <td class="lbl">Part No.</td><td class="col-c">:</td><td class="val" colspan="5" id="prev_partNo">-</td>
+              <td class="lbl">SSC ID</td>
+              <td class="col-c">:</td>
+              <td class="val mono bold" colspan="4" style="padding-left: 6px; color:#1e3a8a;" id="prev_sscId">{{ $report->ssc_id }}</td>
+              
+              <td class="lbl">Quote No.</td>
+              <td class="col-c">:</td>
+              <td class="val" id="prev_quoteNo">{{ $report->quote_no ?? '-' }}</td>
+              
+              <td class="lbl">Part No.</td>
+              <td class="col-c">:</td>
+              <td class="val" id="prev_partNo">{{ $report->part_no ?? '-' }}</td>
             </tr>
           </table>
 

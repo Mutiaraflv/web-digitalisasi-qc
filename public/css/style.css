@@ -2037,32 +2037,39 @@ body {
 
 .p-header-table td {
   border: 1px solid #000;
-  padding: 2px 4px;
+  padding: 0;
   vertical-align: middle;
 }
 
 .p-logo-cell {
-  width: 38%;
+  width: 37%;
+  padding: 3px 5px !important;
   text-align: center;
+  background: #ffffff;
 }
 
 .p-logo-cell img {
   max-width: 100%;
-  height: 32px;
+  height: 48px;
   object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 
 .p-title-cell {
-  width: 32%;
   text-align: center;
   font-weight: 900;
-  font-size: 8.5pt;
-  letter-spacing: 0.2px;
+  font-size: 9.5pt;
+  letter-spacing: 0.5px;
+  padding: 5px 4px !important;
+  background: #ffffff;
+  color: #000000;
+  border-bottom: 1px solid #000000;
 }
 
 .p-ctrl-cell {
-  width: 30%;
   padding: 0 !important;
+  background: #ffffff;
 }
 
 .p-ctrl-table {
@@ -2073,25 +2080,64 @@ body {
 
 .p-ctrl-table td {
   border: 1px solid #000;
+  padding: 1.5px 3px;
+  vertical-align: middle;
+}
+
+.p-ctrl-table .ctrl-lbl {
+  font-weight: 700;
+  background: #ffffff;
+  white-space: nowrap;
+}
+
+.p-ctrl-table .ctrl-colon {
+  width: 6px;
+  text-align: center;
+  padding: 0;
+  font-weight: 700;
+}
+
+.p-ctrl-table .ctrl-val {
+  background: #ffffff;
+}
+
+.ctrl-split-val {
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+
+.ctrl-date-part {
+  flex: 1;
+  text-align: center;
+  border-right: 1px solid #000000;
   padding: 1px 3px;
+}
+
+.ctrl-rev-part {
+  padding: 1px 6px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 /* Metadata Grid */
 .p-meta-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 6.6pt;
+  font-size: 6.4pt;
   border-bottom: 1.5px solid #000;
 }
 
 .p-meta-table td {
   border: 1px solid #000;
-  padding: 1.5px 3px;
+  padding: 2px 3.5px;
+  vertical-align: middle;
 }
 
 .p-meta-table .lbl {
   font-weight: 700;
-  width: 12%;
+  background: #e2e8f0;
+  color: #000000;
   white-space: nowrap;
 }
 
@@ -2099,10 +2145,14 @@ body {
   width: 6px;
   text-align: center;
   padding: 0;
+  background: #e2e8f0;
+  font-weight: 700;
+  color: #000000;
 }
 
 .p-meta-table .val {
-  width: 35%;
+  background: #ffffff;
+  color: #000000;
   font-family: Arial, sans-serif;
 }
 
