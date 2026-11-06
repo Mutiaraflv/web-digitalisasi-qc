@@ -25,6 +25,9 @@
   $photos = isset($report) && $report && $report->photos ? (is_array($report->photos) ? $report->photos : json_decode($report->photos, true)) : [];
   if (!is_array($photos)) $photos = [];
 
+  $dateStr = isset($report) && $report && $report->date ? \Carbon\Carbon::parse($report->date)->format('d-M-y') : date('d-M-y');
+  $effDateStr = isset($report) && $report && $report->effective_date ? \Carbon\Carbon::parse($report->effective_date)->format('d-M-Y') : '28-Jan-2022';
+
   $renderSlot = function($key, $label = 'Foto') use ($photos) {
     if (!empty($photos[$key])) {
       return '<img src="' . asset($photos[$key]) . '" alt="' . $label . '">';
@@ -61,8 +64,8 @@
       </div>
     </div>
     <div class="selector-meta">
-      <span class="meta-item"><i data-lucide="file-text"></i> No. Dok: <strong id="top_badge_docNo">{{ $report->doc_no ?? 'FORM-QC-002' }}</strong></span>
-      <span class="meta-item"><i data-lucide="git-branch"></i> Rev: <strong id="top_badge_rev">{{ $report->rev ?? '04' }}</strong></span>
+      <span class="meta-item"><i data-lucide="file-text"></i> No. Dok: <strong id="top_badge_docNo">{{ $report?->doc_no ?? 'FORM-QC-002' }}</strong></span>
+      <span class="meta-item"><i data-lucide="git-branch"></i> Rev: <strong id="top_badge_rev">{{ $report?->rev ?? '04' }}</strong></span>
       <span class="meta-item"><i data-lucide="layout"></i> Live Preview: <strong style="color: var(--success);">Aktif</strong></span>
     </div>
   </div>
@@ -122,12 +125,12 @@
             <div class="form-grid-2" style="background: #f8fafc; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
               <div class="form-group">
                 <label>Document No (Nomor Dokumen)</label>
-                <input type="text" id="g_docNo" class="mono-input" placeholder="FORM-QC-002" value="{{ $report->doc_no ?? 'FORM-QC-002' }}">
+                <input type="text" id="g_docNo" class="mono-input" placeholder="FORM-QC-002" value="{{ $report?->doc_no ?? 'FORM-QC-002' }}">
                 <small class="helper-text">Contoh: FORM-QC-002, FORM-QC-005, dll.</small>
               </div>
               <div class="form-group">
                 <label>Responsibility (Tanggung Jawab)</label>
-                <input type="text" id="g_responsibility" placeholder="QC Inspector" value="{{ $report->responsibility ?? 'QC Inspector' }}">
+                <input type="text" id="g_responsibility" placeholder="QC Inspector" value="{{ $report?->responsibility ?? 'QC Inspector' }}">
               </div>
               <div class="form-group">
                 <label>Effective Date. (Tanggal Berlaku Dokumen)</label>
@@ -137,7 +140,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                   <div>
                     <label>Rev. (Revisi)</label>
-                    <input type="text" id="g_rev" class="mono-input" placeholder="04" value="{{ $report->rev ?? '04' }}">
+                    <input type="text" id="g_rev" class="mono-input" placeholder="04" value="{{ $report?->rev ?? '04' }}">
                   </div>
                   <div>
                     <label>Page (Halaman)</label>
@@ -160,7 +163,7 @@
               </div>
               <div class="form-group">
                 <label>No. Laporan</label>
-                <input type="text" id="g_reportNo" placeholder="Contoh: 0742" class="mono-input" value="{{ $report->report_no ?? '0742' }}">
+                <input type="text" id="g_reportNo" placeholder="Contoh: 0742" class="mono-input" value="{{ $report?->report_no ?? '0742' }}">
               </div>
               <div class="form-group">
                 <label>Tanggal Inspeksi</label>
@@ -169,33 +172,33 @@
               <div class="form-group">
                 <label>Tipe Inspeksi</label>
                 <select id="g_inspectionType">
-                  <option value="Pre" {{ ($report->inspection_type ?? 'Pre') === 'Pre' ? 'selected' : '' }}>Pre-Inspection (Awal)</option>
-                  <option value="Post" {{ ($report->inspection_type ?? '') === 'Post' ? 'selected' : '' }}>Post-Inspection (Akhir)</option>
+                  <option value="Pre" {{ ($report?->inspection_type ?? 'Pre') === 'Pre' ? 'selected' : '' }}>Pre-Inspection (Awal)</option>
+                  <option value="Post" {{ ($report?->inspection_type ?? '') === 'Post' ? 'selected' : '' }}>Post-Inspection (Akhir)</option>
                 </select>
               </div>
               <div class="form-group full-width">
                 <label>Customer / Perusahaan</label>
-                <input type="text" id="g_customer" placeholder="Nama Perusahaan Pelanggan" value="{{ $report->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}">
+                <input type="text" id="g_customer" placeholder="Nama Perusahaan Pelanggan" value="{{ $report?->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}">
               </div>
               <div class="form-group">
                 <label>Nama Komponen (Part Name)</label>
-                <input type="text" id="g_partName" value="{{ $report->part_name ?? 'OUTPUT SHAFT' }}" placeholder="OUTPUT SHAFT">
+                <input type="text" id="g_partName" value="{{ $report?->part_name ?? 'OUTPUT SHAFT' }}" placeholder="OUTPUT SHAFT">
               </div>
               <div class="form-group">
                 <label>Model Unit</label>
-                <input type="text" id="g_modelUnit" placeholder="Contoh: HT051" value="{{ $report->model_unit ?? 'HT051' }}">
+                <input type="text" id="g_modelUnit" placeholder="Contoh: HT051" value="{{ $report?->model_unit ?? 'HT051' }}">
               </div>
               <div class="form-group">
                 <label>Job No.</label>
-                <input type="text" id="g_jobNo" placeholder="Contoh: WO-2026-001" value="{{ $report->job_no ?? '-' }}">
+                <input type="text" id="g_jobNo" placeholder="Contoh: WO-2026-001" value="{{ $report?->job_no ?? '-' }}">
               </div>
               <div class="form-group">
                 <label>Quote No.</label>
-                <input type="text" id="g_quoteNo" placeholder="-" value="{{ $report->quote_no ?? '-' }}">
+                <input type="text" id="g_quoteNo" placeholder="-" value="{{ $report?->quote_no ?? '-' }}">
               </div>
               <div class="form-group">
                 <label>Part No.</label>
-                <input type="text" id="g_partNo" placeholder="-" value="{{ $report->part_no ?? '-' }}">
+                <input type="text" id="g_partNo" placeholder="-" value="{{ $report?->part_no ?? '-' }}">
               </div>
             </div>
           </div>
@@ -1750,10 +1753,10 @@
                   <tr>
                     <td class="ctrl-lbl" style="width: 22%;">Document No</td>
                     <td class="ctrl-colon">:</td>
-                    <td class="ctrl-val bold" style="width: 28%;" id="prev_docNo">{{ $report->doc_no ?? 'FORM-QC-002' }}</td>
+                    <td class="ctrl-val bold" style="width: 28%;" id="prev_docNo">{{ $report?->doc_no ?? 'FORM-QC-002' }}</td>
                     <td class="ctrl-lbl" style="width: 22%;">Responsibility</td>
                     <td class="ctrl-colon">:</td>
-                    <td class="ctrl-val" style="width: 24%;" id="prev_responsibility">{{ $report->responsibility ?? 'Quality Control' }}</td>
+                    <td class="ctrl-val" style="width: 24%;" id="prev_responsibility">{{ $report?->responsibility ?? 'Quality Control' }}</td>
                   </tr>
                   <tr>
                     <td class="ctrl-lbl">Effective Date.</td>
@@ -1761,7 +1764,7 @@
                     <td class="ctrl-val" style="padding: 0;">
                       <div class="ctrl-split-val">
                         <span class="ctrl-date-part bold" id="prev_effectiveDate">{{ $effDateStr ?? '28-Jan-2022' }}</span>
-                        <span class="ctrl-rev-part">Rev. <strong id="prev_rev">{{ $report->rev ?? '04' }}</strong></span>
+                        <span class="ctrl-rev-part">Rev. <strong id="prev_rev">{{ $report?->rev ?? '04' }}</strong></span>
                       </div>
                     </td>
                     <td class="ctrl-lbl">Page</td>
@@ -1780,19 +1783,19 @@
             <tr>
               <td class="lbl" style="width: 9%;">No.</td>
               <td class="col-c">:</td>
-              <td class="val mono" style="width: 14%; text-align: center;" id="prev_reportNo">{{ $report->report_no ?? '0742' }}</td>
+              <td class="val mono" style="width: 14%; text-align: center;" id="prev_reportNo">{{ $report?->report_no ?? '0742' }}</td>
               
               <td class="lbl" style="width: 8%;">Date</td>
               <td class="col-c">:</td>
-              <td class="val" style="width: 13%; text-align: center;" id="prev_metaDate">{{ $dateStr }}</td>
+              <td class="val" style="width: 13%; text-align: center;" id="prev_metaDate">{{ $dateStr ?? date('d-M-y') }}</td>
               
               <td class="lbl" style="width: 11%;">Customer</td>
               <td class="col-c">:</td>
-              <td class="val bold" style="width: 20%; line-height: 1.25; font-size: 6.8pt;" id="prev_customer">{{ $report->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}</td>
+              <td class="val bold" style="width: 20%; line-height: 1.25; font-size: 6.8pt;" id="prev_customer">{{ $report?->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}</td>
               
               <td class="lbl" style="width: 10%;">Part Name</td>
               <td class="col-c">:</td>
-              <td class="val bold" style="width: 12%;" id="prev_partName">{{ $report->part_name ?? 'OUTPUT SHAFT' }}</td>
+              <td class="val bold" style="width: 12%;" id="prev_partName">{{ $report?->part_name ?? 'OUTPUT SHAFT' }}</td>
             </tr>
             <tr>
               <td class="lbl">Inspection</td>
@@ -1804,24 +1807,24 @@
               
               <td class="lbl">Job No.</td>
               <td class="col-c">:</td>
-              <td class="val" id="prev_jobNo">{{ $report->job_no ?? '-' }}</td>
+              <td class="val" id="prev_jobNo">{{ $report?->job_no ?? '-' }}</td>
               
               <td class="lbl">Model/Unit</td>
               <td class="col-c">:</td>
-              <td class="val" id="prev_modelUnit">{{ $report->model_unit ?? 'HT051' }}</td>
+              <td class="val" id="prev_modelUnit">{{ $report?->model_unit ?? 'HT051' }}</td>
             </tr>
             <tr>
               <td class="lbl">SSC ID</td>
               <td class="col-c">:</td>
-              <td class="val mono bold" colspan="4" style="padding-left: 6px; color:#1e3a8a;" id="prev_sscId">{{ $report->ssc_id }}</td>
+              <td class="val mono bold" colspan="4" style="padding-left: 6px; color:#1e3a8a;" id="prev_sscId">{{ $report?->ssc_id ?? "SSC SBY-5778" }}</td>
               
               <td class="lbl">Quote No.</td>
               <td class="col-c">:</td>
-              <td class="val" id="prev_quoteNo">{{ $report->quote_no ?? '-' }}</td>
+              <td class="val" id="prev_quoteNo">{{ $report?->quote_no ?? '-' }}</td>
               
               <td class="lbl">Part No.</td>
               <td class="col-c">:</td>
-              <td class="val" id="prev_partNo">{{ $report->part_no ?? '-' }}</td>
+              <td class="val" id="prev_partNo">{{ $report?->part_no ?? '-' }}</td>
             </tr>
           </table>
 
