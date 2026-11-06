@@ -236,20 +236,25 @@
     }
     .finding-table td {
       border: 1px solid #000;
-      padding: 3px 4px;
+      padding: 2px 4px;
       vertical-align: middle;
+      overflow: hidden;
+      box-sizing: border-box;
     }
     .finding-img-wrap {
       width: 100%;
-      height: 95px;
+      height: 75px;
+      max-height: 75px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #f8fafc;
+      overflow: hidden;
+      box-sizing: border-box;
     }
     .finding-img-wrap img {
       max-width: 100%;
-      max-height: 95px;
+      max-height: 75px;
       object-fit: contain;
     }
 
@@ -701,7 +706,7 @@
               @elseif(!empty($photos['full_component']))
                 <img src="{{ asset($photos['full_component']) }}" alt="Foto Komponen Utuh">
               @else
-                <div class="slot-placeholder" style="height: 110px; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #cbd5e1; color: #94a3b8; font-size: 7.5pt; font-weight: 600;">
+                <div class="slot-placeholder" style="width: 100%; height: 75px; max-height: 75px; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #cbd5e1; color: #94a3b8; font-size: 7pt; font-weight: 600; box-sizing: border-box; margin: 0;">
                   <span>[ Foto Komponen Utuh Belum Diunggah ]</span>
                 </div>
               @endif
