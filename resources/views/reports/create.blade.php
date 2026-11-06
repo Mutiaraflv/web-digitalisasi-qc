@@ -2308,9 +2308,10 @@
         ============================================================== -->
         <div class="sheet-paper preview-sheet" id="prev_sheet_6">
           <div class="sheet-page-indicator">Halaman 6 dari 6</div>
-          <!-- RECOMENDATION -->
-          <div class="p-bar-yellow" style="margin-top:0;">RECOMENDATION</div>
-          <table class="p-rec-table">
+          <div class="p-page-top-content">
+            <!-- RECOMENDATION -->
+            <div class="p-bar-yellow" style="margin-top:0;">RECOMENDATION</div>
+            <table class="p-rec-table">
             <thead>
               <tr><th style="width:40px;">Item</th><th>Remarks</th><th>Recomendation</th></tr>
             </thead>
@@ -2347,38 +2348,41 @@
               </tr>
             </tbody>
           </table>
+          </div><!-- /.p-page-top-content -->
 
-          <!-- Signatures -->
-          <table class="p-sig-table">
-            <thead>
-              <tr><th>Checked by:</th><th>Created by:</th><th>Reviewed by:</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <div class="sig-name" id="prev_sigCheckedName">Faqih S A A</div>
-                  <div class="sig-meta">
-                    <span id="prev_sigCheckedTitle">QC Inspector</span>
-                    <span id="prev_sigCheckedDate">Date: October 20, 2026</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="sig-name" id="prev_sigCreatedName">M Kevin S</div>
-                  <div class="sig-meta">
-                    <span id="prev_sigCreatedTitle">QC Inspector</span>
-                    <span id="prev_sigCreatedDate">Date: October 21, 2026</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="sig-name" id="prev_sigReviewedName">Agus Riyanto</div>
-                  <div class="sig-meta">
-                    <span id="prev_sigReviewedTitle">Leader QC</span>
-                    <span id="prev_sigReviewedDate">Date: October 21, 2026</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Signatures Block: Anchored at the bottom of Page 6 -->
+          <div class="p-page-bottom-signatures">
+            <table class="p-sig-table">
+              <thead>
+                <tr><th>Checked by:</th><th>Created by:</th><th>Reviewed by:</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="sig-name" id="prev_sigCheckedName">Faqih S A A</div>
+                    <div class="sig-meta">
+                      <span id="prev_sigCheckedTitle">QC Inspector</span>
+                      <span id="prev_sigCheckedDate">Date: October 20, 2026</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="sig-name" id="prev_sigCreatedName">M Kevin S</div>
+                    <div class="sig-meta">
+                      <span id="prev_sigCreatedTitle">QC Inspector</span>
+                      <span id="prev_sigCreatedDate">Date: October 21, 2026</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="sig-name" id="prev_sigReviewedName">Agus Riyanto</div>
+                    <div class="sig-meta">
+                      <span id="prev_sigReviewedTitle">Leader QC</span>
+                      <span id="prev_sigReviewedDate">Date: October 21, 2026</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
       </div>

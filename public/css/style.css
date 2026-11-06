@@ -2670,3 +2670,32 @@ body {
     break-after: auto !important;
   }
 }
+
+
+/* Sheet 6 Signatures Always at the Bottom Edge */
+#prev_sheet_6 {
+  min-height: 850px;
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+#prev_sheet_6.sheet-visible {
+  display: flex !important;
+}
+
+#prev_sheet_6 .p-page-top-content {
+  width: 100%;
+}
+
+#prev_sheet_6 .p-page-bottom-signatures {
+  margin-top: auto;
+  width: 100%;
+}
+
+#prev_sheet_6 .p-sig-table {
+  margin-top: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+}

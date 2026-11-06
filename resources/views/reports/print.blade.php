@@ -399,6 +399,45 @@
       font-weight: 700;
       background: #fff;
     }
+    /* Page 6 Signatures Always at the Bottom Edge */
+    .a4-page.page-6-signatures {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 1040px;
+    }
+    .a4-page.page-6-signatures .page-top-content {
+      width: 100%;
+    }
+    .a4-page.page-6-signatures .page-bottom-signatures {
+      width: 100%;
+      margin-top: auto;
+    }
+    .a4-page.page-6-signatures .sig-table {
+      margin-top: 0;
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    @media print {
+      .a4-page.page-6-signatures {
+        min-height: 278mm !important;
+        height: 278mm !important;
+        max-height: 279mm !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }
+      .a4-page.page-6-signatures .page-bottom-signatures {
+        margin-top: auto !important;
+        width: 100% !important;
+      }
+    }
+
     .sig-table td {
       border: 1px solid #000;
       padding: 4px 6px;
@@ -545,7 +584,13 @@
     <!-- Drawing / Pictures / Dimension -->
     <div class="bar-grey">Drawing / Pictures / Dimension</div>
     <div class="blueprint-box">
-      <img src="{{ asset('images/doc_assets/shaft_blueprint.png') }}" alt="Technical Shaft Blueprint Drawing">
+      @if(!empty($photos['drawing_dimension']))
+        <img src="{{ asset($photos['drawing_dimension']) }}" alt="Drawing Dimensi">
+      @else
+        <div class="slot-placeholder" style="height: 135px; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #cbd5e1; color: #94a3b8; font-size: 7.5pt; font-weight: 600;">
+          <span>[ Drawing / Pictures / Dimension Belum Diunggah ]</span>
+        </div>
+      @endif
     </div>
 
     <!-- Finding Section -->
@@ -563,10 +608,14 @@
           <td style="text-align: center; font-weight: 700;">00</td>
           <td>
             <div class="finding-img-wrap">
-              @if(!empty($photos['full_component']))
-                <img src="{{ asset($photos['full_component']) }}" alt="Full Component">
+              @if(!empty($photos['finding_component']))
+                <img src="{{ asset($photos['finding_component']) }}" alt="Foto Komponen Utuh">
+              @elseif(!empty($photos['full_component']))
+                <img src="{{ asset($photos['full_component']) }}" alt="Foto Komponen Utuh">
               @else
-                <img src="{{ asset('images/doc_assets/p1_Image23.jpg') }}" alt="Full component shaft">
+                <div class="slot-placeholder" style="height: 110px; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #cbd5e1; color: #94a3b8; font-size: 7.5pt; font-weight: 600;">
+                  <span>[ Foto Komponen Utuh Belum Diunggah ]</span>
+                </div>
               @endif
             </div>
           </td>
@@ -584,10 +633,10 @@
       <div class="split-col-left">
         <div class="col-header">Image of OD Spline</div>
         <div class="photo-grid-2x2">
-          <div class="photo-slot">{!! $renderPhoto('area_g_visual_1', 'Foto 1') !!}</div>
-          <div class="photo-slot">{!! $renderPhoto('area_g_visual_2', 'Foto 2') !!}</div>
-          <div class="photo-slot">{!! $renderPhoto('area_g_visual_3', 'Foto 3') !!}</div>
-          <div class="photo-slot">{!! $renderPhoto('area_g_visual_4', 'Foto 4') !!}</div>
+          <div class="photo-slot">{!! $renderPhoto('area_a_visual_1', 'Foto 1') !!}</div>
+          <div class="photo-slot">{!! $renderPhoto('area_a_visual_2', 'Foto 2') !!}</div>
+          <div class="photo-slot">{!! $renderPhoto('area_a_visual_3', 'Foto 3') !!}</div>
+          <div class="photo-slot">{!! $renderPhoto('area_a_visual_4', 'Foto 4') !!}</div>
         </div>
       </div>
       <!-- Right: Measurements & Bullets -->
@@ -1116,16 +1165,10 @@
       <div class="split-col-left">
         <div class="col-header">Image of OD Spline</div>
         <div class="photo-grid-2x2">
-          <div class="photo-slot">
-            @if(!empty($photos['item06']))
-              <img src="{{ asset($photos['item06']) }}" alt="Area G">
-            @else
-              <img src="{{ asset('images/doc_assets/p5_Image75.jpg') }}" alt="Area G 1">
-            @endif
-          </div>
-          <div class="photo-slot"><img src="{{ asset('images/doc_assets/p5_Image76.jpg') }}" alt="Area G 2"></div>
-          <div class="photo-slot"><img src="{{ asset('images/doc_assets/p5_Image77.jpg') }}" alt="Area G 3"></div>
-          <div class="photo-slot"><img src="{{ asset('images/doc_assets/p5_Image78.jpg') }}" alt="Area G 4"></div>
+          <div class="photo-slot">{!! $renderPhoto('area_g_visual_1', 'Foto 1') !!}</div>
+          <div class="photo-slot">{!! $renderPhoto('area_g_visual_2', 'Foto 2') !!}</div>
+          <div class="photo-slot">{!! $renderPhoto('area_g_visual_3', 'Foto 3') !!}</div>
+          <div class="photo-slot">{!! $renderPhoto('area_g_visual_4', 'Foto 4') !!}</div>
         </div>
       </div>
       <div class="split-col-right">
@@ -1213,7 +1256,13 @@
     <div class="bar-yellow">Check TIR</div>
     <!-- TIR Blueprint Diagram -->
     <div class="blueprint-box" style="padding: 6px 15px;">
-      <img src="{{ asset('images/doc_assets/shaft_tir_blueprint.png') }}" alt="Shaft TIR Measurement Diagram">
+      @if(!empty($photos['tir_diagram']))
+        <img src="{{ asset($photos['tir_diagram']) }}" alt="Shaft TIR Measurement Diagram">
+      @else
+        <div class="slot-placeholder" style="height: 105px; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #cbd5e1; color: #94a3b8; font-size: 7.5pt; font-weight: 600;">
+          <span>[ Diagram / Sketsa Titik Ukur TIR Belum Diunggah ]</span>
+        </div>
+      @endif
     </div>
 
     <!-- TIR Table -->
@@ -1273,12 +1322,13 @@
   <!-- =====================================================================
        LEMBAR 6 DARI 6 (PAGE 6)
   ===================================================================== -->
-  <div class="a4-page">
+  <div class="a4-page page-6-signatures">
     
-    <!-- Yellow Banner: RECOMENDATION -->
-    <div class="bar-yellow" style="margin-top: 0;">RECOMENDATION</div>
-    
-    <table class="rec-table">
+    <div class="page-top-content">
+      <!-- Yellow Banner: RECOMENDATION -->
+      <div class="bar-yellow" style="margin-top: 0;">RECOMENDATION</div>
+      
+      <table class="rec-table">
       <thead>
         <tr>
           <th style="width: 45px;">Item</th>
@@ -1307,42 +1357,45 @@
         @endforeach
       </tbody>
     </table>
+    </div><!-- /.page-top-content -->
 
-    <!-- Signatures Block -->
-    <table class="sig-table">
-      <thead>
-        <tr>
-          <th>Checked by:</th>
-          <th>Created by:</th>
-          <th>Reviewed by:</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>
-            <div class="sig-name">{{ $sigs['checkedBy']['name'] ?? 'Faqih S A A' }}</div>
-            <div class="sig-meta">
-              <span>{{ $sigs['checkedBy']['title'] ?? 'QC Inspector' }}</span>
-              <span>Date: {{ $sigs['checkedBy']['date'] ?? 'October 20, 2026' }}</span>
-            </div>
-          </td>
-          <td>
-            <div class="sig-name">{{ $sigs['createdBy']['name'] ?? 'M Kevin S' }}</div>
-            <div class="sig-meta">
-              <span>{{ $sigs['createdBy']['title'] ?? 'QC Inspector' }}</span>
-              <span>Date: {{ $sigs['createdBy']['date'] ?? 'October 21, 2026' }}</span>
-            </div>
-          </td>
-          <td>
-            <div class="sig-name">{{ $sigs['reviewedBy']['name'] ?? 'Agus Riyanto' }}</div>
-            <div class="sig-meta">
-              <span>{{ $sigs['reviewedBy']['title'] ?? 'Leader QC' }}</span>
-              <span>Date: {{ $sigs['reviewedBy']['date'] ?? 'October 21, 2026' }}</span>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Signatures Block: Always anchored at the bottom edge of Page 6 -->
+    <div class="page-bottom-signatures">
+      <table class="sig-table">
+        <thead>
+          <tr>
+            <th>Checked by:</th>
+            <th>Created by:</th>
+            <th>Reviewed by:</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="sig-name">{{ $sigs['checkedBy']['name'] ?? 'Faqih S A A' }}</div>
+              <div class="sig-meta">
+                <span>{{ $sigs['checkedBy']['title'] ?? 'QC Inspector' }}</span>
+                <span>Date: {{ $sigs['checkedBy']['date'] ?? 'October 20, 2026' }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="sig-name">{{ $sigs['createdBy']['name'] ?? 'M Kevin S' }}</div>
+              <div class="sig-meta">
+                <span>{{ $sigs['createdBy']['title'] ?? 'QC Inspector' }}</span>
+                <span>Date: {{ $sigs['createdBy']['date'] ?? 'October 21, 2026' }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="sig-name">{{ $sigs['reviewedBy']['name'] ?? 'Agus Riyanto' }}</div>
+              <div class="sig-meta">
+                <span>{{ $sigs['reviewedBy']['title'] ?? 'Leader QC' }}</span>
+                <span>Date: {{ $sigs['reviewedBy']['date'] ?? 'October 21, 2026' }}</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
   </div><!-- /page 6 -->
 
