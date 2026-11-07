@@ -5,7 +5,7 @@ echo ======================================================================
 echo              MENGHENTIKAN CLOUDFLARE REMOTE ACCESS QCMS
 echo ======================================================================
 echo.
-echo [1/3] Menutup proses Cloudflare Tunnel (cloudflared.exe)...
+echo [1/3] Menutup proses Cloudflare Tunnel cloudflared.exe...
 taskkill /F /IM cloudflared.exe >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo       - Cloudflare Tunnel berhasil dihentikan.
@@ -19,7 +19,7 @@ set FOUND_PORT=0
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000" ^| findstr "LISTENING" 2^>nul') do (
     set FOUND_PORT=1
     taskkill /F /PID %%a >nul 2>&1
-    echo       - Server lokal Laravel (PID: %%a) telah dihentikan.
+    echo       - Server lokal Laravel PID %%a telah dihentikan.
 )
 if "%FOUND_PORT%"=="0" (
     echo       - Tidak ada server di port 8000 yang aktif.
@@ -36,5 +36,5 @@ echo ======================================================================
 echo   [SUKSES] Akses remote publik telah dinonaktifkan dengan aman!
 echo ======================================================================
 echo.
-timeout /t 3 /nobreak >nul
+ping 127.0.0.1 -n 4 >nul
 exit /b 0
