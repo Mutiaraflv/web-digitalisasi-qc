@@ -209,15 +209,22 @@
     /* Blueprint Diagram */
     .blueprint-box {
       text-align: center;
-      padding: 4px;
+      padding: 4px 6px;
       border-bottom: 1.5px solid #000;
       background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
     .blueprint-box img {
+      width: 100%;
       max-width: 100%;
       height: auto;
-      max-height: 195px;
+      max-height: 220px;
       object-fit: contain;
+      display: block;
+      margin: 0 auto;
     }
 
     /* Finding Table */
@@ -488,6 +495,7 @@
     .a4-page.page-6-signatures .page-bottom-signatures {
       width: 100%;
       margin-top: auto;
+      padding-top: 20px;
     }
     .a4-page.page-6-signatures .sig-table {
       margin-top: 0;
@@ -510,22 +518,25 @@
       }
       .a4-page.page-6-signatures .page-bottom-signatures {
         margin-top: auto !important;
+        padding-top: 20px !important;
         width: 100% !important;
       }
     }
 
     .sig-table td {
       border: 1px solid #000;
-      padding: 4px 6px;
+      padding: 6px 8px;
       vertical-align: bottom;
-      height: 75px;
+      height: 95px;
+      min-height: 95px;
       width: 33.33%;
     }
     .sig-name {
       font-weight: 700;
       border-bottom: 1px solid #000;
       padding-bottom: 2px;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
+      margin-top: 45px;
     }
     .sig-meta {
       display: flex;
@@ -1370,7 +1381,7 @@
     <!-- Yellow Banner: Check TIR -->
     <div class="bar-yellow">Check TIR</div>
     <!-- TIR Blueprint Diagram -->
-    <div class="blueprint-box" style="padding: 6px 15px;">
+    <div class="blueprint-box">
       @if(!empty($photos['tir_diagram']))
         <img src="{{ asset($photos['tir_diagram']) }}" alt="Shaft TIR Measurement Diagram">
       @else
@@ -1487,24 +1498,24 @@
         <tbody>
           <tr>
             <td>
-              <div class="sig-name">{{ $sigs['checkedBy']['name'] ?? 'Faqih S A A' }}</div>
+              <div class="sig-name">{{ $sigs['checkedBy']['name'] ?? 'Faqih' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['checkedBy']['title'] ?? 'QC Inspector' }}</span>
-                <span>Date: {{ $sigs['checkedBy']['date'] ?? 'October 20, 2026' }}</span>
+                <span>Date: {{ $sigs['checkedBy']['date'] ?? date('F d, Y') }}</span>
               </div>
             </td>
             <td>
-              <div class="sig-name">{{ $sigs['createdBy']['name'] ?? 'M Kevin S' }}</div>
+              <div class="sig-name">{{ $sigs['createdBy']['name'] ?? 'Kevin' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['createdBy']['title'] ?? 'QC Inspector' }}</span>
-                <span>Date: {{ $sigs['createdBy']['date'] ?? 'October 21, 2026' }}</span>
+                <span>Date: {{ $sigs['createdBy']['date'] ?? date('F d, Y') }}</span>
               </div>
             </td>
             <td>
-              <div class="sig-name">{{ $sigs['reviewedBy']['name'] ?? 'Agus Riyanto' }}</div>
+              <div class="sig-name">{{ $sigs['reviewedBy']['name'] ?? 'Agus' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['reviewedBy']['title'] ?? 'Leader QC' }}</span>
-                <span>Date: {{ $sigs['reviewedBy']['date'] ?? 'October 21, 2026' }}</span>
+                <span>Date: {{ $sigs['reviewedBy']['date'] ?? date('F d, Y') }}</span>
               </div>
             </td>
           </tr>

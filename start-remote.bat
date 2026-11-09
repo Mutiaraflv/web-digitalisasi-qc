@@ -32,6 +32,8 @@ if exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" (
     set "CF_EXE=C:\Program Files\cloudflared\cloudflared.exe"
 ) else if exist "%~dp0cloudflared.exe" (
     set "CF_EXE=%~dp0cloudflared.exe"
+) else if exist "%PROJECT_DIR%\cloudflared.exe" (
+    set "CF_EXE=%PROJECT_DIR%\cloudflared.exe"
 ) else (
     where cloudflared >nul 2>&1
     if !ERRORLEVEL! EQU 0 (
