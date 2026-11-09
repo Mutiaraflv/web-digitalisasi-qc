@@ -184,12 +184,72 @@ function setupLivePreviewSync() {
     const form = document.getElementById('qcMainForm');
     if (!form) return;
 
-    // Attach listener to all inputs, selects, textareas
-    form.addEventListener('input', updateLivePreview);
-    form.addEventListener('change', updateLivePreview);
+    // Keep the preview synchronized, then reveal the document field being edited.
+    form.addEventListener('input', (event) => {
+        updateLivePreview();
+        focusPreviewForInput(event.target);
+    });
+    form.addEventListener('change', (event) => {
+        updateLivePreview();
+        focusPreviewForInput(event.target);
+    });
 
     // Initial sync
     setTimeout(updateLivePreview, 100);
+}
+
+function focusPreviewForInput(input) {
+    if (!input || !input.id || ['button', 'submit', 'reset'].includes(input.type)) return;
+
+    const id = input.id;
+    let target = null;
+    if (id.startsWith('input_slot_') || id.startsWith('camera_slot_')) {
+        const slotKey = id.replace(/^(input|camera)_slot_/, '');
+        target = document.getElementById(`prev_slot_${slotKey}`);
+    }
+    if (!target && input.closest('#recTableBody')) {
+        target = document.getElementById('prev_recTableBody');
+    }
+
+    const aliases = {
+        g_date: 'prev_metaDate',
+        i1_length: 'prev_i1_len',
+        i4_k_res: 'prev_i4_k',
+        i5_j_res: 'prev_i5_j',
+        i6_i_res: 'prev_i6_i',
+        sig_checkedName: 'prev_sigCheckedName', sig_checkedTitle: 'prev_sigCheckedTitle', sig_checkedDate: 'prev_sigCheckedDate',
+        sig_createdName: 'prev_sigCreatedName', sig_createdTitle: 'prev_sigCreatedTitle', sig_createdDate: 'prev_sigCreatedDate',
+        sig_reviewedName: 'prev_sigReviewedName', sig_reviewedTitle: 'prev_sigReviewedTitle', sig_reviewedDate: 'prev_sigReviewedDate'
+    };
+    if (!target) {
+        const previewId = aliases[id] || (id.startsWith('g_') ? `prev_${id.slice(2)}` : `prev_${id}`);
+        target = document.getElementById(previewId);
+    }
+
+    // Some measurement inputs use a slightly different preview suffix.
+    if (!target && /^i[1-6]_/.test(id)) {
+        const previewId = id.replace(/^i([1-6])_/, 'prev_i$1_').replace(/_length$/, '_len').replace(/_res$/, '');
+        target = document.getElementById(previewId);
+    }
+
+    let page = target?.closest('.preview-sheet')?.id?.replace('prev_sheet_', '');
+    if (!page) {
+        if (id.startsWith('i1_') || id.startsWith('i2_')) page = '2';
+        else if (id.startsWith('i3_') || id.startsWith('i4_')) page = '3';
+        else if (id.startsWith('i5_') || id.startsWith('i6_')) page = '4';
+        else if (id.startsWith('tir_')) page = '5';
+        else if (input.closest('#recTableBody')) page = '6';
+        else page = '1';
+        target = target || document.getElementById(`prev_sheet_${page}`);
+    }
+
+    if (!target) return;
+    window.switchPreviewPage?.(page);
+    document.querySelectorAll('.preview-focus-highlight').forEach(el => el.classList.remove('preview-focus-highlight'));
+    target.classList.add('preview-focus-highlight');
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.clearTimeout(target._previewFocusTimer);
+    target._previewFocusTimer = window.setTimeout(() => target.classList.remove('preview-focus-highlight'), 1200);
 }
 
 function updateLivePreview() {
@@ -580,7 +640,7 @@ window.renderPhotoPreview = renderSlotPreview;
 // Recommendations Dynamic Table
 
 // -------------------------------------------------------------
-function setupRecommendations(recs) {
+function setupRecommendationsLegacy(recs) {
     const tbody = document.getElementById('recTableBody');
     if (!tbody) return;
     tbody.innerHTML = '';
@@ -591,7 +651,7 @@ function setupRecommendations(recs) {
     });
 }
 
-function addRecRow(item = '', remarks = '', recommendation = '') {
+function addRecRowLegacy(item = '', remarks = '', recommendation = '') {
     const tbody = document.getElementById('recTableBody');
     if (!tbody) return;
     const rowIdx = tbody.querySelectorAll('tr').length + 1;
@@ -617,7 +677,7 @@ function addRecRow(item = '', remarks = '', recommendation = '') {
     syncRecommendationsPreview();
 }
 
-function syncRecommendationsPreview() {
+function syncRecommendationsPreviewLegacy() {
     const previewBody = document.getElementById('prev_recTableBody');
     const findingDesc = document.getElementById('prev_finding_desc');
     const rows = document.querySelectorAll('#recTableBody tr');

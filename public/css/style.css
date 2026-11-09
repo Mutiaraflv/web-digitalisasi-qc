@@ -2607,6 +2607,18 @@ body {
   display: block;
 }
 
+.preview-focus-highlight {
+  position: relative;
+  z-index: 1;
+  animation: preview-focus-pulse 1.2s ease-out;
+  scroll-margin: 24px;
+}
+
+@keyframes preview-focus-pulse {
+  0%, 45% { outline: 3px solid #f59e0b; outline-offset: 2px; box-shadow: 0 0 0 5px rgba(245, 158, 11, .18); }
+  100% { outline: 0 solid transparent; outline-offset: 2px; box-shadow: none; }
+}
+
 .sheet-page-indicator {
   position: absolute;
   top: -18px;
