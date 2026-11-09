@@ -78,6 +78,9 @@
       </div>
     </aside>
 
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
     <!-- Main Content Area -->
     <div class="app-main">
       <!-- Top App Bar -->
@@ -124,11 +127,35 @@
       
       const btnToggle = document.getElementById('btnToggleSidebar');
       const sidebar = document.getElementById('appSidebar');
-      if (btnToggle && sidebar) {
-        btnToggle.addEventListener('click', () => {
-          sidebar.classList.toggle('show');
-        });
+      const backdrop = document.getElementById('sidebarBackdrop');
+
+      function toggleSidebar() {
+        if (!sidebar) return;
+        const isOpen = sidebar.classList.toggle('show');
+        if (backdrop) {
+          if (isOpen) backdrop.classList.add('show');
+          else backdrop.classList.remove('show');
+        }
       }
+
+      function closeSidebar() {
+        if (sidebar) sidebar.classList.remove('show');
+        if (backdrop) backdrop.classList.remove('show');
+      }
+
+      if (btnToggle) {
+        btnToggle.addEventListener('click', toggleSidebar);
+      }
+      if (backdrop) {
+        backdrop.addEventListener('click', closeSidebar);
+      }
+
+      // Close mobile sidebar when clicking a nav link
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+          if (window.innerWidth <= 900) closeSidebar();
+        });
+      });
     });
   </script>
 

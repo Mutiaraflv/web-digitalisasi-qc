@@ -4,18 +4,18 @@
 @section('page_title', isset($isEdit) && $isEdit ? 'Edit Laporan QC' : 'Input Inspeksi Baru')
 
 @section('top_actions')
-  <div style="display: flex; gap: 0.5rem; align-items: center;">
-    <a href="{{ route('reports.index') }}" class="btn btn-secondary btn-sm">
-      <i data-lucide="arrow-left"></i> Kembali ke Riwayat
+  <div class="top-action-bar">
+    <a href="{{ route('reports.index') }}" class="btn btn-secondary btn-sm" title="Kembali ke Riwayat">
+      <i data-lucide="arrow-left"></i> <span class="hide-mobile">Riwayat</span>
     </a>
-    <button type="button" id="btnTopSave" class="btn btn-secondary btn-sm" onclick="window.saveReportData(false)">
-      <i data-lucide="save"></i> Simpan Data
+    <button type="button" id="btnTopSave" class="btn btn-secondary btn-sm" onclick="window.saveReportData(false)" title="Simpan Data">
+      <i data-lucide="save"></i> <span class="hide-mobile">Simpan</span>
     </button>
     <button type="button" id="btnTopExportPdf" class="btn btn-primary btn-sm" title="Ekspor 6 Lembar PDF Resmi" onclick="window.exportOfficialPdf()">
-      <i data-lucide="file-text"></i> Ekspor PDF Resmi (6 Lembar)
+      <i data-lucide="file-text"></i> <span class="hide-mobile">Ekspor</span> PDF
     </button>
-    <button type="button" id="btnTopExportExcel" class="btn btn-secondary btn-sm" onclick="window.saveReportData(true)">
-      <i data-lucide="file-spreadsheet"></i> Unduh Excel (.xlsx)
+    <button type="button" id="btnTopExportExcel" class="btn btn-secondary btn-sm" onclick="window.saveReportData(true)" title="Unduh Excel (.xlsx)">
+      <i data-lucide="file-spreadsheet"></i> Excel
     </button>
   </div>
 @endsection
@@ -865,7 +865,8 @@
               <span class="spec-tag">Batas Maksimal: Max 0,2 mm</span>
             </div>
 
-            <table class="table-compact">
+            <div class="table-compact-wrapper">
+              <table class="table-compact">
               <thead>
                 <tr>
                   <th style="width: 50px;">Titik</th>
@@ -934,6 +935,7 @@
                 </tr>
               </tbody>
             </table>
+            </div>
           </div>
 
           <!-- TAB 5: REKOMENDASI -->
@@ -948,7 +950,8 @@
               </button>
             </div>
 
-            <table class="table-compact" style="margin-top: 0.75rem;">
+            <div class="table-compact-wrapper">
+              <table class="table-compact" style="margin-top: 0.75rem;">
               <thead>
                 <tr>
                   <th style="width: 60px;">Item</th>
@@ -961,6 +964,7 @@
                 <!-- Dynamically filled -->
               </tbody>
             </table>
+            </div>
           </div>
 
           <!-- TAB 6: PENGESAHAN -->
