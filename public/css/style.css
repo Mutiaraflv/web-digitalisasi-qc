@@ -2262,28 +2262,57 @@ body {
 
 .p-photo-grid-2x2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 110px 110px;
+  grid-template-rows: 110px 110px;
+  width: 224px;
+  height: 224px;
+  min-width: 224px;
+  max-width: 224px;
+  min-height: 224px;
+  max-height: 224px;
   gap: 2px;
-  padding: 2px;
+  padding: 1px;
   background: #000;
-  flex: 1;
-  min-height: 110px;
+  box-sizing: border-box;
+  margin: 4px auto;
+  justify-content: center;
+  align-content: center;
 }
 
 .p-photo-slot {
+  width: 110px;
+  height: 110px;
+  min-width: 110px;
+  max-width: 110px;
+  min-height: 110px;
+  max-height: 110px;
+  box-sizing: border-box;
   background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  min-height: 52px;
+  position: relative;
 }
 
 .p-photo-slot img {
-  width: 100%;
-  height: 100%;
+  width: 110px;
+  height: 110px;
+  min-width: 110px;
+  max-width: 110px;
+  min-height: 110px;
+  max-height: 110px;
   object-fit: cover;
+  display: block;
+}
+
+.p-photo-slot .slot-placeholder {
+  font-size: 6.5pt;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: center;
+  padding: 2px;
+  line-height: 1.2;
 }
 
 .p-sub-title {
@@ -2509,14 +2538,24 @@ body {
   gap: 0.5rem;
 }
 
+@media (max-width: 640px) {
+  .slot-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+}
+
 .slot-item-card {
   border: 1px dashed #cbd5e1;
   border-radius: var(--radius-sm);
   background: #f8fafc;
-  padding: 4px;
+  padding: 6px 4px;
   text-align: center;
   position: relative;
   transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .slot-item-card:hover {
@@ -2531,19 +2570,23 @@ body {
 }
 
 .slot-item-dropzone {
-  min-height: 75px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   overflow: hidden;
-  border-radius: 3px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
 }
 
 .slot-item-dropzone img {
   width: 100%;
-  height: 75px;
+  height: 100%;
   object-fit: cover;
   border-radius: 3px;
   display: block;
@@ -2559,44 +2602,78 @@ body {
 }
 
 .slot-item-dropzone .slot-empty-icon i {
-  width: 18px;
-  height: 18px;
-  color: #94a3b8;
+  width: 20px;
+  height: 20px;
+  color: #64748b;
 }
 
 .slot-item-label {
   font-size: 0.68rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #334155;
-  margin-top: 4px;
+  margin: 4px 0 2px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.slot-item-btn-remove {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  background: rgba(220, 38, 38, 0.9);
-  color: #ffffff;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
+.slot-item-actions {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 3px;
+  margin-top: 3px;
+}
+
+.btn-slot-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 3px 6px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  border-radius: 3px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
   cursor: pointer;
-  padding: 0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: all 0.15s ease;
+  line-height: 1;
 }
 
-.slot-item-btn-remove:hover {
-  background: rgb(220, 38, 38);
+.btn-slot-action.btn-cam {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
 }
 
-.slot-item-btn-remove i {
+.btn-slot-action.btn-cam:hover {
+  background: #dbeafe;
+}
+
+.btn-slot-action.btn-file {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.btn-slot-action.btn-file:hover {
+  background: #e2e8f0;
+}
+
+.btn-slot-action.btn-del {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
+  padding: 3px 5px;
+}
+
+.btn-slot-action.btn-del:hover {
+  background: #fee2e2;
+}
+
+.btn-slot-action i {
   width: 12px;
   height: 12px;
 }

@@ -410,6 +410,10 @@ window.triggerFileInput = function(inputId) {
     document.getElementById(inputId)?.click();
 };
 
+window.triggerCameraInput = function(inputId) {
+    document.getElementById(inputId)?.click();
+};
+
 window.handleSlotUpload = function(input, slotKey) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
@@ -461,9 +465,11 @@ window.handleSlotUpload = function(input, slotKey) {
 window.removeSlotPhoto = function(slotKey) {
     reportPhotos[slotKey] = null;
     
-    // Reset file input
+    // Reset file input and camera input
     const input = document.getElementById(`input_slot_${slotKey}`);
     if (input) input.value = '';
+    const camInput = document.getElementById(`camera_slot_${slotKey}`);
+    if (camInput) camInput.value = '';
 
     // Reset card UI
     const card = document.getElementById(`card_slot_${slotKey}`);
@@ -475,11 +481,11 @@ window.removeSlotPhoto = function(slotKey) {
         if (slotKey === 'drawing_dimension') {
             viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser file gambar cetak biru (blueprint dimensi poros)</span></div>`;
         } else if (slotKey === 'finding_component') {
-            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser foto utuh fisik komponen (Full image received component)</span></div>`;
+            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="camera"></i><span>Klik untuk ambil foto utuh fisik komponen</span></div>`;
         } else if (slotKey === 'tir_diagram') {
             viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser file gambar diagram titik pengukuran runout</span></div>`;
         } else {
-            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>+ Unggah</span></div>`;
+            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="camera"></i><span>Kamera</span></div>`;
         }
         if (window.lucide) lucide.createIcons();
     }

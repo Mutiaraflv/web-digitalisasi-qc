@@ -282,36 +282,58 @@
       border-bottom: 1px solid #000;
     }
 
-    /* 2x2 Photo Grid */
+    /* 2x2 Photo Grid - Fixed Square 110px x 110px per box */
     .photo-grid-2x2 {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
+      grid-template-columns: 110px 110px;
+      grid-template-rows: 110px 110px;
+      width: 224px;
+      height: 224px;
+      min-width: 224px;
+      max-width: 224px;
+      min-height: 224px;
+      max-height: 224px;
       gap: 2px;
-      padding: 2px;
+      padding: 1px;
       background: #000;
-      flex: 1;
-      min-height: 150px;
+      box-sizing: border-box;
+      margin: 4px auto;
+      justify-content: center;
+      align-content: center;
     }
     .photo-slot {
+      width: 110px;
+      height: 110px;
+      min-width: 110px;
+      max-width: 110px;
+      min-height: 110px;
+      max-height: 110px;
+      box-sizing: border-box;
       background: #f8fafc;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      min-height: 72px;
+      position: relative;
     }
     .photo-slot img {
-      width: 100%;
-      height: 100%;
+      width: 110px;
+      height: 110px;
+      min-width: 110px;
+      max-width: 110px;
+      min-height: 110px;
+      max-height: 110px;
       object-fit: cover;
+      display: block;
     }
     .photo-slot .slot-placeholder {
-      font-size: 6.2pt;
+      font-size: 6.5pt;
+      font-weight: 600;
       color: #94a3b8;
       font-style: italic;
       text-align: center;
-      padding: 4px;
+      padding: 2px;
+      line-height: 1.2;
     }
 
     /* Data Tables inside Right Column */
