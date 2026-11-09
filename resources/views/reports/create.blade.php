@@ -1665,7 +1665,7 @@
 
           <!-- Check TIR -->
           <div class="p-bar-yellow">Check TIR</div>
-          <div class="p-blueprint-box" id="prev_slot_tir_diagram" style="padding:4px 10px;">
+          <div class="p-blueprint-box" id="prev_slot_tir_diagram">
             @if(!empty($photos['tir_diagram']))
               <img src="{{ asset($photos['tir_diagram']) }}" alt="Shaft TIR Blueprint">
             @else

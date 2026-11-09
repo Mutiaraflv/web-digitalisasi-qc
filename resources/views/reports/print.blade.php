@@ -209,15 +209,22 @@
     /* Blueprint Diagram */
     .blueprint-box {
       text-align: center;
-      padding: 4px;
+      padding: 4px 6px;
       border-bottom: 1.5px solid #000;
       background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
     }
     .blueprint-box img {
+      width: 100%;
       max-width: 100%;
       height: auto;
-      max-height: 195px;
+      max-height: 220px;
       object-fit: contain;
+      display: block;
+      margin: 0 auto;
     }
 
     /* Finding Table */
@@ -1370,7 +1377,7 @@
     <!-- Yellow Banner: Check TIR -->
     <div class="bar-yellow">Check TIR</div>
     <!-- TIR Blueprint Diagram -->
-    <div class="blueprint-box" style="padding: 6px 15px;">
+    <div class="blueprint-box">
       @if(!empty($photos['tir_diagram']))
         <img src="{{ asset($photos['tir_diagram']) }}" alt="Shaft TIR Measurement Diagram">
       @else

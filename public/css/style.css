@@ -2783,14 +2783,30 @@ body {
 /* Blueprint */
 .p-blueprint-box {
   text-align: center;
-  padding: 4px;
+  padding: 4px 6px;
   border-bottom: 1.5px solid #000;
   background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .p-blueprint-box img {
+  width: 100%;
   max-width: 100%;
-  max-height: 150px;
+  height: auto;
+  max-height: 220px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+#prev_slot_tir_diagram img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 175px;
   object-fit: contain;
 }
 
