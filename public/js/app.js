@@ -3,6 +3,7 @@
 
 let defaultTemplate = null;
 let currentReportId = null;
+let lastPreviewFocusTarget = null;
 const photoSlotKeys = [
     'drawing_dimension',
     'finding_component',
@@ -247,9 +248,26 @@ function focusPreviewForInput(input) {
     window.switchPreviewPage?.(page);
     document.querySelectorAll('.preview-focus-highlight').forEach(el => el.classList.remove('preview-focus-highlight'));
     target.classList.add('preview-focus-highlight');
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    scrollPreviewWithinPane(target);
     window.clearTimeout(target._previewFocusTimer);
     target._previewFocusTimer = window.setTimeout(() => target.classList.remove('preview-focus-highlight'), 1200);
+}
+
+function scrollPreviewWithinPane(target) {
+    const container = target.closest('.sheet-container');
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const visible = targetRect.top >= containerRect.top + 8 && targetRect.bottom <= containerRect.bottom - 8;
+    if (visible || lastPreviewFocusTarget === target) return;
+
+    const targetTop = targetRect.top - containerRect.top + container.scrollTop;
+    const offset = targetRect.height > container.clientHeight
+        ? 0
+        : (container.clientHeight - targetRect.height) / 2;
+    container.scrollTo({ top: Math.max(0, targetTop - offset), behavior: 'smooth' });
+    lastPreviewFocusTarget = target;
 }
 
 function updateLivePreview() {
