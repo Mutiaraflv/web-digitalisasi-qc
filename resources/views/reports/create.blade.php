@@ -1226,7 +1226,7 @@
             <tr>
               <td class="lbl">SSC ID</td>
               <td class="col-c">:</td>
-              <td class="val mono bold" colspan="4" style="padding-left: 6px; color:#ea580c;" id="prev_sscId">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</td>
+              <td class="val mono bold" colspan="4" style="padding-left: 6px; color:#2d6a4f;" id="prev_sscId">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</td>
               
               <td class="lbl">Quote No.</td>
               <td class="col-c">:</td>

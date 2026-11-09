@@ -82,7 +82,7 @@
         <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
         <div class="user-info">
           <h4>{{ auth()->user()->name }}</h4>
-          <p>{{ auth()->user()->email }} · <span style="color: {{ auth()->user()->isAdmin() ? '#fb923c' : '#94a3b8' }}; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">{{ auth()->user()->role ?? 'user' }}</span></p>
+          <p>{{ auth()->user()->email }} · <span style="color: {{ auth()->user()->isAdmin() ? 'var(--primary)' : 'var(--text-subtle)' }}; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">{{ auth()->user()->role ?? 'user' }}</span></p>
         </div>
         <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form">
           @csrf

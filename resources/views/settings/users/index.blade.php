@@ -85,7 +85,7 @@
               </td>
               <td>
                 <div style="display: flex; align-items: center; gap: 0.65rem;">
-                  <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.72rem; flex-shrink: 0; background: {{ $u->isAdmin() ? '#fff7ed' : '#f1f3f5' }}; color: {{ $u->isAdmin() ? '#ea580c' : '#333a45' }}; border-color: {{ $u->isAdmin() ? '#fed7aa' : '#d0d5dd' }};">
+                  <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.72rem; flex-shrink: 0; background: {{ $u->isAdmin() ? 'var(--primary-light)' : '#f1f4f2' }}; color: {{ $u->isAdmin() ? 'var(--primary)' : '#36433a' }}; border-color: {{ $u->isAdmin() ? 'var(--primary-border)' : '#d4ddd6' }};">
                     {{ strtoupper(substr($u->name, 0, 2)) }}
                   </div>
                   <div>
