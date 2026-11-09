@@ -5,45 +5,45 @@
   --sidebar-width: 250px;
   --header-height: 56px;
 
-  /* Clean Muted Green & Sage Palette */
-  --bg-app: #f4f6f4;          /* Soft serene misty sage gray */
+  /* Official PT SSC Works Logo-Blue Palette */
+  --bg-app: #f7f9fc;          /* Clean soft serene slate-blue neutral */
   --bg-surface: #ffffff;      /* Clean pure white */
   --bg-sidebar: #ffffff;      /* Crisp clean light sidebar */
-  --bg-sidebar-hover: #f0f4f1;
-  --bg-sidebar-active: #e8f1eb;
+  --bg-sidebar-hover: #f1f4fb;
+  --bg-sidebar-active: #edf2fe;
   
-  --border-subtle: #e3e8e4;    /* Delicate hairline border */
-  --border-strong: #cdd6cf;    /* Clear subtle line */
-  --border-dark: #e3e8e4;
+  --border-subtle: #e2e8f0;    /* Clean subtle slate border */
+  --border-strong: #cbd5e1;    /* Clear line */
+  --border-dark: #e2e8f0;
 
-  --text-main: #19241d;        /* Deep pine-graphite */
-  --text-muted: #4a574f;       /* Balanced sage slate */
-  --text-subtle: #738278;      /* Gentle technical label */
-  --text-sidebar: #36433a;
-  --text-sidebar-muted: #738278;
+  --text-main: #0f172a;        /* Deep clean slate */
+  --text-muted: #475569;       /* Balanced slate */
+  --text-subtle: #64748b;      /* Subtle label */
+  --text-sidebar: #334155;
+  --text-sidebar-muted: #64748b;
 
-  /* Primary Accent: Muted Sage / Deep Emerald */
-  --primary: #2d6a4f;          /* Refined Sage Green */
-  --primary-hover: #204d39;    /* Deep Forest Green */
-  --primary-light: #eef6f1;    /* Very Soft Sage Wash */
-  --primary-border: #c4dcce;
-  --primary-text: #1b4332;
+  /* Primary Accent: Exact PT SSC Works Logo Blue (#1312B6) */
+  --primary: #1312b6;          /* Official Logo Blue */
+  --primary-hover: #0e0d9b;    /* Deep Cobalt Blue */
+  --primary-light: #eef2ff;    /* Soft Logo Blue Wash */
+  --primary-border: #c7d2fe;
+  --primary-text: #1e1b9a;
 
-  /* Muted Slate Accent */
-  --graphite: #36433a;
-  --graphite-hover: #232c26;
-  --graphite-light: #f1f4f2;
+  /* Slate Accent */
+  --graphite: #334155;
+  --graphite-hover: #1e293b;
+  --graphite-light: #f1f5f9;
 
   /* QC Standard Status: Clean High-contrast */
-  --success: #166534;          /* Forest Green (Accept) */
+  --success: #15803d;          /* Forest Green (Accept) */
   --success-bg: #f0fdf4;
   --success-border: #bbf7d0;
 
-  --danger: #be123c;           /* Clean Rose Terracotta (Reject) */
-  --danger-bg: #fff1f2;
-  --danger-border: #fecdd3;
+  --danger: #dc2626;           /* Crimson Red (Reject) */
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
 
-  --warning: #b45309;          /* Warm Amber */
+  --warning: #d97706;          /* Warm Amber */
   --warning-bg: #fffbeb;
   --warning-border: #fde68a;
 
@@ -78,7 +78,7 @@ body {
   min-height: 100vh;
 }
 
-/* Sidebar - Clean Muted Sage QC Navigation */
+/* Sidebar - Clean Logo-Blue QC Navigation */
 .app-sidebar {
   width: var(--sidebar-width);
   background: var(--bg-sidebar);
@@ -103,14 +103,14 @@ body {
 }
 
 .sidebar-logo {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
   flex-shrink: 0;
-  background: #ffffff;
-  padding: 2px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-subtle);
+  background: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .sidebar-brand-text h2 {
@@ -443,7 +443,7 @@ body {
 .search-box input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.18);
+  box-shadow: 0 0 0 2px rgba(19, 18, 182, 0.15);
 }
 
 .filter-group {
@@ -466,7 +466,7 @@ body {
 .select-filter:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.18);
+  box-shadow: 0 0 0 2px rgba(19, 18, 182, 0.15);
 }
 
 /* Buttons - Industrial Precision */
@@ -510,7 +510,7 @@ body {
   background: var(--primary);
   color: #ffffff;
   border-color: var(--primary);
-  box-shadow: 0 1px 3px rgba(45, 106, 79, 0.2);
+  box-shadow: 0 1px 3px rgba(19, 18, 182, 0.25);
 }
 
 .btn-primary:hover {
@@ -612,11 +612,11 @@ body {
 }
 
 .qc-table th {
-  background: #f2f6f3;
+  background: #f1f5f9;
   padding: 0.7rem 0.95rem;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #36433a;
+  color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   border-bottom: 1px solid var(--border-strong);
@@ -630,7 +630,7 @@ body {
 }
 
 .qc-table tbody tr:hover {
-  background-color: #f8faf8;
+  background-color: #f8fafc;
 }
 
 /* Card Container */
@@ -833,7 +833,7 @@ body {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.18);
+  box-shadow: 0 0 0 2px rgba(19, 18, 182, 0.15);
 }
 
 /* Measurement Boxes */
@@ -1190,7 +1190,7 @@ body {
 
 .form-select-lg:focus {
   border-color: var(--primary-hover);
-  box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.18);
+  box-shadow: 0 0 0 2px rgba(19, 18, 182, 0.15);
 }
 
 .selector-meta {
@@ -1214,15 +1214,15 @@ body {
 }
 
 .notice-box {
-  background: #eef6f1;
-  border: 1px solid #c4dcce;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
   border-radius: var(--radius-sm);
   padding: 0.75rem 1rem;
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;
   font-size: 0.83rem;
-  color: #1b4332;
+  color: #1e1b9a;
   line-height: 1.5;
 }
 
@@ -1481,7 +1481,7 @@ body {
 .dim-input:focus {
   border-color: var(--primary);
   outline: none;
-  background: #eef6f1;
+  background: #eef2ff;
 }
 
 .input-sub-row {
@@ -1626,7 +1626,7 @@ body {
 
 .photo-dropzone:hover {
   border-color: var(--primary);
-  background: #eef6f1;
+  background: #eef2ff;
 }
 
 .dropzone-content {
@@ -2638,14 +2638,14 @@ body {
     right: 1rem !important;
     bottom: 1.25rem !important;
     z-index: 90 !important;
-    background: linear-gradient(135deg, #1b382b, #2d6a4f) !important;
+    background: linear-gradient(135deg, #090a2a, #1312b6) !important;
     color: #ffffff !important;
-    border: 1.5px solid #74c69d !important;
+    border: 1.5px solid #818cf8 !important;
     border-radius: 50px !important;
     padding: 0.65rem 1.15rem !important;
     font-size: 0.82rem !important;
     font-weight: 700 !important;
-    box-shadow: 0 4px 18px rgba(45, 106, 79, 0.35) !important;
+    box-shadow: 0 4px 18px rgba(19, 18, 182, 0.35) !important;
     cursor: pointer !important;
     align-items: center !important;
     gap: 0.45rem !important;
@@ -3380,12 +3380,12 @@ body {
 
 .slot-item-card:hover {
   border-color: var(--primary);
-  background: #eef6f1;
+  background: #eef2ff;
 }
 
 .slot-item-card.has-image {
   border-style: solid;
-  border-color: #a3cbb5;
+  border-color: #a5b4fc;
   background: #ffffff;
 }
 
@@ -3465,13 +3465,13 @@ body {
 }
 
 .btn-slot-action.btn-cam {
-  background: #eef6f1;
-  border-color: #c4dcce;
-  color: #204d39;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #1e1b9a;
 }
 
 .btn-slot-action.btn-cam:hover {
-  background: #ddede2;
+  background: #e0e7ff;
 }
 
 .btn-slot-action.btn-file {
@@ -3512,12 +3512,12 @@ body {
 
 .slot-large-card:hover {
   border-color: var(--primary);
-  background: #eef6f1;
+  background: #eef2ff;
 }
 
 .slot-large-card.has-image {
   border-style: solid;
-  border-color: #a3cbb5;
+  border-color: #a5b4fc;
   background: #ffffff;
 }
 
