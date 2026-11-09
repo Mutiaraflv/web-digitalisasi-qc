@@ -3093,24 +3093,41 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: 6.8pt;
-  margin-top: 10px;
+  margin-top: 18px;
   border: 1px solid #000;
 }
 
 .p-sig-table th {
   border: 1px solid #000;
-  padding: 2px 4px;
+  padding: 3px 6px;
   text-align: left;
   font-weight: 700;
   background: #fff;
+  font-size: 7.2pt;
 }
 
 .p-sig-table td {
   border: 1px solid #000;
-  padding: 3px 4px;
+  padding: 6px 8px;
   vertical-align: bottom;
-  height: 55px;
+  height: 95px;
+  min-height: 95px;
   width: 33.33%;
+}
+
+.p-sig-table .sig-name {
+  font-weight: 700;
+  border-bottom: 1px solid #000;
+  padding-bottom: 2px;
+  margin-bottom: 3px;
+  margin-top: 45px;
+}
+
+.p-sig-table .sig-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #374151;
+  font-size: 6.8pt;
 }
 /* ==========================================================================
    51-SLOT QC PHOTO UPLOADER & PREVIEW PLACEHOLDERS
@@ -3507,6 +3524,7 @@ body {
 
 #prev_sheet_6 .p-page-bottom-signatures {
   margin-top: auto;
+  padding-top: 20px;
   width: 100%;
 }
 

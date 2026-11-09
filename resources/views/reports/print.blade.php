@@ -495,6 +495,7 @@
     .a4-page.page-6-signatures .page-bottom-signatures {
       width: 100%;
       margin-top: auto;
+      padding-top: 20px;
     }
     .a4-page.page-6-signatures .sig-table {
       margin-top: 0;
@@ -517,22 +518,25 @@
       }
       .a4-page.page-6-signatures .page-bottom-signatures {
         margin-top: auto !important;
+        padding-top: 20px !important;
         width: 100% !important;
       }
     }
 
     .sig-table td {
       border: 1px solid #000;
-      padding: 4px 6px;
+      padding: 6px 8px;
       vertical-align: bottom;
-      height: 75px;
+      height: 95px;
+      min-height: 95px;
       width: 33.33%;
     }
     .sig-name {
       font-weight: 700;
       border-bottom: 1px solid #000;
       padding-bottom: 2px;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
+      margin-top: 45px;
     }
     .sig-meta {
       display: flex;
