@@ -17,9 +17,6 @@
     <button type="button" id="btnTopExportExcel" class="btn btn-secondary btn-sm" onclick="window.saveReportData(true)" title="Unduh Excel (.xlsx)">
       <i data-lucide="file-spreadsheet"></i> Excel
     </button>
-    <button type="button" class="btn btn-dark btn-sm btn-open-mobile-preview" id="btnOpenMobilePreview" onclick="window.openMobilePreview()" title="Lihat Dokumen Preview Full Layar">
-      <i data-lucide="eye"></i> <span>Preview</span>
-    </button>
   </div>
 @endsection
 
@@ -1058,14 +1055,14 @@
       <div class="preview-toolbar">
         <div class="preview-title">
           <i data-lucide="eye"></i>
-          <span>Live Document Preview &mdash; <strong>COMPONENT CONDITION REPORT (6 Lembar)</strong></span>
+          <span><span class="hide-mobile">Live Document Preview &mdash; </span><strong>FORM-QC-002</strong></span>
         </div>
         <div class="preview-actions">
           <button type="button" class="btn btn-secondary btn-xs" id="btnPrintPreview" title="Cetak / Unduh PDF" onclick="window.exportOfficialPdf()">
-            <i data-lucide="printer"></i> Cetak / PDF (6 Lembar)
+            <i data-lucide="printer"></i> <span class="hide-mobile">Cetak / </span>PDF
           </button>
           <button type="button" class="btn btn-danger btn-xs btn-close-preview" id="btnCloseMobilePreview" onclick="window.closeMobilePreview()" title="Tutup Preview &amp; Kembali ke Form">
-            <i data-lucide="x"></i> Kembali ke Form
+            <i data-lucide="x"></i> Tutup
           </button>
         </div>
       </div>

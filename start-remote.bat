@@ -26,13 +26,19 @@ if not exist "%PROJECT_DIR%\artisan" (
 
 :: 2. Detect cloudflared.exe safely
 set "CF_EXE="
-where cloudflared >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    set CF_EXE=cloudflared
-) else if exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" (
-    set CF_EXE="C:\Program Files (x86)\cloudflared\cloudflared.exe"
+if exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" (
+    set "CF_EXE=C:\Program Files (x86)\cloudflared\cloudflared.exe"
 ) else if exist "C:\Program Files\cloudflared\cloudflared.exe" (
-    set CF_EXE="C:\Program Files\cloudflared\cloudflared.exe"
+    set "CF_EXE=C:\Program Files\cloudflared\cloudflared.exe"
+) else if exist "%~dp0cloudflared.exe" (
+    set "CF_EXE=%~dp0cloudflared.exe"
+) else (
+    where cloudflared >nul 2>&1
+    if !ERRORLEVEL! EQU 0 (
+        for /f "delims=" %%p in ('where cloudflared 2^>nul') do (
+            if not defined CF_EXE set "CF_EXE=%%p"
+        )
+    )
 )
 
 if not defined CF_EXE (
@@ -73,7 +79,7 @@ taskkill /F /IM cloudflared.exe >nul 2>&1
 
 :: 7. Start cloudflared quick tunnel
 echo [2/4] Menghubungkan ke Cloudflare Tunnel publik...
-start "QCMS Cloudflare Worker" /min %CF_EXE% tunnel --url http://127.0.0.1:8000 --logfile "%LOG_FILE%"
+start "QCMS Cloudflare Worker" /min "%CF_EXE%" tunnel --url http://127.0.0.1:8000 --logfile "%LOG_FILE%"
 
 :: 8. Wait and extract URL
 echo [3/4] Mengambil tautan publik HTTPS Cloudflare...
