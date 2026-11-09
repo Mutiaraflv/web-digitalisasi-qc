@@ -735,8 +735,6 @@
                 </div>
               </div>
             </div>
-              </div>
-            </div>
 
             <!-- LEMBAR 4 -->
             <div class="area-photo-section">
@@ -849,8 +847,6 @@
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
               </div>
             </div>
 
