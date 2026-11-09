@@ -28,11 +28,11 @@ if not exist "%PROJECT_DIR%\artisan" (
 set "CF_EXE="
 where cloudflared >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    set "CF_EXE=cloudflared"
+    set CF_EXE=cloudflared
 ) else if exist "C:\Program Files (x86)\cloudflared\cloudflared.exe" (
-    set "CF_EXE=C:\Program Files (x86)\cloudflared\cloudflared.exe"
+    set CF_EXE="C:\Program Files (x86)\cloudflared\cloudflared.exe"
 ) else if exist "C:\Program Files\cloudflared\cloudflared.exe" (
-    set "CF_EXE=C:\Program Files\cloudflared\cloudflared.exe"
+    set CF_EXE="C:\Program Files\cloudflared\cloudflared.exe"
 )
 
 if not defined CF_EXE (
@@ -73,31 +73,46 @@ taskkill /F /IM cloudflared.exe >nul 2>&1
 
 :: 7. Start cloudflared quick tunnel
 echo [2/4] Menghubungkan ke Cloudflare Tunnel publik...
-start "QCMS Cloudflare Worker" /min "%CF_EXE%" tunnel --url http://127.0.0.1:8000 --logfile "%LOG_FILE%"
+start "QCMS Cloudflare Worker" /min %CF_EXE% tunnel --url http://127.0.0.1:8000 --logfile "%LOG_FILE%"
 
 :: 8. Wait and extract URL
 echo [3/4] Mengambil tautan publik HTTPS Cloudflare...
 set "TUNNEL_URL="
 
-for /l %%i in (1,1,25) do (
+for /l %%i in (1,1,30) do (
     if not defined TUNNEL_URL (
         ping 127.0.0.1 -n 2 >nul
         if exist "%LOG_FILE%" (
-            for /f "tokens=2 delims=|" %%a in ('findstr /i "trycloudflare.com" "%LOG_FILE%" 2^>nul') do (
-                for %%b in (%%a) do set "TUNNEL_URL=%%b"
+            :: Metode 1: Python Regex (Paling akurat)
+            where python >nul 2>&1
+            if !ERRORLEVEL! EQU 0 (
+                for /f "delims=" %%u in ('python -c "import re; m=re.search(r'https://[a-zA-Z0-9\-]+\.trycloudflare\.com', open(r'%LOG_FILE%').read()); print(m.group(0) if m else '')" 2^>nul') do (
+                    if not "%%u"=="" (
+                        echo %%u | findstr /i "^https://" >nul && set "TUNNEL_URL=%%u"
+                    )
+                )
             )
+            :: Metode 2: Findstr filter khusus baris yang ada https:// dan trycloudflare.com
             if not defined TUNNEL_URL (
-                for /f "tokens=4" %%a in ('findstr /i "trycloudflare.com" "%LOG_FILE%" 2^>nul') do (
-                    set "TUNNEL_URL=%%a"
+                for /f "tokens=2 delims=|" %%a in ('findstr /i "https://" "%LOG_FILE%" 2^>nul ^| findstr /i "trycloudflare.com"') do (
+                    for %%b in (%%a) do (
+                        echo %%b | findstr /i "^https://" >nul && set "TUNNEL_URL=%%b"
+                    )
                 )
             )
         )
     )
 )
 
-if not defined TUNNEL_URL (
+:: Verifikasi apakah TUNNEL_URL benar-benar valid (harus dimulai dengan https://)
+set "IS_VALID="
+if defined TUNNEL_URL (
+    echo !TUNNEL_URL! | findstr /i "^https://" >nul && set IS_VALID=1
+)
+
+if not defined IS_VALID (
     echo.
-    echo [PERINGATAN] Belum berhasil mendeteksi URL otomatis dalam 25 detik.
+    echo [PERINGATAN] Belum berhasil mendeteksi URL otomatis dalam 30 detik.
     echo Silakan periksa isi file log: %LOG_FILE%
     echo Atau pastikan laptop Anda terhubung ke internet.
     pause
@@ -140,7 +155,7 @@ echo     - Tekan sembarang tombol di jendela ini.
 echo ======================================================================
 echo.
 
-:: Automatically open in laptop browser too
+:: Automatically open in laptop browser only if valid URL
 start "" "%TUNNEL_URL%"
 
 echo Tekan sembarang tombol untuk MENUTUP dan MEMATIKAN remote tunnel...
