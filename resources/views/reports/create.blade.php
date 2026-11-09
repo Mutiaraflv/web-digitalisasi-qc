@@ -25,6 +25,20 @@
   $photos = isset($report) && $report && $report->photos ? (is_array($report->photos) ? $report->photos : json_decode($report->photos, true)) : [];
   if (!is_array($photos)) $photos = [];
 
+  $signatures = isset($report) && $report && $report->signatures ? (is_array($report->signatures) ? $report->signatures : json_decode($report->signatures, true)) : [];
+  if (!is_array($signatures)) $signatures = [];
+  $checkedName = $signatures['checkedBy']['name'] ?? 'Faqih';
+  $checkedTitle = $signatures['checkedBy']['title'] ?? 'QC Inspector';
+  $checkedDate = !empty($signatures['checkedBy']['date']) ? \Carbon\Carbon::parse($signatures['checkedBy']['date'])->format('Y-m-d') : date('Y-m-d');
+
+  $createdName = $signatures['createdBy']['name'] ?? 'Kevin';
+  $createdTitle = $signatures['createdBy']['title'] ?? 'QC Inspector';
+  $createdDate = !empty($signatures['createdBy']['date']) ? \Carbon\Carbon::parse($signatures['createdBy']['date'])->format('Y-m-d') : date('Y-m-d');
+
+  $reviewedName = $signatures['reviewedBy']['name'] ?? 'Agus';
+  $reviewedTitle = $signatures['reviewedBy']['title'] ?? 'Leader QC';
+  $reviewedDate = !empty($signatures['reviewedBy']['date']) ? \Carbon\Carbon::parse($signatures['reviewedBy']['date'])->format('Y-m-d') : date('Y-m-d');
+
   $dateStr = isset($report) && $report && $report->date ? \Carbon\Carbon::parse($report->date)->format('d-M-y') : date('d-M-y');
   $effDateStr = isset($report) && $report && $report->effective_date ? \Carbon\Carbon::parse($report->effective_date)->format('d-M-Y') : '28-Jan-2022';
 
@@ -978,48 +992,97 @@
               <div class="sig-box">
                 <h5>Checked by:</h5>
                 <div class="form-group">
-                  <label>Nama</label>
-                  <input type="text" id="sig_checkedName" value="Faqih S A A">
+                  <label for="sig_checkedName">Nama Personel (Ketik / Pilih)</label>
+                  <input type="text" id="sig_checkedName" list="listCheckedBy" value="{{ $checkedName }}" placeholder="Pilih atau ketik nama..." autocomplete="off">
+                  <datalist id="listCheckedBy">
+                    <option value="Indra"></option>
+                    <option value="Faqih"></option>
+                    <option value="Sahid"></option>
+                    <option value="Agus"></option>
+                    <option value="Kevin"></option>
+                    <option value="Rafli"></option>
+                  </datalist>
+                  <div class="sig-quick-names">
+                    <span class="quick-names-label"><i data-lucide="user-check"></i> Pilihan Cepat:</span>
+                    <div class="quick-chips-wrapper">
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Indra')">Indra</button>
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Faqih')">Faqih</button>
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Sahid')">Sahid</button>
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Agus')">Agus</button>
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Kevin')">Kevin</button>
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Rafli')">Rafli</button>
+                    </div>
+                  </div>
                 </div>
                 <div class="form-group">
-                  <label>Jabatan</label>
-                  <input type="text" id="sig_checkedTitle" value="QC Inspector">
+                  <label for="sig_checkedTitle">Jabatan</label>
+                  <input type="text" id="sig_checkedTitle" value="{{ $checkedTitle }}">
                 </div>
                 <div class="form-group">
-                  <label>Tanggal</label>
-                  <input type="date" id="sig_checkedDate">
+                  <label for="sig_checkedDate">Tanggal</label>
+                  <input type="date" id="sig_checkedDate" value="{{ $checkedDate }}">
                 </div>
               </div>
 
               <div class="sig-box">
                 <h5>Created by:</h5>
                 <div class="form-group">
-                  <label>Nama</label>
-                  <input type="text" id="sig_createdName" value="M Kevin S">
+                  <label for="sig_createdName">Nama Personel (Ketik / Pilih)</label>
+                  <input type="text" id="sig_createdName" list="listCreatedBy" value="{{ $createdName }}" placeholder="Pilih atau ketik nama..." autocomplete="off">
+                  <datalist id="listCreatedBy">
+                    <option value="Indra"></option>
+                    <option value="Faqih"></option>
+                    <option value="Sahid"></option>
+                    <option value="Agus"></option>
+                    <option value="Kevin"></option>
+                    <option value="Rafli"></option>
+                  </datalist>
+                  <div class="sig-quick-names">
+                    <span class="quick-names-label"><i data-lucide="user-plus"></i> Pilihan Cepat:</span>
+                    <div class="quick-chips-wrapper">
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Indra')">Indra</button>
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Faqih')">Faqih</button>
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Sahid')">Sahid</button>
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Agus')">Agus</button>
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Kevin')">Kevin</button>
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Rafli')">Rafli</button>
+                    </div>
+                  </div>
                 </div>
                 <div class="form-group">
-                  <label>Jabatan</label>
-                  <input type="text" id="sig_createdTitle" value="QC Inspector">
+                  <label for="sig_createdTitle">Jabatan</label>
+                  <input type="text" id="sig_createdTitle" value="{{ $createdTitle }}">
                 </div>
                 <div class="form-group">
-                  <label>Tanggal</label>
-                  <input type="date" id="sig_createdDate">
+                  <label for="sig_createdDate">Tanggal</label>
+                  <input type="date" id="sig_createdDate" value="{{ $createdDate }}">
                 </div>
               </div>
 
               <div class="sig-box">
                 <h5>Reviewed by:</h5>
                 <div class="form-group">
-                  <label>Nama</label>
-                  <input type="text" id="sig_reviewedName" value="Agus Riyanto">
+                  <label for="sig_reviewedName">Nama Personel (Ketik / Pilih)</label>
+                  <input type="text" id="sig_reviewedName" list="listReviewedBy" value="{{ $reviewedName }}" placeholder="Pilih atau ketik nama..." autocomplete="off">
+                  <datalist id="listReviewedBy">
+                    <option value="Agus"></option>
+                    <option value="Firman"></option>
+                  </datalist>
+                  <div class="sig-quick-names">
+                    <span class="quick-names-label"><i data-lucide="shield-check"></i> Pilihan Cepat:</span>
+                    <div class="quick-chips-wrapper">
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_reviewedName', 'Agus')">Agus</button>
+                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_reviewedName', 'Firman')">Firman</button>
+                    </div>
+                  </div>
                 </div>
                 <div class="form-group">
-                  <label>Jabatan</label>
-                  <input type="text" id="sig_reviewedTitle" value="Leader QC">
+                  <label for="sig_reviewedTitle">Jabatan</label>
+                  <input type="text" id="sig_reviewedTitle" value="{{ $reviewedTitle }}">
                 </div>
                 <div class="form-group">
-                  <label>Tanggal</label>
-                  <input type="date" id="sig_reviewedDate">
+                  <label for="sig_reviewedDate">Tanggal</label>
+                  <input type="date" id="sig_reviewedDate" value="{{ $reviewedDate }}">
                 </div>
               </div>
             </div>
@@ -1748,24 +1811,24 @@
               <tbody>
                 <tr>
                   <td>
-                    <div class="sig-name" id="prev_sigCheckedName">Faqih S A A</div>
+                    <div class="sig-name" id="prev_sigCheckedName">{{ $checkedName }}</div>
                     <div class="sig-meta">
-                      <span id="prev_sigCheckedTitle">QC Inspector</span>
-                      <span id="prev_sigCheckedDate">Date: October 20, 2026</span>
+                      <span id="prev_sigCheckedTitle">{{ $checkedTitle }}</span>
+                      <span id="prev_sigCheckedDate">Date: {{ \Carbon\Carbon::parse($checkedDate)->format('F d, Y') }}</span>
                     </div>
                   </td>
                   <td>
-                    <div class="sig-name" id="prev_sigCreatedName">M Kevin S</div>
+                    <div class="sig-name" id="prev_sigCreatedName">{{ $createdName }}</div>
                     <div class="sig-meta">
-                      <span id="prev_sigCreatedTitle">QC Inspector</span>
-                      <span id="prev_sigCreatedDate">Date: October 21, 2026</span>
+                      <span id="prev_sigCreatedTitle">{{ $createdTitle }}</span>
+                      <span id="prev_sigCreatedDate">Date: {{ \Carbon\Carbon::parse($createdDate)->format('F d, Y') }}</span>
                     </div>
                   </td>
                   <td>
-                    <div class="sig-name" id="prev_sigReviewedName">Agus Riyanto</div>
+                    <div class="sig-name" id="prev_sigReviewedName">{{ $reviewedName }}</div>
                     <div class="sig-meta">
-                      <span id="prev_sigReviewedTitle">Leader QC</span>
-                      <span id="prev_sigReviewedDate">Date: October 21, 2026</span>
+                      <span id="prev_sigReviewedTitle">{{ $reviewedTitle }}</span>
+                      <span id="prev_sigReviewedDate">Date: {{ \Carbon\Carbon::parse($reviewedDate)->format('F d, Y') }}</span>
                     </div>
                   </td>
                 </tr>

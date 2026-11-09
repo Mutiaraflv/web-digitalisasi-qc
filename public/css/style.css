@@ -1563,6 +1563,63 @@ body {
   padding-bottom: 0.25rem;
 }
 
+/* Signature Quick Selection Chips */
+.sig-quick-names {
+  margin-top: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.quick-names-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-subtle);
+  margin-bottom: 0.3rem;
+}
+
+.quick-names-label svg {
+  width: 12px;
+  height: 12px;
+  color: var(--primary);
+}
+
+.quick-chips-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.sig-chip {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+  user-select: none;
+}
+
+.sig-chip:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.sig-chip:active,
+.sig-chip.active {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.35);
+}
+
 /* Studio Footer */
 .studio-footer {
   padding: 0.85rem 1.25rem;

@@ -1494,24 +1494,24 @@
         <tbody>
           <tr>
             <td>
-              <div class="sig-name">{{ $sigs['checkedBy']['name'] ?? 'Faqih S A A' }}</div>
+              <div class="sig-name">{{ $sigs['checkedBy']['name'] ?? 'Faqih' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['checkedBy']['title'] ?? 'QC Inspector' }}</span>
-                <span>Date: {{ $sigs['checkedBy']['date'] ?? 'October 20, 2026' }}</span>
+                <span>Date: {{ $sigs['checkedBy']['date'] ?? date('F d, Y') }}</span>
               </div>
             </td>
             <td>
-              <div class="sig-name">{{ $sigs['createdBy']['name'] ?? 'M Kevin S' }}</div>
+              <div class="sig-name">{{ $sigs['createdBy']['name'] ?? 'Kevin' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['createdBy']['title'] ?? 'QC Inspector' }}</span>
-                <span>Date: {{ $sigs['createdBy']['date'] ?? 'October 21, 2026' }}</span>
+                <span>Date: {{ $sigs['createdBy']['date'] ?? date('F d, Y') }}</span>
               </div>
             </td>
             <td>
-              <div class="sig-name">{{ $sigs['reviewedBy']['name'] ?? 'Agus Riyanto' }}</div>
+              <div class="sig-name">{{ $sigs['reviewedBy']['name'] ?? 'Agus' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['reviewedBy']['title'] ?? 'Leader QC' }}</span>
-                <span>Date: {{ $sigs['reviewedBy']['date'] ?? 'October 21, 2026' }}</span>
+                <span>Date: {{ $sigs['reviewedBy']['date'] ?? date('F d, Y') }}</span>
               </div>
             </td>
           </tr>

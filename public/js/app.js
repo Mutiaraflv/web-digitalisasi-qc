@@ -189,14 +189,23 @@ function setupLivePreviewSync() {
     form.addEventListener('input', (event) => {
         updateLivePreview();
         focusPreviewForInput(event.target);
+        if (event.target && event.target.id && event.target.id.startsWith('sig_')) {
+            syncSigChips(event.target.id);
+        }
     });
     form.addEventListener('change', (event) => {
         updateLivePreview();
         focusPreviewForInput(event.target);
+        if (event.target && event.target.id && event.target.id.startsWith('sig_')) {
+            syncSigChips(event.target.id);
+        }
     });
 
     // Initial sync
-    setTimeout(updateLivePreview, 100);
+    setTimeout(() => {
+        updateLivePreview();
+        ['sig_checkedName', 'sig_createdName', 'sig_reviewedName'].forEach(syncSigChips);
+    }, 100);
 }
 
 function focusPreviewForInput(input) {
@@ -438,17 +447,33 @@ function updateLivePreview() {
     syncRecommendationsPreview();
 
     // 10. Signatures
-    setPreviewText('prev_sigCheckedName', document.getElementById('sig_checkedName')?.value || 'Faqih S A A');
+    const formatSigDate = (val, def) => {
+        if (!val) return def;
+        try {
+            const parts = val.split('-');
+            if (parts.length === 3) {
+                const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            }
+        } catch(e) {}
+        return val;
+    };
+
+    const checkedD = document.getElementById('sig_checkedDate')?.value;
+    const createdD = document.getElementById('sig_createdDate')?.value;
+    const reviewedD = document.getElementById('sig_reviewedDate')?.value;
+
+    setPreviewText('prev_sigCheckedName', document.getElementById('sig_checkedName')?.value || 'Faqih');
     setPreviewText('prev_sigCheckedTitle', document.getElementById('sig_checkedTitle')?.value || 'QC Inspector');
-    setPreviewText('prev_sigCheckedDate', 'Date: ' + (document.getElementById('sig_checkedDate')?.value || 'October 20, 2026'));
+    setPreviewText('prev_sigCheckedDate', 'Date: ' + formatSigDate(checkedD, 'October 20, 2026'));
 
-    setPreviewText('prev_sigCreatedName', document.getElementById('sig_createdName')?.value || 'M Kevin S');
+    setPreviewText('prev_sigCreatedName', document.getElementById('sig_createdName')?.value || 'Kevin');
     setPreviewText('prev_sigCreatedTitle', document.getElementById('sig_createdTitle')?.value || 'QC Inspector');
-    setPreviewText('prev_sigCreatedDate', 'Date: ' + (document.getElementById('sig_createdDate')?.value || 'October 21, 2026'));
+    setPreviewText('prev_sigCreatedDate', 'Date: ' + formatSigDate(createdD, 'October 21, 2026'));
 
-    setPreviewText('prev_sigReviewedName', document.getElementById('sig_reviewedName')?.value || 'Agus Riyanto');
+    setPreviewText('prev_sigReviewedName', document.getElementById('sig_reviewedName')?.value || 'Agus');
     setPreviewText('prev_sigReviewedTitle', document.getElementById('sig_reviewedTitle')?.value || 'Leader QC');
-    setPreviewText('prev_sigReviewedDate', 'Date: ' + (document.getElementById('sig_reviewedDate')?.value || 'October 21, 2026'));
+    setPreviewText('prev_sigReviewedDate', 'Date: ' + formatSigDate(reviewedD, 'October 21, 2026'));
 }
 
 function evaluateOverallStatus() {
@@ -1091,6 +1116,23 @@ function loadDefaultBlankForm() {
         { item: "01", remarks: "Cleaning and polish OD area \"A\"", recommendation: "Cleaning and polish OD area \"A\"" }
     ]);
 
+    // Reset signatures to defaults
+    setValue('sig_checkedName', 'Faqih');
+    setValue('sig_checkedTitle', 'QC Inspector');
+    setValue('sig_checkedDate', new Date().toISOString().split('T')[0]);
+
+    setValue('sig_createdName', 'Kevin');
+    setValue('sig_createdTitle', 'QC Inspector');
+    setValue('sig_createdDate', new Date().toISOString().split('T')[0]);
+
+    setValue('sig_reviewedName', 'Agus');
+    setValue('sig_reviewedTitle', 'Leader QC');
+    setValue('sig_reviewedDate', new Date().toISOString().split('T')[0]);
+
+    if (window.syncSigChips) {
+        ['sig_checkedName', 'sig_createdName', 'sig_reviewedName'].forEach(window.syncSigChips);
+    }
+
     updateLivePreview();
     showToast('Form baru telah disiapkan dengan data kosong', 'success');
 }
@@ -1226,6 +1268,10 @@ function populateFormWithData(data) {
         setValue('sig_reviewedDate', sig.reviewedBy.date);
     }
 
+    if (window.syncSigChips) {
+        ['sig_checkedName', 'sig_createdName', 'sig_reviewedName'].forEach(window.syncSigChips);
+    }
+
     // Photos
     const photos = typeof data.photos === 'string' ? JSON.parse(data.photos) : (data.photos || {});
     for (const key in photos) {
@@ -1350,6 +1396,33 @@ window.exportOfficialPdf = function() {
 };
 
 window.saveReportData = saveReportData;
+
+// -------------------------------------------------------------
+// Signature Personel Quick Selection & Chip Sync Helpers
+// -------------------------------------------------------------
+window.setSignatureName = function(inputId, name) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.value = name;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    window.syncSigChips(inputId);
+};
+
+window.syncSigChips = function(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const parentBox = input.closest('.sig-box');
+    if (!parentBox) return;
+    const val = (input.value || '').trim().toLowerCase();
+    parentBox.querySelectorAll('.sig-chip').forEach(chip => {
+        if (chip.textContent.trim().toLowerCase() === val) {
+            chip.classList.add('active');
+        } else {
+            chip.classList.remove('active');
+        }
+    });
+};
 
 // -------------------------------------------------------------
 // Mobile Full-Screen Preview Drawer Controls
