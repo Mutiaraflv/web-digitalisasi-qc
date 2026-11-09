@@ -102,9 +102,10 @@
       </div>
     </div>
     <div class="selector-meta">
-      <span class="meta-item"><i data-lucide="file-text"></i> No. Dok: <strong id="top_badge_docNo">{{ $report?->doc_no ?? 'FORM-QC-002' }}</strong></span>
-      <span class="meta-item"><i data-lucide="git-branch"></i> Rev: <strong id="top_badge_rev">{{ $report?->rev ?? '04' }}</strong></span>
-      <span class="meta-item"><i data-lucide="layout"></i> Live Preview: <strong style="color: var(--success);">Aktif</strong></span>
+      <span class="meta-item" title="Standar Template Formulir Mutu PT SSC Works"><i data-lucide="file-check"></i> Form: <strong>{{ $report?->doc_no ?? 'FORM-QC-002' }} (Rev {{ $report?->rev ?? '04' }})</strong></span>
+      <span class="meta-item" title="Nomor Identitas Unik Unit Workshop"><i data-lucide="hash"></i> SSC ID: <strong id="top_badge_sscId" style="color: var(--primary);">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</strong></span>
+      <span class="meta-item" title="Nomor Lembar Laporan Inspeksi"><i data-lucide="file-text"></i> No. Laporan: <strong id="top_badge_reportNo">{{ $report?->report_no ?? ($nextReportNo ?? '0743') }}</strong></span>
+      <span class="meta-item"><i data-lucide="eye"></i> Live Preview: <strong style="color: var(--success);">Aktif</strong></span>
     </div>
   </div>
 
@@ -196,12 +197,12 @@
             <div class="form-grid-2">
               <div class="form-group">
                 <label>SSC ID <span class="required">*</span></label>
-                <input type="text" id="g_sscId" required placeholder="Contoh: SSC SBY-5778" class="mono-input" value="{{ $report->ssc_id ?? 'SSC SBY-5778' }}">
-                <small class="helper-text">Nomor identitas unik unit workshop</small>
+                <input type="text" id="g_sscId" required placeholder="Contoh: SSC SBY-5779" class="mono-input" value="{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}">
+                <small class="helper-text">Nomor identitas unik unit workshop (otomatis bertambah / dapat disesuaikan)</small>
               </div>
               <div class="form-group">
                 <label>No. Laporan</label>
-                <input type="text" id="g_reportNo" placeholder="Contoh: 0742" class="mono-input" value="{{ $report?->report_no ?? '0742' }}">
+                <input type="text" id="g_reportNo" placeholder="Contoh: 0743" class="mono-input" value="{{ $report?->report_no ?? ($nextReportNo ?? '0743') }}">
               </div>
               <div class="form-group">
                 <label>Tanggal Inspeksi</label>
@@ -1122,7 +1123,7 @@
             <tr>
               <td class="lbl" style="width: 9%;">No.</td>
               <td class="col-c">:</td>
-              <td class="val mono" style="width: 14%; text-align: center;" id="prev_reportNo">{{ $report?->report_no ?? '0742' }}</td>
+              <td class="val mono" style="width: 14%; text-align: center;" id="prev_reportNo">{{ $report?->report_no ?? ($nextReportNo ?? '0743') }}</td>
               
               <td class="lbl" style="width: 8%;">Date</td>
               <td class="col-c">:</td>
@@ -1155,7 +1156,7 @@
             <tr>
               <td class="lbl">SSC ID</td>
               <td class="col-c">:</td>
-              <td class="val mono bold" colspan="4" style="padding-left: 6px; color:#1e3a8a;" id="prev_sscId">{{ $report?->ssc_id ?? "SSC SBY-5778" }}</td>
+              <td class="val mono bold" colspan="4" style="padding-left: 6px; color:#1e3a8a;" id="prev_sscId">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</td>
               
               <td class="lbl">Quote No.</td>
               <td class="col-c">:</td>

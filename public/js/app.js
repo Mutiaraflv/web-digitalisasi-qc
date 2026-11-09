@@ -254,6 +254,12 @@ function updateLivePreview() {
 
     setPreviewText('prev_sscId', sscId);
     setPreviewText('prev_reportNo', reportNo);
+
+    // Sync top bar badges
+    const topSsc = document.getElementById('top_badge_sscId');
+    if (topSsc && sscId) topSsc.textContent = sscId;
+    const topRep = document.getElementById('top_badge_reportNo');
+    if (topRep && reportNo) topRep.textContent = reportNo;
     setPreviewText('prev_customer', customer);
     setPreviewText('prev_partName', partName);
     setPreviewText('prev_inspectionType', inspectionType);
@@ -736,7 +742,7 @@ function syncRecommendationsPreview() {
 function extractFormData() {
     let sscId = document.getElementById('g_sscId')?.value || '';
     if (!sscId.trim()) {
-        sscId = 'SSC SBY-5778';
+        sscId = 'SSC SBY-' + Math.floor(5000 + Math.random() * 4000);
         const sscEl = document.getElementById('g_sscId');
         if (sscEl) sscEl.value = sscId;
     }
@@ -882,7 +888,9 @@ function extractFormData() {
 function saveReportData(andDownloadExcel = false) {
     let sscEl = document.getElementById('g_sscId');
     if (!sscEl || !sscEl.value.trim()) {
-        if (sscEl) sscEl.value = 'SSC SBY-5778';
+        showToast('Mohon isi SSC ID terlebih dahulu!', 'error');
+        if (sscEl) sscEl.focus();
+        return;
     }
     const payload = extractFormData();
     if (!payload) return;
@@ -1211,7 +1219,9 @@ document.addEventListener('DOMContentLoaded', () => {
 window.exportOfficialPdf = function() {
     let sscEl = document.getElementById('g_sscId');
     if (!sscEl || !sscEl.value.trim()) {
-        if (sscEl) sscEl.value = 'SSC SBY-5778';
+        showToast('Mohon isi SSC ID terlebih dahulu!', 'error');
+        if (sscEl) sscEl.focus();
+        return;
     }
 
     const payload = extractFormData();

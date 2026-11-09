@@ -56,9 +56,13 @@ class ReportController extends Controller
      */
     public function create()
     {
+        $identifiers = $this->generateNextIdentifiers();
+
         return view('reports.create', [
             'report' => null,
-            'isEdit' => false
+            'isEdit' => false,
+            'nextReportNo' => $identifiers['nextReportNo'],
+            'nextSscId' => $identifiers['nextSscId'],
         ]);
     }
 
@@ -69,8 +73,49 @@ class ReportController extends Controller
     {
         return view('reports.create', [
             'report' => $report,
-            'isEdit' => true
+            'isEdit' => true,
+            'nextReportNo' => $report->report_no,
+            'nextSscId' => $report->ssc_id,
         ]);
+    }
+
+    /**
+     * Generate next sequential report_no and ssc_id from previous records
+     */
+    private function generateNextIdentifiers(): array
+    {
+        $nextReportNo = '0743';
+        $nextSscId = 'SSC SBY-5779';
+
+        try {
+            $latest = Report::orderBy('id', 'desc')->first();
+            if ($latest) {
+                // Next report_no (e.g. 0742 -> 0743)
+                if (!empty($latest->report_no) && preg_match('/(\d+)/', $latest->report_no, $m)) {
+                    $nextNum = intval($m[1]) + 1;
+                    $len = max(strlen($m[1]), 4);
+                    $nextReportNo = str_pad($nextNum, $len, '0', STR_PAD_LEFT);
+                } elseif (!empty($latest->id)) {
+                    $nextReportNo = str_pad(742 + $latest->id, 4, '0', STR_PAD_LEFT);
+                }
+
+                // Next ssc_id (e.g. SSC SBY-5778 -> SSC SBY-5779)
+                if (!empty($latest->ssc_id) && preg_match('/^(.*?)(\d+)$/', $latest->ssc_id, $m)) {
+                    $prefix = $m[1];
+                    $nextNum = intval($m[2]) + 1;
+                    $nextSscId = $prefix . $nextNum;
+                } elseif (!empty($latest->id)) {
+                    $nextSscId = 'SSC SBY-' . (5778 + $latest->id);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Keep default fallback if table unreadable
+        }
+
+        return [
+            'nextReportNo' => $nextReportNo,
+            'nextSscId' => $nextSscId
+        ];
     }
 
     /**
