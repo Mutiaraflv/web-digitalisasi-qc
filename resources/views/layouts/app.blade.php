@@ -66,15 +66,30 @@
           <i data-lucide="ruler"></i>
           <span>Kalibrasi Alat</span>
         </a>
+
+        @if(auth()->check() && auth()->user()->isAdmin())
+          <div class="nav-section-title" style="margin-top: 1.25rem;">Pengaturan Sistem</div>
+
+          <a href="{{ route('settings.users.index') }}" class="nav-item {{ request()->routeIs('settings.users.*') ? 'active' : '' }}">
+            <i data-lucide="shield-check"></i>
+            <span>Kelola Akun Web</span>
+          </a>
+        @endif
       </nav>
 
       <!-- Sidebar User Footer -->
       <div class="sidebar-footer">
-        <div class="user-avatar">QC</div>
+        <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
         <div class="user-info">
-          <h4>Tim QC Workshop</h4>
-          <p>PT SSC Works</p>
+          <h4>{{ auth()->user()->name }}</h4>
+          <p>{{ auth()->user()->email }} · <span style="color: {{ auth()->user()->isAdmin() ? '#fb923c' : '#94a3b8' }}; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">{{ auth()->user()->role ?? 'user' }}</span></p>
         </div>
+        <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form">
+          @csrf
+          <button type="submit" class="sidebar-logout" title="Keluar" aria-label="Keluar">
+            <i data-lucide="log-out"></i>
+          </button>
+        </form>
       </div>
     </aside>
 

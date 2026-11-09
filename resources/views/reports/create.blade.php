@@ -176,7 +176,7 @@
                 <input type="date" id="g_effectiveDate" value="{{ $report && $report->effective_date ? \Carbon\Carbon::parse($report->effective_date)->format('Y-m-d') : date('Y-m-d') }}">
               </div>
               <div class="form-group">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.5rem;">
                   <div>
                     <label>Rev. (Revisi)</label>
                     <input type="text" id="g_rev" class="mono-input" placeholder="04" value="{{ $report?->rev ?? '04' }}">
@@ -1163,7 +1163,7 @@
             <tr>
               <td class="lbl">SSC ID</td>
               <td class="col-c">:</td>
-              <td class="val mono bold" colspan="4" style="padding-left: 6px; color:#1e3a8a;" id="prev_sscId">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</td>
+              <td class="val mono bold" colspan="4" style="padding-left: 6px; color:#ea580c;" id="prev_sscId">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</td>
               
               <td class="lbl">Quote No.</td>
               <td class="col-c">:</td>
