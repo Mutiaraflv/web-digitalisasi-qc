@@ -1272,3 +1272,38 @@ window.exportOfficialPdf = function() {
 };
 
 window.saveReportData = saveReportData;
+
+// -------------------------------------------------------------
+// Mobile Full-Screen Preview Drawer Controls
+// -------------------------------------------------------------
+window.openMobilePreview = function() {
+    const previewPane = document.querySelector('.studio-preview-pane');
+    if (!previewPane) return;
+    previewPane.classList.add('mobile-open');
+    document.body.style.overflow = 'hidden';
+
+    // Ensure active page is visible
+    if (window.switchPreviewPage && !window.currentPreviewPage) {
+        window.switchPreviewPage(1);
+    }
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+};
+
+window.closeMobilePreview = function() {
+    const previewPane = document.querySelector('.studio-preview-pane');
+    if (!previewPane) return;
+    previewPane.classList.remove('mobile-open');
+    document.body.style.overflow = '';
+};
+
+// Also close on Escape key if open
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const previewPane = document.querySelector('.studio-preview-pane');
+        if (previewPane && previewPane.classList.contains('mobile-open')) {
+            window.closeMobilePreview();
+        }
+    }
+});

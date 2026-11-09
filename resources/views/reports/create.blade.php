@@ -17,6 +17,9 @@
     <button type="button" id="btnTopExportExcel" class="btn btn-secondary btn-sm" onclick="window.saveReportData(true)" title="Unduh Excel (.xlsx)">
       <i data-lucide="file-spreadsheet"></i> Excel
     </button>
+    <button type="button" class="btn btn-dark btn-sm btn-open-mobile-preview" id="btnOpenMobilePreview" onclick="window.openMobilePreview()" title="Lihat Dokumen Preview Full Layar">
+      <i data-lucide="eye"></i> <span>Preview</span>
+    </button>
   </div>
 @endsection
 
@@ -1061,6 +1064,9 @@
           <button type="button" class="btn btn-secondary btn-xs" id="btnPrintPreview" title="Cetak / Unduh PDF" onclick="window.exportOfficialPdf()">
             <i data-lucide="printer"></i> Cetak / PDF (6 Lembar)
           </button>
+          <button type="button" class="btn btn-danger btn-xs btn-close-preview" id="btnCloseMobilePreview" onclick="window.closeMobilePreview()" title="Tutup Preview &amp; Kembali ke Form">
+            <i data-lucide="x"></i> Kembali ke Form
+          </button>
         </div>
       </div>
 
@@ -1776,6 +1782,12 @@
 
   </div>
 </div>
+
+<!-- Floating Action Button for Mobile Preview (Sisi Kanan Layar) -->
+<button type="button" class="mobile-preview-fab" id="btnFabMobilePreview" onclick="window.openMobilePreview()" title="Buka Dokumen Preview Full Layar">
+  <i data-lucide="file-text"></i>
+  <span>Preview Dokumen</span>
+</button>
 @endsection
 
 @section('scripts')
