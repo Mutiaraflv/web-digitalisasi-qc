@@ -1226,7 +1226,7 @@
             <tr>
               <td class="lbl">SSC ID</td>
               <td class="col-c">:</td>
-              <td class="val mono bold" colspan="4" style="padding-left: 6px; color:#1312b6;" id="prev_sscId">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</td>
+              <td class="val mono bold" colspan="4" style="padding-left: 6px; color:#0f172a;" id="prev_sscId">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</td>
               
               <td class="lbl">Quote No.</td>
               <td class="col-c">:</td>
@@ -1330,7 +1330,7 @@
         <div class="sheet-paper preview-sheet" id="prev_sheet_2">
           <div class="sheet-page-indicator">Halaman 2 dari 6</div>
           <!-- Item 01 Penetrant -->
-          <div class="p-split-section" style="border-top: 1px solid #000;">
+          <div class="p-split-section" style="border-top: none;">
             <div class="p-split-left">
               <div class="p-col-header">Image of Penetrant Check OD Area "A" and OD Spline</div>
               <div class="p-photo-grid-2x2">
@@ -1434,7 +1434,7 @@
         <div class="sheet-paper preview-sheet" id="prev_sheet_3">
           <div class="sheet-page-indicator">Halaman 3 dari 6</div>
           <!-- Item 03: Area D -->
-          <div class="p-bar-yellow" style="border-top:1px solid #000;">OD Area "D"</div>
+          <div class="p-bar-yellow" style="border-top: none;">OD Area "D"</div>
           <div class="p-split-section">
             <div class="p-split-left">
               <div class="p-col-header">Image of OD Area "D"</div>
@@ -1558,7 +1558,7 @@
         <div class="sheet-paper preview-sheet" id="prev_sheet_4">
           <div class="sheet-page-indicator">Halaman 4 dari 6</div>
           <!-- Penetrant F -->
-          <div class="p-split-section" style="border-top: 1px solid #000;">
+          <div class="p-split-section" style="border-top: none;">
             <div class="p-split-left">
               <div class="p-col-header">Image of Penetrant Check OD Area "F"</div>
               <div class="p-photo-grid-2x2">
@@ -1658,7 +1658,7 @@
         <div class="sheet-paper preview-sheet" id="prev_sheet_5">
           <div class="sheet-page-indicator">Halaman 5 dari 6</div>
           <!-- Item 06: Area G and Spline -->
-          <div class="p-bar-yellow" style="border-top:1px solid #000;">OD Area "G" and OD Spline</div>
+          <div class="p-bar-yellow" style="border-top: none;">OD Area "G" and OD Spline</div>
           <div class="p-split-section">
             <div class="p-split-left">
               <div class="p-col-header">Image of OD Spline</div>
