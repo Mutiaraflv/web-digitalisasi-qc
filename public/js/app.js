@@ -807,7 +807,7 @@ function syncRecommendationsPreview() {
     if (previewBody) {
         previewBody.innerHTML = '';
         if (rows.length === 0) {
-            previewBody.innerHTML = '<tr><td colspan="4" class="center" style="color:#94a3b8; padding:4px;">Tidak ada rekomendasi</td></tr>';
+            previewBody.innerHTML = '<tr><td colspan="3" class="center" style="color:#94a3b8; padding:4px;">Tidak ada rekomendasi</td></tr>';
         } else {
             rows.forEach((r, idx) => {
                 const item = r.querySelector('.rec-item')?.value || (idx < 9 ? `0${idx + 1}` : `${idx + 1}`);
@@ -816,10 +816,9 @@ function syncRecommendationsPreview() {
 
                 const ptr = document.createElement('tr');
                 ptr.innerHTML = `
-                    <td class="center mono">${item}</td>
-                    <td>${remarks}</td>
-                    <td>${remarks}</td>
-                    <td>${recommendation}</td>
+                    <td style="text-align: center; font-weight: 700; font-family: 'JetBrains Mono', monospace;">${item}</td>
+                    <td style="white-space: pre-line;">${remarks}</td>
+                    <td style="white-space: pre-line;">${recommendation}</td>
                 `;
                 previewBody.appendChild(ptr);
             });
