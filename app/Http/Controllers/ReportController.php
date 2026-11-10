@@ -238,13 +238,24 @@ class ReportController extends Controller
     }
 
     /**
+     * Build sanitized download filename reflecting SSC ID, inspection type, and part name.
+     */
+    private function buildExportFilename(Report $report): string
+    {
+        $sscSafe = preg_replace('/[^A-Za-z0-9_-]/', '_', $report->ssc_id ?? 'REPORT');
+        $typeSafe = strtoupper(preg_replace('/[^A-Za-z0-9_-]/', '', $report->inspection_type ?? 'PRE'));
+        $partSafe = strtoupper(trim(preg_replace('/[^A-Za-z0-9 _-]/', '', $report->part_name ?? 'OUTPUT SHAFT')));
+        return "{$sscSafe} CCR {$typeSafe} {$partSafe}.xlsx";
+    }
+
+    /**
      * Export report to Excel
      */
     public function export(Report $report)
     {
         try {
             $filePath = $this->excelService->generateExcelFile($report);
-            $filename = preg_replace('/[^A-Za-z0-9_-]/', '_', $report->ssc_id ?? 'REPORT') . ' CCR PRE OUTPUT SHAFT.xlsx';
+            $filename = $this->buildExportFilename($report);
 
             return response()->download($filePath, $filename, [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -268,7 +279,7 @@ class ReportController extends Controller
         );
 
         $filePath = $this->excelService->generateExcelFile($report);
-        $filename = preg_replace('/[^A-Za-z0-9_-]/', '_', $report->ssc_id) . ' CCR PRE OUTPUT SHAFT.xlsx';
+        $filename = $this->buildExportFilename($report);
 
         return response()->download($filePath, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
