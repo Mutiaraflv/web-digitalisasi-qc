@@ -1522,13 +1522,41 @@
             ['item' => '06', 'remarks' => "Actual measurement OD area \"G\" was undersize\nVisual corrosion at OD area \"G\"\nVisual corrosion area spline\nVisual scratch and corrosion at area surface\nVisual dirty at hole thread area surface", 'rec' => "Repair Cleaning OD area \"G\" to specification\nCleaning and polish area spline\nCleaning and polish area surface\nRetap hole thread area surface"],
           ];
           $activeRecs = !empty($recs) && count($recs) > 0 ? $recs : $defaultRecs;
+
+          // Group items and split multi-lines
+          $groupedRecs = [];
+          foreach ($activeRecs as $idx => $r) {
+            $itemNum = trim($r['item'] ?? sprintf('%02d', $idx + 1));
+            $rem = trim($r['remarks'] ?? '');
+            $rec = trim($r['recommendation'] ?? ($r['rec'] ?? ''));
+
+            $remLines = array_values(array_filter(array_map('trim', explode("\n", $rem)), fn($s) => $s !== ''));
+            $recLines = array_values(array_filter(array_map('trim', explode("\n", $rec)), fn($s) => $s !== ''));
+            $maxLines = max(count($remLines), count($recLines), 1);
+
+            if (!isset($groupedRecs[$itemNum])) {
+              $groupedRecs[$itemNum] = [];
+            }
+
+            for ($i = 0; $i < $maxLines; $i++) {
+              $groupedRecs[$itemNum][] = [
+                'remarks' => $remLines[$i] ?? ($maxLines === 1 ? $rem : '-'),
+                'rec' => $recLines[$i] ?? ($maxLines === 1 ? $rec : '-')
+              ];
+            }
+          }
         @endphp
-        @foreach($activeRecs as $idx => $r)
-          <tr>
-            <td style="text-align: center; font-weight: 700; font-family: monospace;">{{ $r['item'] ?? sprintf('%02d', $idx + 1) }}</td>
-            <td style="white-space: pre-line;">{{ $r['remarks'] ?? '-' }}</td>
-            <td style="white-space: pre-line;">{{ $r['recommendation'] ?? ($r['rec'] ?? '-') }}</td>
-          </tr>
+        @foreach($groupedRecs as $itemNum => $points)
+          @php $rowCount = count($points); @endphp
+          @foreach($points as $pIdx => $pt)
+            <tr>
+              @if($pIdx === 0)
+                <td rowspan="{{ $rowCount }}" style="text-align: center; font-weight: 700; font-family: monospace; vertical-align: middle; border: 1px solid #000; width: 45px;">{{ $itemNum }}</td>
+              @endif
+              <td style="border: 1px solid #000; padding: 3.5px 6px;">{{ $pt['remarks'] !== '' ? $pt['remarks'] : '-' }}</td>
+              <td style="border: 1px solid #000; padding: 3.5px 6px;">{{ $pt['rec'] !== '' ? $pt['rec'] : '-' }}</td>
+            </tr>
+          @endforeach
         @endforeach
       </tbody>
     </table>
@@ -1547,21 +1575,21 @@
         <tbody>
           <tr>
             <td>
-              <div class="sig-name">{{ $sigs['checkedBy']['name'] ?? 'Faqih' }}</div>
+              <div class="sig-name">{{ !empty($sigs['checkedBy']['name']) ? $sigs['checkedBy']['name'] : '............................' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['checkedBy']['title'] ?? 'QC Inspector' }}</span>
                 <span>Date: {{ $sigs['checkedBy']['date'] ?? date('F d, Y') }}</span>
               </div>
             </td>
             <td>
-              <div class="sig-name">{{ $sigs['createdBy']['name'] ?? 'Kevin' }}</div>
+              <div class="sig-name">{{ !empty($sigs['createdBy']['name']) ? $sigs['createdBy']['name'] : '............................' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['createdBy']['title'] ?? 'QC Inspector' }}</span>
                 <span>Date: {{ $sigs['createdBy']['date'] ?? date('F d, Y') }}</span>
               </div>
             </td>
             <td>
-              <div class="sig-name">{{ $sigs['reviewedBy']['name'] ?? 'Agus' }}</div>
+              <div class="sig-name">{{ !empty($sigs['reviewedBy']['name']) ? $sigs['reviewedBy']['name'] : '............................' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['reviewedBy']['title'] ?? 'Leader QC' }}</span>
                 <span>Date: {{ $sigs['reviewedBy']['date'] ?? date('F d, Y') }}</span>

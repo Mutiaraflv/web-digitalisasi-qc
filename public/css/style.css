@@ -1545,6 +1545,19 @@ body {
   font-size: 0.82rem;
 }
 
+.table-compact textarea {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.82rem;
+  resize: vertical;
+  min-height: 58px;
+  line-height: 1.45;
+  box-sizing: border-box;
+}
+
 .sub-dim-title {
   font-size: 0.78rem;
   font-weight: 700;
@@ -1666,6 +1679,22 @@ body {
 .btn-xs {
   padding: 0.2rem 0.5rem;
   font-size: 0.72rem;
+}
+
+.btn-add-sub {
+  background: #eff6ff;
+  color: var(--primary);
+  border: 1px solid #bfdbfe;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-add-sub:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
 }
 
 /* Signatures */
