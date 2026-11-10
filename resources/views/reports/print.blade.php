@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>FORM-QC-002 - {{ $report->ssc_id }} - PT SSC Works</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
     @page {
       size: A4 portrait;
       margin: 8mm 8mm;
@@ -14,9 +16,9 @@
       print-color-adjust: exact;
     }
     body {
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: 'Inter', Arial, sans-serif;
       font-size: 7.2pt;
-      color: #000;
+      color: #1e293b;
       margin: 0;
       padding: 0;
       background: #e2e8f0;
@@ -65,9 +67,9 @@
       max-width: 790px;
       margin: 15px auto;
       background: #fff;
-      border: 1.5px solid #000;
+      border: 1.5px solid #475569;
       padding: 0;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.14);
       position: relative;
     }
 
@@ -75,10 +77,10 @@
     .header-table {
       width: 100%;
       border-collapse: collapse;
-      border-bottom: 1.5px solid #000;
+      border-bottom: 2px solid #0f172a;
     }
     .header-table td {
-      border: 1px solid #000;
+      border: 1px solid #cbd5e1;
       padding: 0;
       vertical-align: middle;
     }
@@ -97,17 +99,18 @@
     }
     .header-title-cell {
       text-align: center;
+      font-family: 'Inter', Arial, sans-serif;
       font-weight: 900;
       font-size: 11pt;
       letter-spacing: 0.8px;
       padding: 6px 4px !important;
-      background: #fff;
-      color: #000;
-      border-bottom: 1px solid #000;
+      background: #0f172a;
+      color: #ffffff;
+      border-bottom: 1px solid #1e293b;
     }
     .header-ctrl-cell {
       padding: 0 !important;
-      background: #fff;
+      background: #f8fafc;
     }
     .ctrl-table {
       width: 100%;
@@ -115,14 +118,15 @@
       font-size: 6.8pt;
     }
     .ctrl-table td {
-      border: 1px solid #000;
+      border: 1px solid #cbd5e1;
       padding: 2px 4px;
       vertical-align: middle;
     }
     .ctrl-table .ctrl-lbl {
       font-weight: 700;
-      background: #fff;
+      background: #f8fafc;
       white-space: nowrap;
+      color: #334155;
     }
     .ctrl-table .ctrl-colon {
       width: 8px;
@@ -141,7 +145,7 @@
     .ctrl-date-part {
       flex: 1;
       text-align: center;
-      border-right: 1px solid #000;
+      border-right: 1px solid #cbd5e1;
       padding: 1px 4px;
     }
     .ctrl-rev-part {
@@ -155,62 +159,67 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 6.8pt;
-      border-bottom: 1.5px solid #000;
+      border-bottom: 1.5px solid #475569;
     }
     .meta-table td {
-      border: 1px solid #000;
+      border: 1px solid #cbd5e1;
       padding: 2.5px 4px;
       vertical-align: middle;
     }
     .meta-table .lbl {
       font-weight: 700;
-      background: #e2e8f0;
-      color: #000;
+      background: #f1f5f9;
+      color: #0f172a;
       white-space: nowrap;
     }
     .meta-table .colon {
       width: 8px;
       text-align: center;
       padding: 0;
-      background: #e2e8f0;
+      background: #f1f5f9;
       font-weight: 700;
-      color: #000;
+      color: #0f172a;
     }
     .meta-table .val {
       background: #ffffff;
-      color: #000;
-      font-family: Arial, sans-serif;
+      color: #1e293b;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+    .meta-table .mono {
+      font-family: 'JetBrains Mono', monospace;
     }
 
     /* Section Bars */
     .bar-grey {
-      background: #e5e7eb;
-      color: #000;
-      font-weight: 700;
-      font-size: 7.2pt;
-      text-align: center;
-      padding: 2px 4px;
-      border-bottom: 1px solid #000;
-      border-top: 1px solid #000;
-      letter-spacing: 0.3px;
-    }
-    .bar-yellow {
-      background: #ffeb3b;
-      color: #000;
+      background: #f1f5f9;
+      color: #0f172a;
       font-weight: 700;
       font-size: 7.5pt;
-      text-align: center;
-      padding: 2.5px 4px;
-      border-bottom: 1px solid #000;
-      border-top: 1px solid #000;
+      padding: 4px 6px 4px 10px;
+      border-bottom: 1px solid #cbd5e1;
+      border-top: 1px solid #cbd5e1;
+      border-left: 4px solid #2563eb;
       letter-spacing: 0.3px;
+      text-align: left;
+    }
+    .bar-yellow {
+      background: #fffbeb;
+      color: #92400e;
+      font-weight: 700;
+      font-size: 7.5pt;
+      padding: 4px 6px 4px 10px;
+      border-bottom: 1px solid #fcd34d;
+      border-top: 1px solid #fcd34d;
+      border-left: 4px solid #f59e0b;
+      letter-spacing: 0.3px;
+      text-align: left;
     }
 
     /* Blueprint Diagram */
     .blueprint-box {
       text-align: center;
       padding: 4px 6px;
-      border-bottom: 1.5px solid #000;
+      border-bottom: 1.5px solid #475569;
       background: #fff;
       display: flex;
       align-items: center;
@@ -232,17 +241,18 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 7pt;
-      border-bottom: 1.5px solid #000;
+      border-bottom: 1.5px solid #475569;
     }
     .finding-table th {
-      background: #fff;
-      border: 1px solid #000;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
       padding: 2px 4px;
       font-weight: 700;
       text-align: center;
+      color: #0f172a;
     }
     .finding-table td {
-      border: 1px solid #000;
+      border: 1px solid #cbd5e1;
       padding: 2px 4px;
       vertical-align: middle;
       overflow: hidden;
@@ -258,21 +268,23 @@
       background: #f8fafc;
       overflow: hidden;
       box-sizing: border-box;
+      border-radius: 4px;
     }
     .finding-img-wrap img {
       max-width: 100%;
       max-height: 75px;
       object-fit: contain;
+      border-radius: 4px;
     }
 
     /* Two-Column Section (Photos Left, Measurement Right) */
     .split-section {
       display: grid;
       grid-template-columns: 50% 50%;
-      border-bottom: 1px solid #000;
+      border-bottom: 1px solid #cbd5e1;
     }
     .split-col-left {
-      border-right: 1px solid #000;
+      border-right: 1px solid #cbd5e1;
       display: flex;
       flex-direction: column;
     }
@@ -281,12 +293,13 @@
       flex-direction: column;
     }
     .col-header {
-      background: #e5e7eb;
+      background: #f1f5f9;
       font-weight: 700;
       font-size: 7pt;
       text-align: center;
       padding: 2px 4px;
-      border-bottom: 1px solid #000;
+      border-bottom: 1px solid #cbd5e1;
+      color: #0f172a;
     }
 
     /* 2x2 Photo Grid - Fixed Square 110px x 110px per box */
@@ -302,11 +315,12 @@
       max-height: 224px;
       gap: 2px;
       padding: 1px;
-      background: #000;
+      background: #cbd5e1;
       box-sizing: border-box;
       margin: 4px auto;
       justify-content: center;
       align-content: center;
+      border-radius: 4px;
     }
     .photo-slot {
       width: 110px;
@@ -322,6 +336,7 @@
       justify-content: center;
       overflow: hidden;
       position: relative;
+      border-radius: 3px;
     }
     .photo-slot img {
       width: 110px;
@@ -332,6 +347,7 @@
       max-height: 110px;
       object-fit: cover;
       display: block;
+      border-radius: 3px;
     }
     .photo-slot .slot-placeholder {
       font-size: 6.5pt;
@@ -349,8 +365,9 @@
       font-size: 6.8pt;
       text-align: center;
       padding: 1.5px;
-      border-bottom: 1px solid #000;
-      background: #fff;
+      border-bottom: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
     }
     .data-table {
       width: 100%;
@@ -358,21 +375,26 @@
       font-size: 6.8pt;
     }
     .data-table th {
-      border: 1px solid #000;
+      border: 1px solid #cbd5e1;
       padding: 1.5px 2px;
-      background: #f3f4f6;
+      background: #f1f5f9;
       font-weight: 700;
       text-align: center;
+      color: #0f172a;
     }
     .data-table td {
-      border: 1px solid #000;
+      border: 1px solid #cbd5e1;
       padding: 1.5px 2px;
       text-align: center;
-      font-family: monospace;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 6.5pt;
     }
     .data-table td.text-left {
       text-align: left;
-      font-family: Arial, sans-serif;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+    .data-table tbody tr:nth-child(even) {
+      background: #f8fafc;
     }
 
     /* Bullet Findings */
@@ -381,6 +403,7 @@
       font-size: 6.6pt;
       line-height: 1.35;
       flex: 1;
+      color: #334155;
     }
     .bullet-findings div {
       margin-bottom: 2px;
@@ -388,6 +411,7 @@
     .bullet-arrow {
       font-weight: 700;
       margin-right: 3px;
+      color: #2563eb;
     }
 
     /* Legend Footer (A: Accept, R: Reject) */
@@ -399,32 +423,41 @@
       padding: 2px 10px;
       font-size: 6.8pt;
       font-weight: 700;
-      border-bottom: 1px solid #000;
-      background: #fff;
+      border-bottom: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
     }
     .badge-ar-a {
-      background: #dcfce7;
-      color: #15803d;
-      padding: 1px 6px;
-      border: 1px solid #16a34a;
-      border-radius: 2px;
+      background: #ecfdf5;
+      color: #059669;
+      padding: 1px 8px;
+      border: 1px solid #059669;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 6.5pt;
     }
     .badge-ar-r {
-      background: #fee2e2;
+      background: #fef2f2;
       color: #dc2626;
-      padding: 1px 6px;
+      padding: 1px 8px;
       border: 1px solid #dc2626;
-      border-radius: 2px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 6.5pt;
     }
     .cell-reject {
-      background: #fee2e2 !important;
+      background: #fef2f2 !important;
       color: #dc2626 !important;
       font-weight: 700;
+      font-family: 'Inter', Arial, sans-serif !important;
+      font-size: 6.5pt;
     }
     .cell-accept {
-      background: #dcfce7 !important;
-      color: #15803d !important;
+      background: #ecfdf5 !important;
+      color: #059669 !important;
       font-weight: 700;
+      font-family: 'Inter', Arial, sans-serif !important;
+      font-size: 6.5pt;
     }
 
     /* TIR Table (Page 5) */
@@ -435,17 +468,22 @@
       font-size: 7pt;
     }
     .tir-table th {
-      background: #f3f4f6;
-      border: 1px solid #000;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
       padding: 2px 4px;
       text-align: center;
       font-weight: 700;
+      color: #0f172a;
     }
     .tir-table td {
-      border: 1px solid #000;
+      border: 1px solid #cbd5e1;
       padding: 2px 4px;
       text-align: center;
-      font-family: monospace;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 6.8pt;
+    }
+    .tir-table tbody tr:nth-child(even) {
+      background: #f8fafc;
     }
 
     /* Recommendation Table (Page 6) */
@@ -455,16 +493,21 @@
       font-size: 7.2pt;
     }
     .rec-table th {
-      background: #f3f4f6;
-      border: 1px solid #000;
+      background: #0f172a;
+      border: 1px solid #1e293b;
       padding: 3px 6px;
       font-weight: 700;
       text-align: center;
+      color: #fff;
+      letter-spacing: 0.3px;
     }
     .rec-table td {
-      border: 1px solid #000;
+      border: 1px solid #cbd5e1;
       padding: 3.5px 6px;
       vertical-align: top;
+    }
+    .rec-table tbody tr:nth-child(even) td {
+      background: #f8fafc;
     }
 
     /* Signatures (Page 6) */
@@ -473,14 +516,16 @@
       border-collapse: collapse;
       font-size: 7.2pt;
       margin-top: 15px;
-      border: 1px solid #000;
+      border: 1.5px solid #475569;
     }
     .sig-table th {
-      border: 1px solid #000;
+      border: 1px solid #cbd5e1;
       padding: 3px 6px;
       text-align: left;
       font-weight: 700;
-      background: #fff;
+      background: #0f172a;
+      color: #ffffff;
+      letter-spacing: 0.3px;
     }
     /* Page 6 Signatures Always at the Bottom Edge */
     .a4-page.page-6-signatures {
@@ -524,7 +569,7 @@
     }
 
     .sig-table td {
-      border: 1px solid #000;
+      border: 1px solid #cbd5e1;
       padding: 6px 8px;
       vertical-align: bottom;
       height: 95px;
@@ -533,15 +578,16 @@
     }
     .sig-name {
       font-weight: 700;
-      border-bottom: 1px solid #000;
+      border-bottom: 1px solid #94a3b8;
       padding-bottom: 2px;
       margin-bottom: 3px;
       margin-top: 45px;
+      color: #0f172a;
     }
     .sig-meta {
       display: flex;
       justify-content: space-between;
-      color: #374151;
+      color: #475569;
       font-size: 6.8pt;
     }
   
