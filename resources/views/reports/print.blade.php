@@ -87,8 +87,8 @@
     }
     .header-logo-cell {
       width: 37%;
-      padding: 4px 6px !important;
-      text-align: center;
+      padding: 3px 6px 3px 8px !important;
+      text-align: left;
       background: #fff;
     }
     .header-logo-cell img {
@@ -96,7 +96,7 @@
       height: 52px;
       object-fit: contain;
       display: block;
-      margin: 0 auto;
+      margin: 0 auto 0 2px;
     }
     .header-title-cell {
       text-align: center;
@@ -669,7 +669,7 @@
     <table class="header-table">
       <tr>
         <td class="header-logo-cell" rowspan="2" style="width: 37%;">
-          <img src="{{ asset('images/doc_assets/kop_logo_perfect.png') }}" alt="PT. SSC WORKS">
+          <img src="{{ asset('images/doc_assets/kop_logo_perfect.png') }}?v={{ file_exists(public_path('images/doc_assets/kop_logo_perfect.png')) ? filemtime(public_path('images/doc_assets/kop_logo_perfect.png')) : time() }}" alt="PT. SSC WORKS">
         </td>
         <td class="header-title-cell" style="width: 63%;">
           COMPONENT CONDITION REPORT

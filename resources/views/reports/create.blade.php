@@ -1153,7 +1153,7 @@
           <table class="p-header-table">
             <tr>
               <td class="p-logo-cell" rowspan="2" style="width: 37%;">
-                <img src="{{ asset('images/doc_assets/kop_logo_perfect.png') }}" alt="PT. SSC WORKS">
+                <img src="{{ asset('images/doc_assets/kop_logo_perfect.png') }}?v={{ file_exists(public_path('images/doc_assets/kop_logo_perfect.png')) ? filemtime(public_path('images/doc_assets/kop_logo_perfect.png')) : time() }}" alt="PT. SSC WORKS">
               </td>
               <td class="p-title-cell" style="width: 63%;">COMPONENT CONDITION REPORT</td>
             </tr>
