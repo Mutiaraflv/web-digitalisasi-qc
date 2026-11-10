@@ -121,24 +121,64 @@ const blankDefaultTemplate = {
         ]
     },
     recommendations: [
-        { item: "01", remarks: "Cleaning and polish OD area \"A\"", recommendation: "Cleaning and polish OD area \"A\"" }
+        { item: "01", remarks: "", recommendation: "" }
     ],
     photos: {
         item01: null, item02: null, item03: null, item04: null,
         item05: null, item06: null, penetrant: null, defect: null
     },
     signatures: {
-        checkedBy: { name: "Faqih S A A", title: "QC Inspector", date: "" },
-        createdBy: { name: "M Kevin S", title: "QC Inspector", date: "" },
-        reviewedBy: { name: "Agus Riyanto", title: "Leader QC", date: "" }
+        checkedBy: { name: "", title: "QC Inspector", date: "" },
+        createdBy: { name: "", title: "QC Inspector", date: "" },
+        reviewedBy: { name: "", title: "Leader QC", date: "" }
     }
 };
+
+function initPersonnelAutoRole() {
+    const rolesMap = {
+        'faqih': 'QC Inspector',
+        'faqih s a a': 'QC Inspector',
+        'm kevin s': 'QC Inspector',
+        'kevin': 'QC Inspector',
+        'indra': 'QC Inspector',
+        'sahid': 'QC Inspector',
+        'rafli': 'QC Inspector',
+        'agus': 'Leader QC',
+        'agus riyanto': 'Leader QC',
+        'firman': 'Workshop Supervisor',
+    };
+
+    const pairs = [
+        { nameId: 'sig_checkedName', titleId: 'sig_checkedTitle' },
+        { nameId: 'sig_createdName', titleId: 'sig_createdTitle' },
+        { nameId: 'sig_reviewedName', titleId: 'sig_reviewedTitle' },
+    ];
+
+    pairs.forEach(({ nameId, titleId }) => {
+        const nameInput = document.getElementById(nameId);
+        const titleInput = document.getElementById(titleId);
+        if (!nameInput || !titleInput) return;
+
+        const updateTitle = () => {
+            const val = (nameInput.value || '').trim().toLowerCase();
+            if (rolesMap[val]) {
+                titleInput.value = rolesMap[val];
+                titleInput.dispatchEvent(new Event('change', { bubbles: true }));
+                titleInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        };
+
+        nameInput.addEventListener('input', updateTitle);
+        nameInput.addEventListener('change', updateTitle);
+    });
+}
 
 function initApp() {
     if (window.lucide) lucide.createIcons();
     setupStudioTabs();
     setupLivePreviewSync();
     setupButtonActions();
+    initPersonnelAutoRole();
 
     // Check if we are on inspection create/edit page
     const reportIdInput = document.getElementById('reportId');
@@ -193,6 +233,9 @@ function setupLivePreviewSync() {
             syncSigChips(event.target.id);
         }
     });
+    form.addEventListener('focusin', (event) => {
+        focusPreviewForInput(event.target);
+    });
     form.addEventListener('change', (event) => {
         updateLivePreview();
         focusPreviewForInput(event.target);
@@ -200,6 +243,12 @@ function setupLivePreviewSync() {
             syncSigChips(event.target.id);
         }
     });
+
+    const compSelect = document.getElementById('componentSelect');
+    if (compSelect) {
+        compSelect.addEventListener('change', () => focusPreviewForInput(compSelect));
+        compSelect.addEventListener('focus', () => focusPreviewForInput(compSelect));
+    }
 
     // Initial sync
     setTimeout(() => {
@@ -209,21 +258,52 @@ function setupLivePreviewSync() {
 }
 
 function focusPreviewForInput(input) {
-    if (!input || !input.id || ['button', 'submit', 'reset'].includes(input.type)) return;
+    if (!input || ['button', 'submit', 'reset'].includes(input.type)) return;
 
-    const id = input.id;
+    const id = input.id || '';
     let target = null;
     if (id.startsWith('input_slot_') || id.startsWith('camera_slot_')) {
         const slotKey = id.replace(/^(input|camera)_slot_/, '');
         target = document.getElementById(`prev_slot_${slotKey}`);
     }
     if (!target && input.closest('#recTableBody')) {
-        target = document.getElementById('prev_recTableBody');
+        const tr = input.closest('tr');
+        const tbody = tr ? tr.parentElement : null;
+        if (tbody) {
+            const allFormRows = Array.from(tbody.querySelectorAll('tr'));
+            const rowIndex = allFormRows.indexOf(tr);
+            const prevRows = document.querySelectorAll('#prev_recTableBody tr');
+            const prevTr = prevRows[rowIndex];
+            if (prevTr) {
+                const hasItemCell = prevTr.children.length >= 3;
+                if (input.classList.contains('rec-item')) {
+                    let cur = prevTr;
+                    let idx = rowIndex;
+                    while (cur && cur.children.length < 3 && idx > 0) {
+                        idx--;
+                        cur = prevRows[idx];
+                    }
+                    target = cur ? cur.children[0] : prevTr;
+                } else if (input.classList.contains('rec-remarks')) {
+                    target = hasItemCell ? prevTr.children[1] : prevTr.children[0];
+                } else if (input.classList.contains('rec-rec')) {
+                    target = hasItemCell ? prevTr.children[2] : prevTr.children[1];
+                } else {
+                    target = prevTr;
+                }
+            }
+        }
+        target = target || document.getElementById('prev_recTableBody');
     }
 
     const aliases = {
+        componentSelect: 'prev_partName',
         g_date: 'prev_metaDate',
+        g_inspectionType: 'prev_inspectionType',
         i1_length: 'prev_i1_len',
+        i1_remark1: 'prev_i1_remark1',
+        i3_e_y: 'prev_i3_e_x',
+        i3_e_z: 'prev_i3_e_x',
         i4_k_res: 'prev_i4_k',
         i5_j_res: 'prev_i5_j',
         i6_i_res: 'prev_i6_i',
@@ -455,7 +535,7 @@ function updateLivePreview() {
                 const d = new Date(parts[0], parts[1] - 1, parts[2]);
                 return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
             }
-        } catch(e) {}
+        } catch (e) { }
         return val;
     };
 
@@ -463,15 +543,15 @@ function updateLivePreview() {
     const createdD = document.getElementById('sig_createdDate')?.value;
     const reviewedD = document.getElementById('sig_reviewedDate')?.value;
 
-    setPreviewText('prev_sigCheckedName', document.getElementById('sig_checkedName')?.value || 'Faqih');
+    setPreviewText('prev_sigCheckedName', document.getElementById('sig_checkedName')?.value?.trim() || '............................');
     setPreviewText('prev_sigCheckedTitle', document.getElementById('sig_checkedTitle')?.value || 'QC Inspector');
     setPreviewText('prev_sigCheckedDate', 'Date: ' + formatSigDate(checkedD, 'October 20, 2026'));
 
-    setPreviewText('prev_sigCreatedName', document.getElementById('sig_createdName')?.value || 'Kevin');
+    setPreviewText('prev_sigCreatedName', document.getElementById('sig_createdName')?.value?.trim() || '............................');
     setPreviewText('prev_sigCreatedTitle', document.getElementById('sig_createdTitle')?.value || 'QC Inspector');
     setPreviewText('prev_sigCreatedDate', 'Date: ' + formatSigDate(createdD, 'October 21, 2026'));
 
-    setPreviewText('prev_sigReviewedName', document.getElementById('sig_reviewedName')?.value || 'Agus');
+    setPreviewText('prev_sigReviewedName', document.getElementById('sig_reviewedName')?.value?.trim() || '............................');
     setPreviewText('prev_sigReviewedTitle', document.getElementById('sig_reviewedTitle')?.value || 'Leader QC');
     setPreviewText('prev_sigReviewedDate', 'Date: ' + formatSigDate(reviewedD, 'October 21, 2026'));
 }
@@ -515,21 +595,21 @@ function colorStatusCell(id, status) {
 // -------------------------------------------------------------
 // Photo Upload and Section Handling
 // -------------------------------------------------------------
-window.triggerFileInput = function(inputId) {
+window.triggerFileInput = function (inputId) {
     document.getElementById(inputId)?.click();
 };
 
-window.triggerCameraInput = function(inputId) {
+window.triggerCameraInput = function (inputId) {
     document.getElementById(inputId)?.click();
 };
 
-window.handleSlotUpload = function(input, slotKey) {
+window.handleSlotUpload = function (input, slotKey) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
 
     // Immediate local preview via FileReader
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         const dataUrl = e.target.result;
         renderSlotPreview(slotKey, dataUrl);
     };
@@ -551,29 +631,29 @@ window.handleSlotUpload = function(input, slotKey) {
         },
         body: formData
     })
-    .then(r => r.json())
-    .then(data => {
-        if (card) card.style.opacity = '1';
-        if (data.success) {
-            reportPhotos[slotKey] = data.url;
-            renderSlotPreview(slotKey, data.url);
+        .then(r => r.json())
+        .then(data => {
+            if (card) card.style.opacity = '1';
+            if (data.success) {
+                reportPhotos[slotKey] = data.url;
+                renderSlotPreview(slotKey, data.url);
+                updatePhotoBadgeCount();
+                showToast('Foto berhasil diunggah', 'success');
+            } else {
+                showToast(data.message || 'Gagal mengunggah foto', 'error');
+            }
+        })
+        .catch(err => {
+            if (card) card.style.opacity = '1';
+            console.error('Upload photo error:', err);
+            showToast('Foto tersimpan di sesi lokal', 'success');
             updatePhotoBadgeCount();
-            showToast('Foto berhasil diunggah', 'success');
-        } else {
-            showToast(data.message || 'Gagal mengunggah foto', 'error');
-        }
-    })
-    .catch(err => {
-        if (card) card.style.opacity = '1';
-        console.error('Upload photo error:', err);
-        showToast('Foto tersimpan di sesi lokal', 'success');
-        updatePhotoBadgeCount();
-    });
+        });
 };
 
-window.removeSlotPhoto = function(slotKey) {
+window.removeSlotPhoto = function (slotKey) {
     reportPhotos[slotKey] = null;
-    
+
     // Reset file input and camera input
     const input = document.getElementById(`input_slot_${slotKey}`);
     if (input) input.value = '';
@@ -625,7 +705,7 @@ window.removeSlotPhoto = function(slotKey) {
     showToast('Foto dihapus', 'success');
 };
 
-window.useDefaultBlueprint = function(slotKey) {
+window.useDefaultBlueprint = function (slotKey) {
     let url = '';
     if (slotKey === 'drawing_dimension') {
         url = '/images/doc_assets/shaft_blueprint.png';
@@ -660,6 +740,7 @@ function renderSlotPreview(slotKey, imageUrl) {
     const prevSlot = document.getElementById(`prev_slot_${slotKey}`);
     if (prevSlot) {
         prevSlot.innerHTML = `<img src="${imageUrl}" alt="${slotKey}">`;
+        focusPreviewForInput({ id: `input_slot_${slotKey}` });
     }
 
     updatePhotoBadgeCount();
@@ -768,71 +849,235 @@ function setupRecommendations(recs) {
     tbody.innerHTML = '';
 
     const list = recs && recs.length > 0 ? recs : blankDefaultTemplate.recommendations;
+    const normalizedRows = [];
+
     list.forEach((r, idx) => {
-        addRecRow(r.item || sprintf('%02d', idx + 1), r.remarks || '', r.recommendation || '');
+        const itemNum = (r.item || (idx < 9 ? `0${idx + 1}` : `${idx + 1}`)).trim();
+        const rem = (r.remarks || '').trim();
+        const rec = (r.recommendation || r.rec || '').trim();
+
+        if (Array.isArray(r.points) && r.points.length > 0) {
+            r.points.forEach((pt, pIdx) => {
+                normalizedRows.push({
+                    item: itemNum,
+                    remarks: pt.remarks || '',
+                    recommendation: pt.recommendation || pt.rec || '',
+                    isSub: pIdx > 0
+                });
+            });
+        } else {
+            const remLines = rem.includes('\n') ? rem.split('\n').map(s => s.trim()).filter(Boolean) : [rem];
+            const recLines = rec.includes('\n') ? rec.split('\n').map(s => s.trim()).filter(Boolean) : [rec];
+            const max = Math.max(remLines.length, recLines.length, 1);
+
+            for (let i = 0; i < max; i++) {
+                normalizedRows.push({
+                    item: itemNum,
+                    remarks: remLines[i] || '',
+                    recommendation: recLines[i] || '',
+                    isSub: i > 0
+                });
+            }
+        }
     });
-}
 
-function addRecRow(item = '', remarks = '', recommendation = '') {
-    const tbody = document.getElementById('recTableBody');
-    if (!tbody) return;
-    const rowIdx = tbody.querySelectorAll('tr').length + 1;
-    const formattedItem = item || (rowIdx < 10 ? `0${rowIdx}` : `${rowIdx}`);
+    if (normalizedRows.length === 0) {
+        normalizedRows.push({ item: '01', remarks: '', recommendation: '', isSub: false });
+    }
 
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td><input type="text" class="rec-item mono" value="${formattedItem}" style="width:50px;"></td>
-        <td><input type="text" class="rec-remarks" value="${remarks}" placeholder="Temuan visual..."></td>
-        <td><input type="text" class="rec-rec" value="${recommendation}" placeholder="Rekomendasi tindakan..."></td>
-        <td style="text-align: center;">
-            <button type="button" class="btn btn-secondary btn-xs" onclick="this.closest('tr').remove(); syncRecommendationsPreview();">
-                &times;
-            </button>
-        </td>
-    `;
-    tbody.appendChild(tr);
-
-    tr.querySelectorAll('input').forEach(inp => {
-        inp.addEventListener('input', syncRecommendationsPreview);
+    normalizedRows.forEach(row => {
+        addRecRow(row.item, row.remarks, row.recommendation, row.isSub);
     });
 
     syncRecommendationsPreview();
 }
+
+function addRecRow(item = '', remarks = '', recommendation = '', isSub = false, insertAfterTr = null) {
+    const tbody = document.getElementById('recTableBody');
+    if (!tbody) return;
+
+    let formattedItem = item;
+    if (!formattedItem) {
+        // Dapatkan nomor item terakhir
+        const existingItems = Array.from(tbody.querySelectorAll('.rec-item')).map(i => parseInt(i.value, 10)).filter(n => !isNaN(n));
+        const nextNum = existingItems.length > 0 ? Math.max(...existingItems) + 1 : 1;
+        formattedItem = nextNum < 10 ? `0${nextNum}` : `${nextNum}`;
+    }
+
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-item', formattedItem);
+    tr.setAttribute('data-is-sub', isSub ? 'true' : 'false');
+
+    let itemCellHtml = '';
+    if (!isSub) {
+        itemCellHtml = `
+            <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                <input type="text" class="rec-item mono" value="${formattedItem}" style="width: 44px; text-align: center; font-weight: 700;">
+                <button type="button" class="btn btn-secondary btn-xs btn-add-sub" onclick="window.addSubRecPoint(this)" title="Tambah baris poin temuan & rekomendasi baru di bawah Item ${formattedItem}" style="font-size: 0.68rem; padding: 2px 5px; white-space: nowrap; font-weight: 600; line-height: 1.2;">
+                    + Baris
+                </button>
+            </div>
+        `;
+    } else {
+        itemCellHtml = `
+            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px; padding-left: 10px;">
+                <span style="color: var(--primary); font-size: 0.85rem; font-weight: 700;">↳</span>
+                <input type="text" class="rec-item mono" value="${formattedItem}" style="width: 44px; text-align: center; font-size: 0.78rem; background: #f8fafc; border: 1px dashed #cbd5e1; color: var(--text-muted);" readonly title="Sub-poin dari Item ${formattedItem}">
+            </div>
+        `;
+    }
+
+    tr.innerHTML = `
+        <td style="vertical-align: middle; width: 115px; padding: 4px 6px;">${itemCellHtml}</td>
+        <td style="vertical-align: middle;"><input type="text" class="rec-remarks" value="${remarks.replace(/"/g, '&quot;')}" placeholder="Temuan visual..."></td>
+        <td style="vertical-align: middle;"><input type="text" class="rec-rec" value="${recommendation.replace(/"/g, '&quot;')}" placeholder="Rekomendasi tindakan QC..."></td>
+        <td style="text-align: center; vertical-align: middle; width: 45px;">
+            <button type="button" class="btn btn-secondary btn-xs" onclick="window.removeRecRow(this)" title="Hapus Baris">
+                &times;
+            </button>
+        </td>
+    `;
+
+    if (insertAfterTr && insertAfterTr.nextSibling) {
+        tbody.insertBefore(tr, insertAfterTr.nextSibling);
+    } else if (insertAfterTr) {
+        tbody.appendChild(tr);
+    } else {
+        tbody.appendChild(tr);
+    }
+
+    tr.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', () => {
+            if (inp.classList.contains('rec-item')) {
+                // Update attribute data-item & sub-baris jika ada
+                const newItemVal = inp.value.trim();
+                tr.setAttribute('data-item', newItemVal);
+            }
+            syncRecommendationsPreview();
+        });
+    });
+
+    syncRecommendationsPreview();
+    return tr;
+}
+
+window.addSubRecPoint = function (btn) {
+    const tr = btn.closest('tr');
+    if (!tr) return;
+    const itemVal = (tr.querySelector('.rec-item')?.value || '01').trim();
+
+    // Temukan baris terakhir dalam grup item ini
+    const tbody = document.getElementById('recTableBody');
+    const allRows = Array.from(tbody.querySelectorAll('tr'));
+    const startIdx = allRows.indexOf(tr);
+
+    let lastTr = tr;
+    for (let i = startIdx + 1; i < allRows.length; i++) {
+        const row = allRows[i];
+        if (row.getAttribute('data-is-sub') === 'true' && (row.querySelector('.rec-item')?.value || '').trim() === itemVal) {
+            lastTr = row;
+        } else {
+            break;
+        }
+    }
+
+    const newTr = addRecRow(itemVal, '', '', true, lastTr);
+    if (newTr) {
+        const inpRemarks = newTr.querySelector('.rec-remarks');
+        if (inpRemarks) inpRemarks.focus();
+    }
+};
+
+window.removeRecRow = function (btn) {
+    const tr = btn.closest('tr');
+    if (!tr) return;
+
+    const tbody = document.getElementById('recTableBody');
+    const allRows = Array.from(tbody.querySelectorAll('tr'));
+    const curIdx = allRows.indexOf(tr);
+    const isSub = tr.getAttribute('data-is-sub') === 'true';
+    const itemVal = (tr.querySelector('.rec-item')?.value || '').trim();
+
+    // Jika baris utama yang dihapus, dan ada sub-baris di bawahnya dengan item yang sama,
+    // promosikan sub-baris pertama menjadi baris utama
+    if (!isSub && curIdx < allRows.length - 1) {
+        const nextTr = allRows[curIdx + 1];
+        if (nextTr.getAttribute('data-is-sub') === 'true' && (nextTr.querySelector('.rec-item')?.value || '').trim() === itemVal) {
+            nextTr.setAttribute('data-is-sub', 'false');
+            const itemTd = nextTr.querySelector('td:first-child');
+            if (itemTd) {
+                itemTd.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                        <input type="text" class="rec-item mono" value="${itemVal}" style="width: 44px; text-align: center; font-weight: 700;">
+                        <button type="button" class="btn btn-secondary btn-xs btn-add-sub" onclick="window.addSubRecPoint(this)" title="Tambah baris poin temuan & rekomendasi baru di bawah Item ${itemVal}" style="font-size: 0.68rem; padding: 2px 5px; white-space: nowrap; font-weight: 600; line-height: 1.2;">
+                            + Baris
+                        </button>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    tr.remove();
+    syncRecommendationsPreview();
+};
 
 function syncRecommendationsPreview() {
     const previewBody = document.getElementById('prev_recTableBody');
     const findingDesc = document.getElementById('prev_finding_desc');
     const rows = document.querySelectorAll('#recTableBody tr');
 
+    // Grouping baris berdasarkan nomor Item
+    const groups = [];
+    let currentGroup = null;
+
+    rows.forEach((r, idx) => {
+        const itemVal = (r.querySelector('.rec-item')?.value || '').trim() || (idx < 9 ? `0${idx + 1}` : `${idx + 1}`);
+        const remarks = (r.querySelector('.rec-remarks')?.value || '').trim();
+        const recommendation = (r.querySelector('.rec-rec')?.value || '').trim();
+
+        if (!currentGroup || currentGroup.item !== itemVal) {
+            currentGroup = { item: itemVal, points: [] };
+            groups.push(currentGroup);
+        }
+        currentGroup.points.push({ remarks, recommendation });
+    });
+
     if (previewBody) {
         previewBody.innerHTML = '';
-        if (rows.length === 0) {
-            previewBody.innerHTML = '<tr><td colspan="3" class="center" style="color:#94a3b8; padding:4px;">Tidak ada rekomendasi</td></tr>';
+        if (groups.length === 0) {
+            previewBody.innerHTML = '<tr><td colspan="3" class="center" style="color:#94a3b8; padding:8px;">Tidak ada rekomendasi</td></tr>';
         } else {
-            rows.forEach((r, idx) => {
-                const item = r.querySelector('.rec-item')?.value || (idx < 9 ? `0${idx + 1}` : `${idx + 1}`);
-                const remarks = r.querySelector('.rec-remarks')?.value || '-';
-                const recommendation = r.querySelector('.rec-rec')?.value || '-';
-
-                const ptr = document.createElement('tr');
-                ptr.innerHTML = `
-                    <td style="text-align: center; font-weight: 700; font-family: 'JetBrains Mono', monospace;">${item}</td>
-                    <td style="white-space: pre-line;">${remarks}</td>
-                    <td style="white-space: pre-line;">${recommendation}</td>
-                `;
-                previewBody.appendChild(ptr);
+            groups.forEach(g => {
+                const count = g.points.length;
+                g.points.forEach((pt, pIdx) => {
+                    const ptr = document.createElement('tr');
+                    let html = '';
+                    if (pIdx === 0) {
+                        html += `<td rowspan="${count}" style="text-align: center; font-weight: 700; font-family: 'JetBrains Mono', monospace; vertical-align: middle; border: 1px solid #000; width: 40px; padding: 3px;">${g.item}</td>`;
+                    }
+                    html += `<td style="border: 1px solid #000; padding: 3px 6px;">${pt.remarks || '-'}</td>`;
+                    html += `<td style="border: 1px solid #000; padding: 3px 6px;">${pt.recommendation || '-'}</td>`;
+                    ptr.innerHTML = html;
+                    previewBody.appendChild(ptr);
+                });
             });
         }
     }
 
     if (findingDesc) {
-        if (rows.length === 0) {
+        if (groups.length === 0) {
             findingDesc.innerHTML = '<span style="color:#9ca3af; font-style:italic;">— Temuan akan muncul dari tab Rekomendasi —</span>';
         } else {
-            const listItems = Array.from(rows).map((r, i) => {
-                const remarks = r.querySelector('.rec-remarks')?.value || '';
-                return remarks ? `<div style="margin-bottom:2px;"><strong>${i + 1}.</strong> ${remarks}</div>` : '';
-            }).filter(Boolean);
+            const listItems = [];
+            groups.forEach((g, gIdx) => {
+                const validRemarks = g.points.map(p => p.remarks).filter(Boolean);
+                if (validRemarks.length > 0) {
+                    listItems.push(
+                        `<div style="margin-bottom:3px;"><strong>${gIdx + 1}. [Item ${g.item}]</strong> ${validRemarks.join('; ')}</div>`
+                    );
+                }
+            });
             findingDesc.innerHTML = listItems.length > 0 ? listItems.join('') : '<span style="color:#9ca3af; font-style:italic;">— Belum ada temuan visual diisi —</span>';
         }
     }
@@ -1013,38 +1258,36 @@ function saveReportData(andDownloadExcel = false) {
         },
         body: JSON.stringify(payload)
     })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success || data.id || data.report) {
-            const savedReport = data.report || data;
-            const savedId = savedReport.id || reportId;
-            document.getElementById('reportId').value = savedId;
-            currentReportId = savedId;
+        .then(r => r.json())
+        .then(data => {
+            if (data.success || data.id || data.report) {
+                const savedReport = data.report || data;
+                const savedId = savedReport.id || reportId;
+                document.getElementById('reportId').value = savedId;
+                currentReportId = savedId;
 
-            showToast(data.message || 'Laporan berhasil disimpan!', 'success');
+                showToast(data.message || 'Laporan berhasil disimpan!', 'success');
 
-            if (andDownloadExcel) {
-                // Trigger Excel download
-                window.location.href = `/reports/${savedId}/export`;
+                if (andDownloadExcel) {
+                    // Trigger Excel download
+                    window.location.href = `/reports/${savedId}/export`;
+                }
+            } else {
+                showToast('Gagal menyimpan laporan: ' + (data.message || 'Unknown error'), 'error');
             }
-        } else {
-            showToast('Gagal menyimpan laporan: ' + (data.message || 'Unknown error'), 'error');
-        }
-    })
-    .catch(err => {
-        console.error('Save error:', err);
-        showToast('Terjadi kesalahan koneksi saat menyimpan.', 'error');
-    });
+        })
+        .catch(err => {
+            console.error('Save error:', err);
+            showToast('Terjadi kesalahan koneksi saat menyimpan.', 'error');
+        });
 }
 
 function setupButtonActions() {
-    // Save buttons
+    // Save button (Top bar)
     document.getElementById('btnTopSave')?.addEventListener('click', () => saveReportData(false));
-    document.getElementById('btnBottomSave')?.addEventListener('click', () => saveReportData(false));
 
-    // Save & Download Excel
+    // Save & Download Excel (Top bar)
     document.getElementById('btnTopExportExcel')?.addEventListener('click', () => saveReportData(true));
-    document.getElementById('btnBottomExportExcel')?.addEventListener('click', () => saveReportData(true));
 
     // Reset blank button
     document.getElementById('btnResetBlank')?.addEventListener('click', () => {
@@ -1064,10 +1307,6 @@ function setupButtonActions() {
         window.exportOfficialPdf();
     });
     document.getElementById('btnTopExportPdf')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.exportOfficialPdf();
-    });
-    document.getElementById('btnBottomExportPdf')?.addEventListener('click', (e) => {
         e.preventDefault();
         window.exportOfficialPdf();
     });
@@ -1112,19 +1351,19 @@ function loadDefaultBlankForm() {
 
     // Reset recommendations
     setupRecommendations([
-        { item: "01", remarks: "Cleaning and polish OD area \"A\"", recommendation: "Cleaning and polish OD area \"A\"" }
+        { item: "01", remarks: "", recommendation: "" }
     ]);
 
-    // Reset signatures to defaults
-    setValue('sig_checkedName', 'Faqih');
+    // Reset signatures to defaults (empty by default for user input)
+    setValue('sig_checkedName', '');
     setValue('sig_checkedTitle', 'QC Inspector');
     setValue('sig_checkedDate', new Date().toISOString().split('T')[0]);
 
-    setValue('sig_createdName', 'Kevin');
+    setValue('sig_createdName', '');
     setValue('sig_createdTitle', 'QC Inspector');
     setValue('sig_createdDate', new Date().toISOString().split('T')[0]);
 
-    setValue('sig_reviewedName', 'Agus');
+    setValue('sig_reviewedName', '');
     setValue('sig_reviewedTitle', 'Leader QC');
     setValue('sig_reviewedDate', new Date().toISOString().split('T')[0]);
 
@@ -1141,15 +1380,15 @@ function loadReportForEdit(id) {
     fetch(`/reports/${id}`, {
         headers: { 'Accept': 'application/json' }
     })
-    .then(r => r.json())
-    .then(data => {
-        populateFormWithData(data);
-        showToast(`Laporan ${data.ssc_id} berhasil dimuat`, 'success');
-    })
-    .catch(err => {
-        console.error('Load report error:', err);
-        showToast('Gagal memuat data laporan', 'error');
-    });
+        .then(r => r.json())
+        .then(data => {
+            populateFormWithData(data);
+            showToast(`Laporan ${data.ssc_id} berhasil dimuat`, 'success');
+        })
+        .catch(err => {
+            console.error('Load report error:', err);
+            showToast('Gagal memuat data laporan', 'error');
+        });
 }
 
 function populateFormWithData(data) {
@@ -1309,7 +1548,7 @@ function showToast(message, type = 'success') {
 // -------------------------------------------------------------
 // Preview Page Switching (Lembar 1 - 6)
 // -------------------------------------------------------------
-window.switchPreviewPage = function(page) {
+window.switchPreviewPage = function (page) {
     const sheets = document.querySelectorAll('.preview-sheet');
     const btns = document.querySelectorAll('.p-page-btn');
 
@@ -1339,7 +1578,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // -------------------------------------------------------------
 // Official PDF Export (Opens pure 6-page A4 document)
 // -------------------------------------------------------------
-window.exportOfficialPdf = function() {
+window.exportOfficialPdf = function () {
     let sscEl = document.getElementById('g_sscId');
     if (!sscEl || !sscEl.value.trim()) {
         showToast('Mohon isi SSC ID terlebih dahulu!', 'error');
@@ -1367,31 +1606,31 @@ window.exportOfficialPdf = function() {
         },
         body: JSON.stringify(payload)
     })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success || data.report || data.id) {
-            const savedReport = data.report || data;
-            const savedId = savedReport.id || existingId;
-            if (reportIdInput) reportIdInput.value = savedId;
-            currentReportId = savedId;
+        .then(r => r.json())
+        .then(data => {
+            if (data.success || data.report || data.id) {
+                const savedReport = data.report || data;
+                const savedId = savedReport.id || existingId;
+                if (reportIdInput) reportIdInput.value = savedId;
+                currentReportId = savedId;
 
-            showToast('Membuka PDF Dokumen Resmi 6 Lembar...', 'success');
-            // Open dedicated 6-page A4 print view in new window/tab
-            window.open(`/reports/${savedId}/pdf?autoprint=1`, '_blank');
-        } else if (existingId) {
-            window.open(`/reports/${existingId}/pdf?autoprint=1`, '_blank');
-        } else {
-            showToast('Gagal memproses dokumen PDF: ' + (data.message || 'Error'), 'error');
-        }
-    })
-    .catch(err => {
-        console.error('PDF export error:', err);
-        if (existingId) {
-            window.open(`/reports/${existingId}/pdf?autoprint=1`, '_blank');
-        } else {
-            showToast('Terjadi kesalahan saat menyimpan data.', 'error');
-        }
-    });
+                showToast('Membuka PDF Dokumen Resmi 6 Lembar...', 'success');
+                // Open dedicated 6-page A4 print view in new window/tab
+                window.open(`/reports/${savedId}/pdf?autoprint=1`, '_blank');
+            } else if (existingId) {
+                window.open(`/reports/${existingId}/pdf?autoprint=1`, '_blank');
+            } else {
+                showToast('Gagal memproses dokumen PDF: ' + (data.message || 'Error'), 'error');
+            }
+        })
+        .catch(err => {
+            console.error('PDF export error:', err);
+            if (existingId) {
+                window.open(`/reports/${existingId}/pdf?autoprint=1`, '_blank');
+            } else {
+                showToast('Terjadi kesalahan saat menyimpan data.', 'error');
+            }
+        });
 };
 
 window.saveReportData = saveReportData;
@@ -1399,7 +1638,7 @@ window.saveReportData = saveReportData;
 // -------------------------------------------------------------
 // Signature Personel Quick Selection & Chip Sync Helpers
 // -------------------------------------------------------------
-window.setSignatureName = function(inputId, name) {
+window.setSignatureName = function (inputId, name) {
     const input = document.getElementById(inputId);
     if (!input) return;
     input.value = name;
@@ -1408,7 +1647,7 @@ window.setSignatureName = function(inputId, name) {
     window.syncSigChips(inputId);
 };
 
-window.syncSigChips = function(inputId) {
+window.syncSigChips = function (inputId) {
     const input = document.getElementById(inputId);
     if (!input) return;
     const parentBox = input.closest('.sig-box');
@@ -1426,7 +1665,7 @@ window.syncSigChips = function(inputId) {
 // -------------------------------------------------------------
 // Mobile Full-Screen Preview Drawer Controls
 // -------------------------------------------------------------
-window.openMobilePreview = function() {
+window.openMobilePreview = function () {
     const previewPane = document.querySelector('.studio-preview-pane');
     if (!previewPane) return;
     previewPane.classList.add('mobile-open');
@@ -1441,7 +1680,7 @@ window.openMobilePreview = function() {
     }
 };
 
-window.closeMobilePreview = function() {
+window.closeMobilePreview = function () {
     const previewPane = document.querySelector('.studio-preview-pane');
     if (!previewPane) return;
     previewPane.classList.remove('mobile-open');

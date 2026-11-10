@@ -27,16 +27,16 @@
 
   $signatures = isset($report) && $report && $report->signatures ? (is_array($report->signatures) ? $report->signatures : json_decode($report->signatures, true)) : [];
   if (!is_array($signatures)) $signatures = [];
-  $checkedName = $signatures['checkedBy']['name'] ?? 'Faqih';
-  $checkedTitle = $signatures['checkedBy']['title'] ?? 'QC Inspector';
+  $checkedName = $signatures['checkedBy']['name'] ?? '';
+  $checkedTitle = $signatures['checkedBy']['title'] ?? '';
   $checkedDate = !empty($signatures['checkedBy']['date']) ? \Carbon\Carbon::parse($signatures['checkedBy']['date'])->format('Y-m-d') : date('Y-m-d');
 
-  $createdName = $signatures['createdBy']['name'] ?? 'Kevin';
-  $createdTitle = $signatures['createdBy']['title'] ?? 'QC Inspector';
+  $createdName = $signatures['createdBy']['name'] ?? '';
+  $createdTitle = $signatures['createdBy']['title'] ?? '';
   $createdDate = !empty($signatures['createdBy']['date']) ? \Carbon\Carbon::parse($signatures['createdBy']['date'])->format('Y-m-d') : date('Y-m-d');
 
-  $reviewedName = $signatures['reviewedBy']['name'] ?? 'Agus';
-  $reviewedTitle = $signatures['reviewedBy']['title'] ?? 'Leader QC';
+  $reviewedName = $signatures['reviewedBy']['name'] ?? '';
+  $reviewedTitle = $signatures['reviewedBy']['title'] ?? '';
   $reviewedDate = !empty($signatures['reviewedBy']['date']) ? \Carbon\Carbon::parse($signatures['reviewedBy']['date'])->format('Y-m-d') : date('Y-m-d');
 
   $dateStr = isset($report) && $report && $report->date ? \Carbon\Carbon::parse($report->date)->format('d-M-y') : date('d-M-y');
@@ -960,18 +960,21 @@
                 <h4 style="display: inline; margin-left: 0.5rem;">Temuan & Rekomendasi Tindakan</h4>
               </div>
               <button type="button" class="btn btn-secondary btn-sm" id="btnAddRecRow">
-                <i data-lucide="plus"></i> Tambah Baris
+                <i data-lucide="plus"></i> Tambah Item Baru
               </button>
             </div>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0.35rem 0 0.6rem 0;">
+              Satu item dapat memiliki beberapa baris temuan & rekomendasi. Klik tombol <strong style="color:var(--primary); font-weight:700;">+ Baris</strong> pada item untuk menambah baris di item yang sama.
+            </p>
 
             <div class="table-compact-wrapper">
-              <table class="table-compact" style="margin-top: 0.75rem;">
+              <table class="table-compact" style="margin-top: 0.5rem;">
               <thead>
                 <tr>
-                  <th style="width: 60px;">Item</th>
+                  <th style="width: 115px; text-align: center;">Item</th>
                   <th>Remarks (Temuan Visual / Kondisi Bagian)</th>
                   <th>Rekomendasi Tindakan QC</th>
-                  <th style="width: 45px;">Aksi</th>
+                  <th style="width: 45px; text-align: center;">Aksi</th>
                 </tr>
               </thead>
               <tbody id="recTableBody">
@@ -992,7 +995,7 @@
               <div class="sig-box">
                 <h5>Checked by:</h5>
                 <div class="form-group">
-                  <label for="sig_checkedName">Nama Personel (Ketik / Pilih)</label>
+                  <label for="sig_checkedName">Nama Pemeriksa</label>
                   <input type="text" id="sig_checkedName" list="listCheckedBy" value="{{ $checkedName }}" placeholder="Pilih atau ketik nama..." autocomplete="off">
                   <datalist id="listCheckedBy">
                     <option value="Indra"></option>
@@ -1002,21 +1005,16 @@
                     <option value="Kevin"></option>
                     <option value="Rafli"></option>
                   </datalist>
-                  <div class="sig-quick-names">
-                    <span class="quick-names-label"><i data-lucide="user-check"></i> Pilihan Cepat:</span>
-                    <div class="quick-chips-wrapper">
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Indra')">Indra</button>
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Faqih')">Faqih</button>
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Sahid')">Sahid</button>
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Agus')">Agus</button>
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Kevin')">Kevin</button>
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_checkedName', 'Rafli')">Rafli</button>
-                    </div>
-                  </div>
                 </div>
                 <div class="form-group">
                   <label for="sig_checkedTitle">Jabatan</label>
-                  <input type="text" id="sig_checkedTitle" value="{{ $checkedTitle }}">
+                  <select id="sig_checkedTitle">
+                    <option value="">Pilih jabatan...</option>
+                    <option value="QC Inspector" {{ $checkedTitle === 'QC Inspector' ? 'selected' : '' }}>QC Inspector</option>
+                    <option value="Leader QC" {{ $checkedTitle === 'Leader QC' ? 'selected' : '' }}>Leader QC</option>
+                    <option value="Workshop Supervisor" {{ $checkedTitle === 'Workshop Supervisor' ? 'selected' : '' }}>Workshop Supervisor</option>
+                    <option value="QC Engineer" {{ $checkedTitle === 'QC Engineer' ? 'selected' : '' }}>QC Engineer</option>
+                  </select>
                 </div>
                 <div class="form-group">
                   <label for="sig_checkedDate">Tanggal</label>
@@ -1027,7 +1025,7 @@
               <div class="sig-box">
                 <h5>Created by:</h5>
                 <div class="form-group">
-                  <label for="sig_createdName">Nama Personel (Ketik / Pilih)</label>
+                  <label for="sig_createdName">Nama Pembuat</label>
                   <input type="text" id="sig_createdName" list="listCreatedBy" value="{{ $createdName }}" placeholder="Pilih atau ketik nama..." autocomplete="off">
                   <datalist id="listCreatedBy">
                     <option value="Indra"></option>
@@ -1037,21 +1035,16 @@
                     <option value="Kevin"></option>
                     <option value="Rafli"></option>
                   </datalist>
-                  <div class="sig-quick-names">
-                    <span class="quick-names-label"><i data-lucide="user-plus"></i> Pilihan Cepat:</span>
-                    <div class="quick-chips-wrapper">
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Indra')">Indra</button>
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Faqih')">Faqih</button>
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Sahid')">Sahid</button>
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Agus')">Agus</button>
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Kevin')">Kevin</button>
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_createdName', 'Rafli')">Rafli</button>
-                    </div>
-                  </div>
                 </div>
                 <div class="form-group">
                   <label for="sig_createdTitle">Jabatan</label>
-                  <input type="text" id="sig_createdTitle" value="{{ $createdTitle }}">
+                  <select id="sig_createdTitle">
+                    <option value="">Pilih jabatan...</option>
+                    <option value="QC Inspector" {{ $createdTitle === 'QC Inspector' ? 'selected' : '' }}>QC Inspector</option>
+                    <option value="Leader QC" {{ $createdTitle === 'Leader QC' ? 'selected' : '' }}>Leader QC</option>
+                    <option value="Workshop Supervisor" {{ $createdTitle === 'Workshop Supervisor' ? 'selected' : '' }}>Workshop Supervisor</option>
+                    <option value="QC Engineer" {{ $createdTitle === 'QC Engineer' ? 'selected' : '' }}>QC Engineer</option>
+                  </select>
                 </div>
                 <div class="form-group">
                   <label for="sig_createdDate">Tanggal</label>
@@ -1062,23 +1055,22 @@
               <div class="sig-box">
                 <h5>Reviewed by:</h5>
                 <div class="form-group">
-                  <label for="sig_reviewedName">Nama Personel (Ketik / Pilih)</label>
+                  <label for="sig_reviewedName">Nama Peninjau</label>
                   <input type="text" id="sig_reviewedName" list="listReviewedBy" value="{{ $reviewedName }}" placeholder="Pilih atau ketik nama..." autocomplete="off">
                   <datalist id="listReviewedBy">
                     <option value="Agus"></option>
                     <option value="Firman"></option>
                   </datalist>
-                  <div class="sig-quick-names">
-                    <span class="quick-names-label"><i data-lucide="shield-check"></i> Pilihan Cepat:</span>
-                    <div class="quick-chips-wrapper">
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_reviewedName', 'Agus')">Agus</button>
-                      <button type="button" class="sig-chip" onclick="setSignatureName('sig_reviewedName', 'Firman')">Firman</button>
-                    </div>
-                  </div>
                 </div>
                 <div class="form-group">
                   <label for="sig_reviewedTitle">Jabatan</label>
-                  <input type="text" id="sig_reviewedTitle" value="{{ $reviewedTitle }}">
+                  <select id="sig_reviewedTitle">
+                    <option value="">Pilih jabatan...</option>
+                    <option value="Leader QC" {{ $reviewedTitle === 'Leader QC' ? 'selected' : '' }}>Leader QC</option>
+                    <option value="Workshop Supervisor" {{ $reviewedTitle === 'Workshop Supervisor' ? 'selected' : '' }}>Workshop Supervisor</option>
+                    <option value="QC Inspector" {{ $reviewedTitle === 'QC Inspector' ? 'selected' : '' }}>QC Inspector</option>
+                    <option value="QC Engineer" {{ $reviewedTitle === 'QC Engineer' ? 'selected' : '' }}>QC Engineer</option>
+                  </select>
                 </div>
                 <div class="form-group">
                   <label for="sig_reviewedDate">Tanggal</label>
@@ -1095,17 +1087,6 @@
           <div class="footer-left">
             <button type="button" class="btn btn-secondary btn-sm" id="btnResetBlank">
               <i data-lucide="rotate-ccw"></i> Kosongkan Form
-            </button>
-          </div>
-          <div class="footer-right">
-            <button type="button" class="btn btn-secondary" id="btnBottomSave" onclick="window.saveReportData(false)">
-              <i data-lucide="save"></i> Simpan Data
-            </button>
-            <button type="button" class="btn btn-primary" id="btnBottomExportPdf" title="Simpan data dan ekspor PDF resmi 6 lembar" onclick="window.exportOfficialPdf()">
-              <i data-lucide="file-text"></i> Simpan &amp; Ekspor PDF
-            </button>
-            <button type="button" class="btn btn-secondary" id="btnBottomExportExcel" onclick="window.saveReportData(true)">
-              <i data-lucide="download"></i> Simpan &amp; Unduh Excel
             </button>
           </div>
         </div>
@@ -1210,7 +1191,7 @@
             <tr>
               <td class="lbl">Inspection</td>
               <td class="col-c">:</td>
-              <td class="val" colspan="4" style="padding-left: 6px;">
+              <td class="val" colspan="4" style="padding-left: 6px;" id="prev_inspectionType">
                 <span id="prev_preCheck">&#9745; Pre</span> &nbsp;&nbsp;&nbsp;&nbsp;
                 <span id="prev_postCheck">&#9744; Post</span>
               </td>
@@ -1302,7 +1283,7 @@
                   </tr>
                 </tbody>
               </table>
-              <div class="p-bullet-box">
+              <div class="p-bullet-box" id="prev_i1_remark1">
                 <div><strong>&gt;</strong> Actual measurement OD area "A" in good condition</div>
                 <div><strong>&gt;</strong> Visual scratch at OD area "A"</div>
                 <div><strong>&gt;</strong> Visual corrosion area spline</div>
@@ -1768,35 +1749,81 @@
               <tr><th style="width:40px;">Item</th><th>Remarks</th><th>Recomendation</th></tr>
             </thead>
             <tbody id="prev_recTableBody">
+              <!-- Item 01 -->
               <tr>
-                <td style="text-align:center; font-weight:700; font-family:monospace;">01</td>
-                <td style="white-space:pre-line;">Visual scratch at OD area "A"&#10;Visual corrosion area spline&#10;Visual scratch at area surface&#10;Visual dirty at hole thread area surface</td>
-                <td style="white-space:pre-line;">Cleaning and polish OD area "A"&#10;Cleaning area surface&#10;Cleaning and polish area spline&#10;Retap hole thread area surface</td>
+                <td rowspan="4" style="text-align:center; font-weight:700; font-family:monospace; vertical-align:middle; border:1px solid #000; width:40px;">01</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual scratch at OD area "A"</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Cleaning and polish OD area "A"</td>
               </tr>
               <tr>
-                <td style="text-align:center; font-weight:700; font-family:monospace;">02</td>
-                <td style="white-space:pre-line;">Visual corrosion at OD area "B"&#10;Visual corrosion at OD area "C"</td>
-                <td style="white-space:pre-line;">Cleaning OD area "B and C"</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual corrosion area spline</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Cleaning and polish area spline</td>
               </tr>
               <tr>
-                <td style="text-align:center; font-weight:700; font-family:monospace;">03</td>
-                <td style="white-space:pre-line;">Visual scratch at OD area "D"&#10;Visual worn out at area surface (see mark no 1)</td>
-                <td style="white-space:pre-line;">Cleaning and polish OD area "D"&#10;Repair worn out area surface</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual scratch at area surface</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Cleaning area surface</td>
               </tr>
               <tr>
-                <td style="text-align:center; font-weight:700; font-family:monospace;">04</td>
-                <td style="white-space:pre-line;">Actual measurement OD area "F" in good condition but, Visual pitting and scratch OD area "F" (see mark no 1)</td>
-                <td style="white-space:pre-line;">Repair OD area "F" to specification</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual dirty at hole thread area surface</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Retap hole thread area surface</td>
+              </tr>
+              <!-- Item 02 -->
+              <tr>
+                <td rowspan="2" style="text-align:center; font-weight:700; font-family:monospace; vertical-align:middle; border:1px solid #000; width:40px;">02</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual corrosion at OD area "B"</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Cleaning OD area "B and C"</td>
               </tr>
               <tr>
-                <td style="text-align:center; font-weight:700; font-family:monospace;">05</td>
-                <td style="white-space:pre-line;">Actual measurement OD area "H" was undersize&#10;Visual pitting and scratch at OD area "H" (see mark no 1)</td>
-                <td style="white-space:pre-line;">Repair OD area "H" to specification</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual corrosion at OD area "C"</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Cleaning OD area "B and C"</td>
+              </tr>
+              <!-- Item 03 -->
+              <tr>
+                <td rowspan="2" style="text-align:center; font-weight:700; font-family:monospace; vertical-align:middle; border:1px solid #000; width:40px;">03</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual scratch at OD area "D"</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Cleaning and polish OD area "D"</td>
               </tr>
               <tr>
-                <td style="text-align:center; font-weight:700; font-family:monospace;">06</td>
-                <td style="white-space:pre-line;">Actual measurement OD area "G" was undersize&#10;Visual corrosion at OD area "G"&#10;Visual corrosion area spline&#10;Visual scratch and corrosion at area surface&#10;Visual dirty at hole thread area surface</td>
-                <td style="white-space:pre-line;">Repair Cleaning OD area "G" to specification&#10;Cleaning and polish area spline&#10;Cleaning and polish area surface&#10;Retap hole thread area surface</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual worn out at area surface (see mark no 1)</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Repair worn out area surface</td>
+              </tr>
+              <!-- Item 04 -->
+              <tr>
+                <td style="text-align:center; font-weight:700; font-family:monospace; vertical-align:middle; border:1px solid #000; width:40px;">04</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Actual measurement OD area "F" in good condition but, Visual pitting and scratch OD area "F" (see mark no 1)</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Repair OD area "F" to specification</td>
+              </tr>
+              <!-- Item 05 -->
+              <tr>
+                <td rowspan="2" style="text-align:center; font-weight:700; font-family:monospace; vertical-align:middle; border:1px solid #000; width:40px;">05</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Actual measurement OD area "H" was undersize</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Repair OD area "H" to specification</td>
+              </tr>
+              <tr>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual pitting and scratch at OD area "H" (see mark no 1)</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Repair OD area "H" to specification</td>
+              </tr>
+              <!-- Item 06 -->
+              <tr>
+                <td rowspan="5" style="text-align:center; font-weight:700; font-family:monospace; vertical-align:middle; border:1px solid #000; width:40px;">06</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Actual measurement OD area "G" was undersize</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Repair Cleaning OD area "G" to specification</td>
+              </tr>
+              <tr>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual corrosion at OD area "G"</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Cleaning and polish area spline</td>
+              </tr>
+              <tr>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual corrosion area spline</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Cleaning and polish area surface</td>
+              </tr>
+              <tr>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual scratch and corrosion at area surface</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Retap hole thread area surface</td>
+              </tr>
+              <tr>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Visual dirty at hole thread area surface</td>
+                <td style="border:1px solid #000; padding:2.5px 5px;">Retap hole thread area surface</td>
               </tr>
             </tbody>
           </table>
@@ -1811,23 +1838,23 @@
               <tbody>
                 <tr>
                   <td>
-                    <div class="sig-name" id="prev_sigCheckedName">{{ $checkedName }}</div>
+                    <div class="sig-name" id="prev_sigCheckedName">{{ !empty($checkedName) ? $checkedName : '............................' }}</div>
                     <div class="sig-meta">
-                      <span id="prev_sigCheckedTitle">{{ $checkedTitle }}</span>
+                      <span id="prev_sigCheckedTitle">{{ !empty($checkedTitle) ? $checkedTitle : 'QC Inspector' }}</span>
                       <span id="prev_sigCheckedDate">Date: {{ \Carbon\Carbon::parse($checkedDate)->format('F d, Y') }}</span>
                     </div>
                   </td>
                   <td>
-                    <div class="sig-name" id="prev_sigCreatedName">{{ $createdName }}</div>
+                    <div class="sig-name" id="prev_sigCreatedName">{{ !empty($createdName) ? $createdName : '............................' }}</div>
                     <div class="sig-meta">
-                      <span id="prev_sigCreatedTitle">{{ $createdTitle }}</span>
+                      <span id="prev_sigCreatedTitle">{{ !empty($createdTitle) ? $createdTitle : 'QC Inspector' }}</span>
                       <span id="prev_sigCreatedDate">Date: {{ \Carbon\Carbon::parse($createdDate)->format('F d, Y') }}</span>
                     </div>
                   </td>
                   <td>
-                    <div class="sig-name" id="prev_sigReviewedName">{{ $reviewedName }}</div>
+                    <div class="sig-name" id="prev_sigReviewedName">{{ !empty($reviewedName) ? $reviewedName : '............................' }}</div>
                     <div class="sig-meta">
-                      <span id="prev_sigReviewedTitle">{{ $reviewedTitle }}</span>
+                      <span id="prev_sigReviewedTitle">{{ !empty($reviewedTitle) ? $reviewedTitle : 'Leader QC' }}</span>
                       <span id="prev_sigReviewedDate">Date: {{ \Carbon\Carbon::parse($reviewedDate)->format('F d, Y') }}</span>
                     </div>
                   </td>
