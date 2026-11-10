@@ -2821,6 +2821,7 @@ body {
 .p-header-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
   border-bottom: 2px solid #1e40af;
 }
 
@@ -2865,6 +2866,7 @@ body {
 .p-ctrl-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
   font-size: 6.2pt;
 }
 
@@ -2882,7 +2884,7 @@ body {
 }
 
 .p-ctrl-table .ctrl-colon {
-  width: 6px;
+  width: 1.6%;
   text-align: center;
   padding: 0;
   font-weight: 700;
@@ -2917,6 +2919,7 @@ body {
 .p-meta-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
   font-size: 6.4pt;
   border-bottom: 1.5px solid #1e40af;
 }
@@ -2936,7 +2939,7 @@ body {
 }
 
 .p-meta-table .col-c {
-  width: 6px;
+  width: 1%;
   text-align: center;
   padding: 0;
   background: #eff6ff;

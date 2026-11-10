@@ -77,6 +77,7 @@
     .header-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
       border-bottom: 2px solid #1e40af;
     }
     .header-table td {
@@ -115,6 +116,7 @@
     .ctrl-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
       font-size: 6.8pt;
     }
     .ctrl-table td {
@@ -129,7 +131,7 @@
       color: #334155;
     }
     .ctrl-table .ctrl-colon {
-      width: 8px;
+      width: 1.6%;
       text-align: center;
       padding: 0;
       font-weight: 700;
@@ -158,6 +160,7 @@
     .meta-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
       font-size: 6.8pt;
       border-bottom: 1.5px solid #1e40af;
     }
@@ -173,7 +176,7 @@
       white-space: nowrap;
     }
     .meta-table .colon {
-      width: 8px;
+      width: 1%;
       text-align: center;
       padding: 0;
       background: #eff6ff;
@@ -665,23 +668,23 @@
     <!-- Header (Kop Dokumen) -->
     <table class="header-table">
       <tr>
-        <td class="header-logo-cell" rowspan="2">
+        <td class="header-logo-cell" rowspan="2" style="width: 37%;">
           <img src="{{ asset('images/doc_assets/kop_logo_perfect.png') }}" alt="PT. SSC WORKS">
         </td>
-        <td class="header-title-cell">
+        <td class="header-title-cell" style="width: 63%;">
           COMPONENT CONDITION REPORT
         </td>
       </tr>
       <tr>
-        <td class="header-ctrl-cell">
+        <td class="header-ctrl-cell" style="width: 63%;">
           <table class="ctrl-table">
             <tr>
-              <td class="ctrl-lbl" style="width: 22%;">Document No</td>
-              <td class="ctrl-colon">:</td>
-              <td class="ctrl-val bold" style="width: 28%;">{{ $report->doc_no ?? 'FORM-QC-002' }}</td>
-              <td class="ctrl-lbl" style="width: 22%;">Responsibility</td>
-              <td class="ctrl-colon">:</td>
-              <td class="ctrl-val" style="width: 24%;">{{ $report->responsibility ?? 'Quality Control' }}</td>
+              <td class="ctrl-lbl" style="width: 16.67%;">Document No</td>
+              <td class="ctrl-colon" style="width: 1.6%;">:</td>
+              <td class="ctrl-val bold" style="width: 31.73%;">{{ $report->doc_no ?? 'FORM-QC-002' }}</td>
+              <td class="ctrl-lbl" style="width: 16.67%;">Responsibility</td>
+              <td class="ctrl-colon" style="width: 1.6%;">:</td>
+              <td class="ctrl-val" style="width: 31.73%;">{{ $report->responsibility ?? 'Quality Control' }}</td>
             </tr>
             <tr>
               <td class="ctrl-lbl">Effective Date.</td>
@@ -707,20 +710,20 @@
     <table class="meta-table">
       <tr>
         <td class="lbl" style="width: 9%;">No.</td>
-        <td class="colon">:</td>
-        <td class="val mono" style="width: 14%; text-align: center;">{{ $report->report_no ?? '0742' }}</td>
+        <td class="colon" style="width: 1%;">:</td>
+        <td class="val mono" style="width: 7.5%; text-align: center;">{{ $report->report_no ?? '0742' }}</td>
         
-        <td class="lbl" style="width: 8%;">Date</td>
-        <td class="colon">:</td>
+        <td class="lbl" style="width: 5.5%;">Date</td>
+        <td class="colon" style="width: 1%;">:</td>
         <td class="val" style="width: 13%; text-align: center;">{{ $dateStr }}</td>
         
-        <td class="lbl" style="width: 11%;">Customer</td>
-        <td class="colon">:</td>
+        <td class="lbl" style="width: 10.5%;">Customer</td>
+        <td class="colon" style="width: 1%;">:</td>
         <td class="val bold" style="width: 20%; line-height: 1.25; font-size: 6.8pt;">{{ $report->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}</td>
         
-        <td class="lbl" style="width: 10%;">Part Name</td>
-        <td class="colon">:</td>
-        <td class="val bold" style="width: 12%;">{{ $report->part_name ?? 'OUTPUT SHAFT' }}</td>
+        <td class="lbl" style="width: 10.5%;">Part Name</td>
+        <td class="colon" style="width: 1%;">:</td>
+        <td class="val bold" style="width: 20%;">{{ $report->part_name ?? 'OUTPUT SHAFT' }}</td>
       </tr>
       <tr>
         <td class="lbl">Inspection</td>

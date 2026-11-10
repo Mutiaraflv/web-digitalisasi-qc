@@ -1152,21 +1152,21 @@
           <!-- Header (Kop Dokumen) -->
           <table class="p-header-table">
             <tr>
-              <td class="p-logo-cell" rowspan="2">
+              <td class="p-logo-cell" rowspan="2" style="width: 37%;">
                 <img src="{{ asset('images/doc_assets/kop_logo_perfect.png') }}" alt="PT. SSC WORKS">
               </td>
-              <td class="p-title-cell">COMPONENT CONDITION REPORT</td>
+              <td class="p-title-cell" style="width: 63%;">COMPONENT CONDITION REPORT</td>
             </tr>
             <tr>
-              <td class="p-ctrl-cell">
+              <td class="p-ctrl-cell" style="width: 63%;">
                 <table class="p-ctrl-table">
                   <tr>
-                    <td class="ctrl-lbl" style="width: 22%;">Document No</td>
-                    <td class="ctrl-colon">:</td>
-                    <td class="ctrl-val bold" style="width: 28%;" id="prev_docNo">{{ $report?->doc_no ?? 'FORM-QC-002' }}</td>
-                    <td class="ctrl-lbl" style="width: 22%;">Responsibility</td>
-                    <td class="ctrl-colon">:</td>
-                    <td class="ctrl-val" style="width: 24%;" id="prev_responsibility">{{ $report?->responsibility ?? 'Quality Control' }}</td>
+                    <td class="ctrl-lbl" style="width: 16.67%;">Document No</td>
+                    <td class="ctrl-colon" style="width: 1.6%;">:</td>
+                    <td class="ctrl-val bold" style="width: 31.73%;" id="prev_docNo">{{ $report?->doc_no ?? 'FORM-QC-002' }}</td>
+                    <td class="ctrl-lbl" style="width: 16.67%;">Responsibility</td>
+                    <td class="ctrl-colon" style="width: 1.6%;">:</td>
+                    <td class="ctrl-val" style="width: 31.73%;" id="prev_responsibility">{{ $report?->responsibility ?? 'Quality Control' }}</td>
                   </tr>
                   <tr>
                     <td class="ctrl-lbl">Effective Date.</td>
@@ -1192,20 +1192,20 @@
           <table class="p-meta-table">
             <tr>
               <td class="lbl" style="width: 9%;">No.</td>
-              <td class="col-c">:</td>
-              <td class="val mono" style="width: 14%; text-align: center;" id="prev_reportNo">{{ $report?->report_no ?? ($nextReportNo ?? '0743') }}</td>
+              <td class="col-c" style="width: 1%;">:</td>
+              <td class="val mono" style="width: 7.5%; text-align: center;" id="prev_reportNo">{{ $report?->report_no ?? ($nextReportNo ?? '0743') }}</td>
               
-              <td class="lbl" style="width: 8%;">Date</td>
-              <td class="col-c">:</td>
+              <td class="lbl" style="width: 5.5%;">Date</td>
+              <td class="col-c" style="width: 1%;">:</td>
               <td class="val" style="width: 13%; text-align: center;" id="prev_metaDate">{{ $dateStr ?? date('d-M-y') }}</td>
               
-              <td class="lbl" style="width: 11%;">Customer</td>
-              <td class="col-c">:</td>
+              <td class="lbl" style="width: 10.5%;">Customer</td>
+              <td class="col-c" style="width: 1%;">:</td>
               <td class="val bold" style="width: 20%; line-height: 1.25; font-size: 6.8pt;" id="prev_customer">{{ $report?->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}</td>
               
-              <td class="lbl" style="width: 10%;">Part Name</td>
-              <td class="col-c">:</td>
-              <td class="val bold" style="width: 12%;" id="prev_partName">{{ $report?->part_name ?? 'OUTPUT SHAFT' }}</td>
+              <td class="lbl" style="width: 10.5%;">Part Name</td>
+              <td class="col-c" style="width: 1%;">:</td>
+              <td class="val bold" style="width: 20%;" id="prev_partName">{{ $report?->part_name ?? 'OUTPUT SHAFT' }}</td>
             </tr>
             <tr>
               <td class="lbl">Inspection</td>
