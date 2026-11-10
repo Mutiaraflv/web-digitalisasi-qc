@@ -2821,7 +2821,7 @@ body {
 .p-header-table {
   width: 100%;
   border-collapse: collapse;
-  border-bottom: 2px solid #0f172a;
+  border-bottom: 2px solid #1e40af;
 }
 
 .p-header-table td {
@@ -2852,9 +2852,9 @@ body {
   font-size: 9.5pt;
   letter-spacing: 0.8px;
   padding: 6px 4px !important;
-  background: #0f172a;
+  background: #1e40af;
   color: #ffffff;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid #1d4ed8;
 }
 
 .p-ctrl-cell {
@@ -2918,7 +2918,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: 6.4pt;
-  border-bottom: 1.5px solid #475569;
+  border-bottom: 1.5px solid #1e40af;
 }
 
 .p-meta-table td {
@@ -2930,8 +2930,8 @@ body {
 .p-meta-table .lbl {
   font-family: 'Inter', sans-serif;
   font-weight: 700;
-  background: #f1f5f9;
-  color: #0f172a;
+  background: #eff6ff;
+  color: #1e3a8a;
   white-space: nowrap;
 }
 
@@ -2939,9 +2939,9 @@ body {
   width: 6px;
   text-align: center;
   padding: 0;
-  background: #f1f5f9;
+  background: #eff6ff;
   font-weight: 700;
-  color: #0f172a;
+  color: #1e3a8a;
 }
 
 .p-meta-table .val {
@@ -2956,16 +2956,16 @@ body {
 
 /* Section Bars */
 .p-bar-grey {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: #eff6ff;
+  color: #1e3a8a;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-size: 7pt;
   text-align: left;
   padding: 3px 6px 3px 10px;
-  border-bottom: 1px solid #cbd5e1;
-  border-top: 1px solid #cbd5e1;
-  border-left: 4px solid #2563eb;
+  border-bottom: 1px solid #bfdbfe;
+  border-top: 1px solid #bfdbfe;
+  border-left: 4px solid #1d4ed8;
   letter-spacing: 0.3px;
 }
 
@@ -2987,7 +2987,7 @@ body {
 .p-blueprint-box {
   text-align: center;
   padding: 4px 6px;
-  border-bottom: 1.5px solid #475569;
+  border-bottom: 1.5px solid #cbd5e1;
   background: #ffffff;
   display: flex;
   align-items: center;
@@ -3018,16 +3018,16 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: 6.6pt;
-  border-bottom: 1.5px solid #475569;
+  border-bottom: 1.5px solid #cbd5e1;
 }
 
 .p-finding-table th {
-  background: #f1f5f9;
+  background: #eff6ff;
   border: 1px solid #cbd5e1;
   padding: 2px 3px;
   font-weight: 700;
   text-align: center;
-  color: #0f172a;
+  color: #1e3a8a;
 }
 
 .p-finding-table td {
@@ -3077,14 +3077,14 @@ body {
 }
 
 .p-col-header {
-  background: #f1f5f9;
+  background: #eff6ff;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-size: 6.6pt;
   text-align: center;
   padding: 2px 3px;
   border-bottom: 1px solid #cbd5e1;
-  color: #0f172a;
+  color: #1e3a8a;
 }
 
 .p-photo-grid-2x2 {
@@ -3165,11 +3165,11 @@ body {
 .p-data-table th {
   border: 1px solid #cbd5e1;
   padding: 1.5px 2px;
-  background: #f1f5f9;
+  background: #eff6ff;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   text-align: center;
-  color: #0f172a;
+  color: #1e3a8a;
 }
 
 .p-data-table td {
@@ -3203,7 +3203,7 @@ body {
 }
 
 .p-bullet-box strong {
-  color: #2563eb;
+  color: #1d4ed8;
 }
 
 .p-legend-footer {
@@ -3264,13 +3264,13 @@ body {
 }
 
 .p-tir-table th {
-  background: #f1f5f9;
+  background: #eff6ff;
   border: 1px solid #cbd5e1;
   padding: 1.5px 3px;
   text-align: center;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
-  color: #0f172a;
+  color: #1e3a8a;
 }
 
 .p-tir-table td {
@@ -3294,8 +3294,8 @@ body {
 }
 
 .p-rec-table th {
-  background: #0f172a;
-  border: 1px solid #1e293b;
+  background: #1e40af;
+  border: 1px solid #1d4ed8;
   padding: 2.5px 4px;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
@@ -3321,7 +3321,7 @@ body {
   border-collapse: collapse;
   font-size: 6.8pt;
   margin-top: 18px;
-  border: 1.5px solid #475569;
+  border: 1.5px solid #cbd5e1;
 }
 
 .p-sig-table th {
@@ -3330,7 +3330,7 @@ body {
   text-align: left;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
-  background: #0f172a;
+  background: #1e40af;
   color: #ffffff;
   font-size: 7.2pt;
   letter-spacing: 0.3px;
@@ -3352,7 +3352,7 @@ body {
   padding-bottom: 2px;
   margin-bottom: 3px;
   margin-top: 45px;
-  color: #0f172a;
+  color: #1e3a8a;
 }
 
 .p-sig-table .sig-meta {

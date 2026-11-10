@@ -77,7 +77,7 @@
     .header-table {
       width: 100%;
       border-collapse: collapse;
-      border-bottom: 2px solid #0f172a;
+      border-bottom: 2px solid #1e40af;
     }
     .header-table td {
       border: 1px solid #cbd5e1;
@@ -104,9 +104,9 @@
       font-size: 11pt;
       letter-spacing: 0.8px;
       padding: 6px 4px !important;
-      background: #0f172a;
+      background: #1e40af;
       color: #ffffff;
-      border-bottom: 1px solid #1e293b;
+      border-bottom: 1px solid #1d4ed8;
     }
     .header-ctrl-cell {
       padding: 0 !important;
@@ -159,7 +159,7 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 6.8pt;
-      border-bottom: 1.5px solid #475569;
+      border-bottom: 1.5px solid #1e40af;
     }
     .meta-table td {
       border: 1px solid #cbd5e1;
@@ -168,17 +168,17 @@
     }
     .meta-table .lbl {
       font-weight: 700;
-      background: #f1f5f9;
-      color: #0f172a;
+      background: #eff6ff;
+      color: #1e3a8a;
       white-space: nowrap;
     }
     .meta-table .colon {
       width: 8px;
       text-align: center;
       padding: 0;
-      background: #f1f5f9;
+      background: #eff6ff;
       font-weight: 700;
-      color: #0f172a;
+      color: #1e3a8a;
     }
     .meta-table .val {
       background: #ffffff;
@@ -191,14 +191,14 @@
 
     /* Section Bars */
     .bar-grey {
-      background: #f1f5f9;
-      color: #0f172a;
+      background: #eff6ff;
+      color: #1e3a8a;
       font-weight: 700;
       font-size: 7.5pt;
       padding: 4px 6px 4px 10px;
-      border-bottom: 1px solid #cbd5e1;
-      border-top: 1px solid #cbd5e1;
-      border-left: 4px solid #2563eb;
+      border-bottom: 1px solid #bfdbfe;
+      border-top: 1px solid #bfdbfe;
+      border-left: 4px solid #1d4ed8;
       letter-spacing: 0.3px;
       text-align: left;
     }
@@ -219,7 +219,7 @@
     .blueprint-box {
       text-align: center;
       padding: 4px 6px;
-      border-bottom: 1.5px solid #475569;
+      border-bottom: 1.5px solid #cbd5e1;
       background: #fff;
       display: flex;
       align-items: center;
@@ -241,15 +241,15 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 7pt;
-      border-bottom: 1.5px solid #475569;
+      border-bottom: 1.5px solid #cbd5e1;
     }
     .finding-table th {
-      background: #f1f5f9;
+      background: #eff6ff;
       border: 1px solid #cbd5e1;
       padding: 2px 4px;
       font-weight: 700;
       text-align: center;
-      color: #0f172a;
+      color: #1e3a8a;
     }
     .finding-table td {
       border: 1px solid #cbd5e1;
@@ -293,13 +293,13 @@
       flex-direction: column;
     }
     .col-header {
-      background: #f1f5f9;
+      background: #eff6ff;
       font-weight: 700;
       font-size: 7pt;
       text-align: center;
       padding: 2px 4px;
       border-bottom: 1px solid #cbd5e1;
-      color: #0f172a;
+      color: #1e3a8a;
     }
 
     /* 2x2 Photo Grid - Fixed Square 110px x 110px per box */
@@ -377,10 +377,10 @@
     .data-table th {
       border: 1px solid #cbd5e1;
       padding: 1.5px 2px;
-      background: #f1f5f9;
+      background: #eff6ff;
       font-weight: 700;
       text-align: center;
-      color: #0f172a;
+      color: #1e3a8a;
     }
     .data-table td {
       border: 1px solid #cbd5e1;
@@ -411,7 +411,7 @@
     .bullet-arrow {
       font-weight: 700;
       margin-right: 3px;
-      color: #2563eb;
+      color: #1d4ed8;
     }
 
     /* Legend Footer (A: Accept, R: Reject) */
@@ -468,12 +468,12 @@
       font-size: 7pt;
     }
     .tir-table th {
-      background: #f1f5f9;
+      background: #eff6ff;
       border: 1px solid #cbd5e1;
       padding: 2px 4px;
       text-align: center;
       font-weight: 700;
-      color: #0f172a;
+      color: #1e3a8a;
     }
     .tir-table td {
       border: 1px solid #cbd5e1;
@@ -493,8 +493,8 @@
       font-size: 7.2pt;
     }
     .rec-table th {
-      background: #0f172a;
-      border: 1px solid #1e293b;
+      background: #1e40af;
+      border: 1px solid #1d4ed8;
       padding: 3px 6px;
       font-weight: 700;
       text-align: center;
@@ -516,14 +516,14 @@
       border-collapse: collapse;
       font-size: 7.2pt;
       margin-top: 15px;
-      border: 1.5px solid #475569;
+      border: 1.5px solid #cbd5e1;
     }
     .sig-table th {
       border: 1px solid #cbd5e1;
       padding: 3px 6px;
       text-align: left;
       font-weight: 700;
-      background: #0f172a;
+      background: #1e40af;
       color: #ffffff;
       letter-spacing: 0.3px;
     }
@@ -582,7 +582,7 @@
       padding-bottom: 2px;
       margin-bottom: 3px;
       margin-top: 45px;
-      color: #0f172a;
+      color: #1e3a8a;
     }
     .sig-meta {
       display: flex;
