@@ -191,26 +191,26 @@
 
     /* Section Bars */
     .bar-grey {
-      background: #f1f5f9;
-      color: #334155;
-      font-weight: 700;
-      font-size: 7.5pt;
-      padding: 4px 6px 4px 10px;
-      border-bottom: 1px solid #cbd5e1;
-      border-top: 1px solid #cbd5e1;
-      border-left: 4px solid #64748b;
-      letter-spacing: 0.3px;
-      text-align: left;
-    }
-    .bar-yellow {
-      background: #dbeafe;
+      background: #eff6ff;
       color: #1e3a8a;
       font-weight: 700;
       font-size: 7.5pt;
       padding: 4px 6px 4px 10px;
       border-bottom: 1px solid #bfdbfe;
       border-top: 1px solid #bfdbfe;
-      border-left: 4px solid #1e40af;
+      border-left: 4px solid #1d4ed8;
+      letter-spacing: 0.3px;
+      text-align: left;
+    }
+    .bar-yellow {
+      background: #fffbeb;
+      color: #92400e;
+      font-weight: 700;
+      font-size: 7.5pt;
+      padding: 4px 6px 4px 10px;
+      border-bottom: 1px solid #fcd34d;
+      border-top: 1px solid #fcd34d;
+      border-left: 4px solid #f59e0b;
       letter-spacing: 0.3px;
       text-align: left;
     }
