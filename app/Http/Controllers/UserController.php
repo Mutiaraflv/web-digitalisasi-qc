@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,11 +66,16 @@ class UserController extends Controller
             'password.min' => 'Kata sandi minimal 6 karakter.',
         ]);
 
-        User::create([
+        $newUser = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'role' => $validated['role'],
             'password' => Hash::make($validated['password']),
+        ]);
+
+        ActivityLog::record('user_created', "Menambahkan akun baru {$newUser->name} ({$newUser->roleLabel()})", null, [
+            'subject' => $newUser->name,
+            'role' => $newUser->role,
         ]);
 
         return redirect()->route('settings.users.index')
@@ -111,6 +117,11 @@ class UserController extends Controller
 
         $user->save();
 
+        ActivityLog::record('user_updated', "Memperbarui akun {$user->name} ({$user->roleLabel()})", null, [
+            'subject' => $user->name,
+            'role' => $user->role,
+        ]);
+
         return redirect()->route('settings.users.index')
             ->with('success', "Data akun '{$user->name}' berhasil diperbarui.");
     }
@@ -132,6 +143,10 @@ class UserController extends Controller
 
         $name = $user->name;
         $user->delete();
+
+        ActivityLog::record('user_deleted', "Menghapus akun {$name}", null, [
+            'subject' => $name,
+        ]);
 
         return redirect()->route('settings.users.index')
             ->with('success', "Akun '{$name}' telah berhasil dihapus dari sistem.");

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,12 +33,16 @@ class AuthController extends Controller
         }
 
         $request->session()->regenerate();
+        ActivityLog::record('login', 'Masuk ke sistem QCMS');
 
         return redirect()->intended(route('dashboard'));
     }
 
     public function destroy(Request $request): RedirectResponse
     {
+        $userId = Auth::id();
+        ActivityLog::record('logout', 'Keluar dari sistem QCMS', null, [], $userId);
+
         Auth::logout();
 
         $request->session()->invalidate();

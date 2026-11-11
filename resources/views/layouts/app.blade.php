@@ -42,6 +42,11 @@
       <nav class="sidebar-nav">
         <div class="nav-section-title">Menu Utama</div>
 
+        <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+
         <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') || request()->routeIs('inspection.create') ? 'active' : '' }}">
           <i data-lucide="archive"></i>
           <span>Riwayat Laporan</span>
@@ -53,11 +58,6 @@
         <a href="{{ route('templates.index') }}" class="nav-item {{ request()->routeIs('templates.*') || request()->routeIs('parts.*') ? 'active' : '' }}">
           <i data-lucide="file-spreadsheet"></i>
           <span>Template Komponen</span>
-        </a>
-
-        <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-          <i data-lucide="layout-dashboard"></i>
-          <span>Dashboard Ringkas</span>
         </a>
 
         <div class="nav-section-title" style="margin-top: 1.25rem;">Modul Pendukung</div>

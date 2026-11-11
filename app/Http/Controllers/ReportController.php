@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\ActivityLog;
 use App\Models\Report;
 use App\Models\User;
 use App\Services\ExcelReportService;
@@ -182,6 +183,15 @@ class ReportController extends Controller
             ? "Draft laporan {$report->ssc_id} berhasil disimpan!"
             : "Laporan {$report->ssc_id} berhasil disubmit (Waiting Review)!";
 
+        ActivityLog::record(
+            $isDraft ? 'report_draft_created' : 'report_submitted',
+            $isDraft
+                ? "Menyimpan draft laporan {$report->ssc_id}"
+                : "Mensubmit laporan {$report->ssc_id} (Waiting Review)",
+            $report,
+            ['part_name' => $report->part_name, 'status' => $report->review_status]
+        );
+
         if ($request->wantsJson() || $request->is('api/*')) {
             if ($request->hasSession()) {
                 $request->session()->flash('success', $message);
@@ -215,7 +225,8 @@ class ReportController extends Controller
         $data = $this->extractReportData($request);
         $data['has_rejects'] = $this->checkHasRejects($data);
 
-        if ($report->isDraft()) {
+        $wasDraft = $report->isDraft();
+        if ($wasDraft) {
             if ($submitAction === 'submit') {
                 $data['review_status'] = Report::STATUS_WAITING_REVIEW;
                 $data['submitted_at'] = now();
@@ -229,6 +240,23 @@ class ReportController extends Controller
         }
 
         $report->update($data);
+
+        if ($wasDraft && $submitAction === 'submit') {
+            ActivityLog::record('report_submitted', "Mensubmit laporan {$report->ssc_id} dari Draft ke Waiting Review", $report, [
+                'part_name' => $report->part_name,
+                'status' => Report::STATUS_WAITING_REVIEW,
+            ]);
+        } elseif ($wasDraft) {
+            ActivityLog::record('report_draft_updated', "Memperbarui draft laporan {$report->ssc_id}", $report, [
+                'part_name' => $report->part_name,
+                'status' => Report::STATUS_DRAFT,
+            ]);
+        } else {
+            ActivityLog::record('report_updated', "Memperbarui data laporan {$report->ssc_id}", $report, [
+                'part_name' => $report->part_name,
+                'status' => $report->review_status,
+            ]);
+        }
 
         if ($request->wantsJson() || $request->is('api/*')) {
             if ($request->hasSession()) {
@@ -260,7 +288,13 @@ class ReportController extends Controller
         }
 
         $sscId = $report->ssc_id;
+        $partName = $report->part_name;
         $report->delete();
+
+        ActivityLog::record('report_deleted', "Menghapus laporan {$sscId}", null, [
+            'subject' => $sscId,
+            'part_name' => $partName,
+        ]);
 
         if (request()->wantsJson() || request()->is('api/*')) {
             return response()->json(['success' => true, 'message' => "Laporan {$sscId} berhasil dihapus."]);
@@ -325,6 +359,10 @@ class ReportController extends Controller
             $filePath = $this->excelService->generateExcelFile($report);
             $filename = $this->buildExportFilename($report);
 
+            ActivityLog::record('report_exported_excel', "Mengunduh Excel laporan {$report->ssc_id}", $report, [
+                'part_name' => $report->part_name,
+            ]);
+
             return response()->download($filePath, $filename, [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ])->deleteFileAfterSend(true);
@@ -376,6 +414,10 @@ class ReportController extends Controller
      */
     public function pdf(Report $report)
     {
+        ActivityLog::record('report_exported_pdf', "Membuka cetak / PDF laporan {$report->ssc_id}", $report, [
+            'part_name' => $report->part_name,
+        ]);
+
         return view('reports.print', [
             'report' => $report,
             'isReviewMode' => false,
@@ -447,6 +489,12 @@ class ReportController extends Controller
             'reviewed_by' => $user->id,
             'reviewer_id' => $report->reviewer_id ?: $user->id,
             'signatures' => $signatures,
+        ]);
+
+        ActivityLog::record('report_reviewed', "Menyelesaikan review (Finish Review) laporan {$report->ssc_id}", $report, [
+            'part_name' => $report->part_name,
+            'status' => Report::STATUS_REVIEWED,
+            'creator' => $report->creator?->name,
         ]);
 
         if ($request->wantsJson() || $request->is('api/*')) {
