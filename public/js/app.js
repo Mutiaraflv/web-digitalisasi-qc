@@ -229,6 +229,7 @@ function setupStudioTabs() {
             btn.classList.add('active');
             const targetContent = document.getElementById(targetId);
             if (targetContent) targetContent.classList.add('active');
+            document.querySelector('.studio-form')?.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
 }
@@ -666,7 +667,8 @@ window.handleSlotUpload = function (input, slotKey) {
         });
 };
 
-window.removeSlotPhoto = function (slotKey) {
+window.removeSlotPhoto = function (slotKey, silent = false) {
+    const hadPhoto = Boolean(reportPhotos[slotKey]);
     reportPhotos[slotKey] = null;
 
     // Reset file input and camera input
@@ -717,7 +719,9 @@ window.removeSlotPhoto = function (slotKey) {
     }
 
     updatePhotoBadgeCount();
-    showToast('Foto dihapus', 'success');
+    if (!silent && hadPhoto) {
+        showToast('Foto dihapus', 'success');
+    }
 };
 
 window.useDefaultBlueprint = function (slotKey) {
@@ -1536,7 +1540,7 @@ function loadDefaultBlankForm() {
 
     // Reset photos
     for (const key in reportPhotos) {
-        removeSlotPhoto(key);
+        removeSlotPhoto(key, true);
     }
 
     // Reset recommendations

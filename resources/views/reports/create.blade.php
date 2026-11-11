@@ -16,7 +16,7 @@
     <!-- Desktop Toolbar (Hanya Tampil di Layar PC/Tablet Lebar) -->
     <div class="desktop-actions">
       <!-- 1. Kosongkan Form -->
-      <button type="button" id="btnTopResetBlank" class="btn btn-secondary btn-sm" title="Kosongkan Semua Data Form" onclick="document.getElementById('btnResetBlank')?.click()">
+      <button type="button" id="btnTopResetBlank" class="btn btn-secondary btn-sm" title="Kosongkan Semua Data Form">
         <i data-lucide="rotate-ccw"></i> <span>Kosongkan</span>
       </button>
 
@@ -146,39 +146,6 @@
 @endphp
 
 <div class="workspace-container">
-  
-  <!-- Component Selector Bar -->
-  <div class="component-selector-bar">
-    <div class="selector-info">
-      <label for="componentSelect"><i data-lucide="layers"></i> Pilih Komponen Inspeksi QC:</label>
-      <div class="selector-wrapper">
-        <select id="componentSelect" class="form-select-lg">
-          <option value="output_shaft" selected>
-            Output Shaft (Poros Output &mdash; Aktif & Siap Digunakan)
-          </option>
-          <option value="hydraulic_cylinder" disabled>
-            Hydraulic Cylinder Rod (Menunggu Template Divisi Terkait)
-          </option>
-          <option value="drive_pinion" disabled>
-            Drive Pinion Gear (Menunggu Template Divisi Terkait)
-          </option>
-          <option value="bearing_journal" disabled>
-            Bearing Journal Sleeve (Menunggu Template Divisi Terkait)
-          </option>
-          <option value="connecting_rod" disabled>
-            Connecting Rod (Menunggu Template Divisi Terkait)
-          </option>
-        </select>
-        <span class="badge badge-green" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;">Aktif</span>
-      </div>
-    </div>
-    <div class="selector-meta">
-      <span class="meta-item" title="Standar Template Formulir Mutu PT SSC Works"><i data-lucide="file-check"></i> Form: <strong>{{ $report?->doc_no ?? 'FORM-QC-002' }} (Rev {{ $report?->rev ?? '04' }})</strong></span>
-      <span class="meta-item" title="Nomor Identitas Unik Unit Workshop"><i data-lucide="hash"></i> SSC ID: <strong id="top_badge_sscId" style="color: var(--primary);">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</strong></span>
-      <span class="meta-item" title="Nomor Lembar Laporan Inspeksi"><i data-lucide="file-text"></i> No. Laporan: <strong id="top_badge_reportNo">{{ $report?->report_no ?? ($nextReportNo ?? '0743') }}</strong></span>
-      <span class="meta-item"><i data-lucide="eye"></i> Live Preview: <strong style="color: var(--success);">Aktif</strong></span>
-    </div>
-  </div>
 
   <div class="notice-box">
     <i data-lucide="info" style="color: var(--primary); flex-shrink: 0;"></i>
@@ -193,28 +160,58 @@
     <!-- LEFT COLUMN: Form Inputs & Section Photo Uploaders -->
     <div class="studio-editor-pane">
       <div class="pane-card">
-        
-        <!-- Navigation Tabs -->
-        <div class="studio-tabs">
-          <button type="button" class="s-tab-btn active" data-target="stab-identitas">
-            1. Identitas & Job
-          </button>
-          <button type="button" class="s-tab-btn" data-target="stab-dimensi">
-            2. Nilai Dimensi
-          </button>
-          <button type="button" class="s-tab-btn" data-target="stab-foto">
-            3. Upload Foto Bagian
-            <span class="tab-photo-counter" id="photoCountBadge">0</span>
-          </button>
-          <button type="button" class="s-tab-btn" data-target="stab-tir">
-            4. Runout (TIR)
-          </button>
-          <button type="button" class="s-tab-btn" data-target="stab-rekomendasi">
-            5. Rekomendasi
-          </button>
-          <button type="button" class="s-tab-btn" data-target="stab-ttd">
-            6. Pengesahan
-          </button>
+
+        <!-- Sticky Header: Bar Komponen & Bar Tab Form -->
+        <div class="editor-sticky-header">
+          <!-- Bar Komponen (Tepat di Atas Bar Form) -->
+          <div class="component-selector-bar">
+            <div class="selector-info">
+              <label for="componentSelect"><i data-lucide="layers"></i> Pilih Komponen Inspeksi QC:</label>
+              <div class="selector-wrapper">
+                <select id="componentSelect" class="form-select-lg">
+                  <option value="output_shaft" selected>
+                    Output Shaft (Poros Output &mdash; Aktif & Siap Digunakan)
+                  </option>
+                  <option value="hydraulic_cylinder" disabled>
+                    Hydraulic Cylinder Rod (Menunggu Template Divisi Terkait)
+                  </option>
+                  <option value="drive_pinion" disabled>
+                    Drive Pinion Gear (Menunggu Template Divisi Terkait)
+                  </option>
+                  <option value="bearing_journal" disabled>
+                    Bearing Journal Sleeve (Menunggu Template Divisi Terkait)
+                  </option>
+                  <option value="connecting_rod" disabled>
+                    Connecting Rod (Menunggu Template Divisi Terkait)
+                  </option>
+                </select>
+                <span class="badge badge-green" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;">Aktif</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Navigation Tabs (Bar Form) -->
+          <div class="studio-tabs">
+            <button type="button" class="s-tab-btn active" data-target="stab-identitas">
+              1. Identitas & Job
+            </button>
+            <button type="button" class="s-tab-btn" data-target="stab-dimensi">
+              2. Nilai Dimensi
+            </button>
+            <button type="button" class="s-tab-btn" data-target="stab-foto">
+              3. Upload Foto Bagian
+              <span class="tab-photo-counter" id="photoCountBadge">0</span>
+            </button>
+            <button type="button" class="s-tab-btn" data-target="stab-tir">
+              4. Runout (TIR)
+            </button>
+            <button type="button" class="s-tab-btn" data-target="stab-rekomendasi">
+              5. Rekomendasi
+            </button>
+            <button type="button" class="s-tab-btn" data-target="stab-ttd">
+              6. Pengesahan
+            </button>
+          </div>
         </div>
 
         <form id="qcMainForm" class="studio-form">
@@ -1153,25 +1150,6 @@
           </div>
 
         </form>
-
-        <!-- Studio Footer Actions -->
-        <div class="studio-footer">
-          <div class="footer-left">
-            <button type="button" class="btn btn-secondary btn-sm" id="btnResetBlank">
-              <i data-lucide="rotate-ccw"></i> Kosongkan Form
-            </button>
-          </div>
-          <div class="footer-right">
-            @if($isDraftReport)
-              <button type="button" class="btn btn-secondary btn-sm" id="btnFooterDraft">
-                <i data-lucide="file-clock"></i> Simpan Draft
-              </button>
-            @endif
-            <button type="button" class="btn btn-primary btn-sm" id="btnFooterSubmit">
-              <i data-lucide="{{ $isDraftReport ? 'send' : 'save' }}"></i> {{ $isDraftReport ? 'Submit Laporan' : 'Simpan Perubahan' }}
-            </button>
-          </div>
-        </div>
 
       </div>
     </div>

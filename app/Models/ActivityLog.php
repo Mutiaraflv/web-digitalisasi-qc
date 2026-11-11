@@ -84,6 +84,8 @@ class ActivityLog extends Model
             'report_exported_excel' => ['label' => 'Unduh Excel', 'tone' => 'success', 'icon' => 'file-spreadsheet'],
             'report_exported_pdf' => ['label' => 'Cetak / PDF', 'tone' => 'primary', 'icon' => 'printer'],
             'user_created', 'user_updated', 'user_deleted' => ['label' => 'Kelola Akun', 'tone' => 'primary', 'icon' => 'user-cog'],
+            'profile_updated' => ['label' => 'Ubah Profil', 'tone' => 'primary', 'icon' => 'user-check'],
+            'password_updated' => ['label' => 'Ubah Sandi', 'tone' => 'warning', 'icon' => 'key'],
             'login' => ['label' => 'Login', 'tone' => 'primary', 'icon' => 'log-in'],
             'logout' => ['label' => 'Logout', 'tone' => 'slate', 'icon' => 'log-out'],
             default => ['label' => ucfirst(str_replace('_', ' ', $this->action)), 'tone' => 'slate', 'icon' => 'activity'],

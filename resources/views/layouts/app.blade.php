@@ -52,7 +52,7 @@
 
         <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
           <i data-lucide="layout-dashboard"></i>
-          <span>Dashboard Ringkas</span>
+          <span>Dashboard</span>
         </a>
 
         <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') || request()->routeIs('inspection.create') ? 'active' : '' }}">
@@ -80,12 +80,27 @@
 
       <!-- Sidebar User Footer -->
       <div class="sidebar-footer">
-        <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
-        <div class="user-info">
-          <h4>{{ auth()->user()->name }}</h4>
-          <p>{{ auth()->user()->email }} · <span style="color: {{ auth()->user()->isAdmin() ? 'var(--primary)' : 'var(--text-subtle)' }}; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">{{ auth()->user()->roleLabel() }}</span></p>
-        </div>
-        <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form">
+        <a href="{{ route('profile.show') }}" class="sidebar-user-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" title="Buka Profil & Pengaturan Akun">
+          <div class="user-avatar">
+            @if(auth()->user()->avatar_url)
+              <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="user-avatar-img">
+            @else
+              {{ auth()->user()->initials() }}
+            @endif
+          </div>
+          <div class="user-info">
+            <h4>{{ auth()->user()->name }}</h4>
+            <p>{{ auth()->user()->email }} · <span style="color: {{ auth()->user()->isAdmin() ? 'var(--primary)' : 'var(--text-subtle)' }}; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">{{ auth()->user()->roleLabel() }}</span></p>
+          </div>
+        </a>
+        <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form" onsubmit="return window.qcConfirmForm(event, this, {
+          title: 'Akses Log Out',
+          message: 'Apakah Anda yakin ingin keluar dari akun QCMS?',
+          confirmText: 'Ya',
+          cancelText: 'Tidak',
+          variant: 'danger',
+          icon: 'log-out'
+        })">
           @csrf
           <button type="submit" class="sidebar-logout" title="Keluar" aria-label="Keluar">
             <i data-lucide="log-out"></i>
@@ -242,7 +257,7 @@
         }
       }
 
-      function openQcDialog({ title, message, confirmText = 'Lanjutkan', cancelText = 'Batal', variant = 'primary', showCancel = true }) {
+      function openQcDialog({ title, message, confirmText = 'Lanjutkan', cancelText = 'Batal', variant = 'primary', icon = null, showCancel = true }) {
         const overlay = document.getElementById('qcDialogOverlay');
         const titleEl = document.getElementById('qcDialogTitle');
         const msgEl = document.getElementById('qcDialogMessage');
@@ -277,7 +292,8 @@
 
         confirmBtn.className = `btn btn-sm ${btnClassMap[variant] || 'btn-primary'}`;
         iconWrap.className = `qc-dialog-icon-wrap variant-${variant}`;
-        iconWrap.innerHTML = `<i data-lucide="${iconMap[variant] || 'help-circle'}"></i>`;
+        const chosenIcon = icon || iconMap[variant] || 'help-circle';
+        iconWrap.innerHTML = `<i data-lucide="${chosenIcon}"></i>`;
         if (window.lucide) lucide.createIcons({ root: iconWrap });
 
         overlay.classList.add('active');
@@ -296,6 +312,7 @@
           confirmText: options?.confirmText || 'Ya, Lanjutkan',
           cancelText: options?.cancelText || 'Batal',
           variant: options?.variant || 'primary',
+          icon: options?.icon || null,
           showCancel: true,
         });
       };

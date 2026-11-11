@@ -39,9 +39,33 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'avatar',
         'role',
         'password',
     ];
+
+    /**
+     * Get avatar public URL or null if none uploaded.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if ($this->avatar && file_exists(public_path('uploads/avatars/' . $this->avatar))) {
+            return asset('uploads/avatars/' . $this->avatar);
+        }
+        return null;
+    }
+
+    /**
+     * User initials fallback for avatar.
+     */
+    public function initials(): string
+    {
+        $words = preg_split('/\s+/', trim((string) $this->name));
+        if (count($words) >= 2) {
+            return strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
+        }
+        return strtoupper(substr((string) $this->name, 0, 2));
+    }
 
     /**
      * Check if user has administrator privileges.

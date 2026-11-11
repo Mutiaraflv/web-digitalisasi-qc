@@ -9,6 +9,7 @@ use App\Http\Controllers\NcrController;
 use App\Http\Controllers\CalibrationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,7 +59,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/ncrs', [NcrController::class, 'index'])->name('ncrs.index');
     Route::get('/calibration-tools', [CalibrationController::class, 'index'])->name('calibration.index');
 
-    // 6. Pengaturan Sistem & Kelola Akun (Khusus Administrator)
+    // 6. Profil Akun Pengguna
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
+    // 7. Pengaturan Sistem & Kelola Akun (Khusus Administrator)
     Route::middleware('admin')->prefix('settings')->name('settings.')->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
