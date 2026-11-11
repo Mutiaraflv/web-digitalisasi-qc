@@ -24,6 +24,11 @@
         } catch (e) {}
       })();
     </script>
+    <!-- Floating Sidebar Edge Tab (Linear/Notion Style) -->
+    <button type="button" class="sidebar-edge-tab" id="btnSidebarEdgeTab" title="Buka Sidebar" aria-label="Buka Sidebar">
+      <i data-lucide="panel-left-open"></i>
+    </button>
+
     <!-- Sidebar Navigation -->
     <aside class="app-sidebar" id="appSidebar">
       <!-- Sidebar Header -->
@@ -33,6 +38,9 @@
           <h2>QCMS</h2>
           <p>PT SSC Works</p>
         </div>
+        <button type="button" class="sidebar-collapse-desktop" id="btnSidebarCollapse" aria-label="Ciutkan Menu" title="Ciutkan Menu">
+          <i data-lucide="panel-left-close"></i>
+        </button>
         <button type="button" class="sidebar-close-mobile" id="btnCloseSidebarMobile" aria-label="Tutup Menu" title="Tutup Menu">
           <i data-lucide="x"></i>
         </button>
@@ -44,7 +52,7 @@
 
         <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
           <i data-lucide="layout-dashboard"></i>
-          <span>Dashboard</span>
+          <span>Dashboard Ringkas</span>
         </a>
 
         <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') || request()->routeIs('inspection.create') ? 'active' : '' }}">
@@ -58,23 +66,6 @@
         <a href="{{ route('templates.index') }}" class="nav-item {{ request()->routeIs('templates.*') || request()->routeIs('parts.*') ? 'active' : '' }}">
           <i data-lucide="file-spreadsheet"></i>
           <span>Template Komponen</span>
-        </a>
-
-        <div class="nav-section-title" style="margin-top: 1.25rem;">Modul Pendukung</div>
-
-        <a href="{{ route('customers.index') }}" class="nav-item {{ request()->routeIs('customers.*') ? 'active' : '' }}">
-          <i data-lucide="building"></i>
-          <span>Data Pelanggan</span>
-        </a>
-
-        <a href="{{ route('ncrs.index') }}" class="nav-item {{ request()->routeIs('ncrs.*') ? 'active' : '' }}">
-          <i data-lucide="alert-octagon"></i>
-          <span>Temuan & NCR</span>
-        </a>
-
-        <a href="{{ route('calibration.index') }}" class="nav-item {{ request()->routeIs('calibration.*') ? 'active' : '' }}">
-          <i data-lucide="ruler"></i>
-          <span>Kalibrasi Alat</span>
         </a>
 
         @if(auth()->check() && auth()->user()->isAdmin())
@@ -111,9 +102,12 @@
       <!-- Top App Bar -->
       <header class="top-navbar">
         <div class="top-nav-left">
-          <button type="button" class="btn-sidebar-toggle" id="btnToggleSidebar" title="Toggle Sidebar">
-            <i data-lucide="menu"></i>
-          </button>
+          @hasSection('top_back_link')
+            <a href="@yield('top_back_link')" class="btn-nav-back-icon" title="@yield('top_back_title', 'Kembali ke Riwayat')">
+              <i data-lucide="arrow-left"></i>
+            </a>
+          @endif
+
           <div class="breadcrumbs">
             <span>QCMS</span>
             <span>/</span>
@@ -336,19 +330,23 @@
         if (window.lucide) lucide.createIcons();
 
         const appShell = document.getElementById('appShell');
-        const btnToggle = document.getElementById('btnToggleSidebar');
+        const btnCollapse = document.getElementById('btnSidebarCollapse');
+        const btnEdgeTab = document.getElementById('btnSidebarEdgeTab');
         const btnCloseMobile = document.getElementById('btnCloseSidebarMobile');
         const sidebar = document.getElementById('appSidebar');
         const backdrop = document.getElementById('sidebarBackdrop');
 
         function syncToggleButtonState() {
-          if (!btnToggle) return;
           const isMobile = window.innerWidth <= 900;
           const isOpen = isMobile
             ? Boolean(sidebar?.classList.contains('show'))
             : !Boolean(appShell?.classList.contains('sidebar-collapsed'));
-          btnToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-          btnToggle.title = isOpen ? 'Tutup Sidebar' : 'Buka Sidebar';
+          if (btnCollapse) {
+            btnCollapse.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          }
+          if (btnEdgeTab) {
+            btnEdgeTab.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          }
         }
 
         function openMobileSidebar() {
@@ -384,7 +382,8 @@
           }
         }
 
-        btnToggle?.addEventListener('click', toggleSidebar);
+        btnCollapse?.addEventListener('click', toggleSidebar);
+        btnEdgeTab?.addEventListener('click', toggleSidebar);
         btnCloseMobile?.addEventListener('click', closeMobileSidebar);
         backdrop?.addEventListener('click', closeMobileSidebar);
 

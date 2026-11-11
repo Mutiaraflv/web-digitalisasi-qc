@@ -320,6 +320,125 @@ body {
   display: flex;
   align-items: center;
   gap: 0.85rem;
+  transition: padding-left 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Floating Sidebar Edge Tab (Linear / Notion Style) */
+.sidebar-edge-tab {
+  position: fixed;
+  top: 12px;
+  left: 0;
+  height: 32px;
+  padding: 0 8px 0 6px;
+  border-radius: 0 8px 8px 0;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-left: none;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-edge-tab svg,
+.sidebar-edge-tab i {
+  width: 17px;
+  height: 17px;
+}
+
+.sidebar-edge-tab:hover {
+  background: #f8fafc;
+  color: var(--primary);
+  border-color: #cbd5e1;
+  padding-left: 8px;
+  padding-right: 11px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
+}
+
+/* Minimalist Back Icon Button in top-nav-left */
+.btn-nav-back-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.btn-nav-back-icon:hover {
+  background: var(--bg-app);
+  color: var(--primary);
+  border-color: var(--border-subtle);
+  transform: translateX(-2px);
+}
+
+.btn-nav-back-icon svg,
+.btn-nav-back-icon i {
+  width: 17px;
+  height: 17px;
+}
+
+/* Sidebar Header Collapse Button (Desktop) */
+.sidebar-collapse-desktop {
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: #f8fafc;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: all 0.16s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-collapse-desktop:hover {
+  background: #ffffff;
+  color: var(--primary);
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+  transform: translateX(-1px);
+}
+
+.sidebar-collapse-desktop svg,
+.sidebar-collapse-desktop i {
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 900px) {
+  .sidebar-collapse-desktop {
+    display: none !important;
+  }
+  .sidebar-edge-tab {
+    display: inline-flex;
+  }
+  .top-nav-left {
+    padding-left: 1.5rem;
+  }
+}
+
+@media (min-width: 901px) {
+  .app-shell.sidebar-collapsed .sidebar-edge-tab {
+    display: inline-flex;
+  }
+  .app-shell.sidebar-collapsed .top-nav-left {
+    padding-left: 1.5rem;
+  }
 }
 
 .btn-sidebar-toggle {
@@ -355,6 +474,200 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.top-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+}
+
+.top-action-bar .btn.btn-icon {
+  width: 33px;
+  height: 33px;
+  min-height: 33px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.top-action-bar .btn.btn-icon svg,
+.top-action-bar .btn.btn-icon i {
+  width: 15px;
+  height: 15px;
+}
+
+/* Export Dropdown Component */
+.export-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.export-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 155px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+  padding: 0.3rem;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.98);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+  pointer-events: none;
+}
+
+.export-dropdown.is-open .export-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.export-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-main);
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.export-menu-item i,
+.export-menu-item svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: var(--text-subtle);
+  transition: color 0.15s ease;
+}
+
+.export-menu-item:hover {
+  background: #f1f5f9;
+  color: var(--primary);
+}
+
+.export-menu-item:hover i,
+.export-menu-item:hover svg {
+  color: var(--primary);
+}
+
+/* Responsive Desktop vs Mobile Actions */
+.desktop-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.mobile-action-dropdown {
+  display: none;
+  position: relative;
+}
+
+.mobile-menu-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 190px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.16), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+  padding: 0.35rem;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.98);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+  pointer-events: none;
+}
+
+.mobile-action-dropdown.is-open .mobile-menu-popup {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-main);
+  white-space: nowrap;
+  user-select: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.mobile-menu-item i,
+.mobile-menu-item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--text-subtle);
+}
+
+.mobile-menu-item:hover,
+.mobile-menu-item:active {
+  background: #f1f5f9;
+  color: var(--primary);
+}
+
+.mobile-menu-item:hover i,
+.mobile-menu-item:hover svg,
+.mobile-menu-item:active i,
+.mobile-menu-item:active svg {
+  color: var(--primary);
+}
+
+.mobile-menu-item.text-danger {
+  color: #dc2626;
+}
+
+.mobile-menu-item.text-danger i,
+.mobile-menu-item.text-danger svg {
+  color: #dc2626;
+}
+
+.mobile-menu-item.text-danger:hover,
+.mobile-menu-item.text-danger:active {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.mobile-menu-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0.35rem 0;
 }
 
 /* Content Container */
@@ -2481,19 +2794,30 @@ body {
   }
 
   .top-navbar {
-    height: auto;
+    height: 52px;
     min-height: 52px;
-    padding: 0.45rem 0.75rem;
-    flex-wrap: wrap;
-    gap: 0.45rem;
+    padding: 0 0.75rem;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
   }
 
   .top-nav-left {
     gap: 0.5rem;
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
   }
 
   .breadcrumbs {
     font-size: 0.78rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .top-nav-right {
+    flex-shrink: 0;
+    margin-left: auto;
   }
 
   .top-action-bar {
@@ -2501,12 +2825,31 @@ body {
     align-items: center;
     gap: 0.35rem;
     margin-left: auto;
+    flex-shrink: 0;
   }
 
   .top-action-bar .btn {
-    padding: 0.35rem 0.55rem;
-    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.78rem;
     min-height: 32px;
+    height: 32px;
+  }
+
+  .top-action-bar .btn.btn-icon {
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+  }
+
+  /* Sembunyikan tombol banyak di layar HP, ganti dengan menu popover [ ••• ] */
+  .desktop-actions {
+    display: none !important;
+  }
+
+  .mobile-action-dropdown {
+    display: inline-block !important;
   }
 
   /* Component Selector Bar */
@@ -4352,7 +4695,7 @@ body {
 
   .top-nav-right {
     max-width: 100%;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: flex-end;
   }
 

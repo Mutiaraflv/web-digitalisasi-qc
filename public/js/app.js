@@ -1283,7 +1283,11 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
     payload.submit_action = resolvedAction;
 
     isSavingReport = true;
-    const actionBtnIds = ['btnTopDraft', 'btnFooterDraft', 'btnTopSave', 'btnFooterSubmit', 'btnTopExportExcel'];
+    const actionBtnIds = [
+        'btnTopDraft', 'btnFooterDraft', 'btnTopSave', 'btnFooterSubmit',
+        'btnTopExportExcel', 'btnTopResetBlank', 'btnResetBlank',
+        'btnMobileMenuTrigger', 'btnMobileDraft', 'btnMobileExportExcel', 'btnMobileResetBlank'
+    ];
     const setButtonsBusy = (busy) => {
         actionBtnIds.forEach(id => {
             const btn = document.getElementById(id);
@@ -1354,17 +1358,101 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
 }
 
 function setupButtonActions() {
+    // Export Dropdown Toggle (PDF & Excel)
+    const exportWrap = document.getElementById('topExportDropdown');
+    const exportTrigger = document.getElementById('btnExportDropdownTrigger');
+    const exportMenu = document.getElementById('topExportDropdownMenu');
+
+    if (exportWrap && exportTrigger && exportMenu) {
+        const toggleExportDropdown = (open) => {
+            const willOpen = open !== undefined ? open : !exportWrap.classList.contains('is-open');
+            exportWrap.classList.toggle('is-open', willOpen);
+            exportTrigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        };
+
+        exportTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleExportDropdown();
+        });
+
+        exportMenu.querySelectorAll('.export-menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                toggleExportDropdown(false);
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!exportWrap.contains(e.target)) {
+                toggleExportDropdown(false);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && exportWrap.classList.contains('is-open')) {
+                toggleExportDropdown(false);
+            }
+        });
+    }
+
+    // Mobile Action Dropdown Toggle (More Options [ ••• ])
+    const mobileDropdown = document.getElementById('mobileActionDropdown');
+    const mobileTrigger = document.getElementById('btnMobileMenuTrigger');
+    const mobileMenu = document.getElementById('mobileMenuPopup');
+
+    if (mobileDropdown && mobileTrigger) {
+        const toggleMobileMenu = (open) => {
+            const willOpen = open !== undefined ? open : !mobileDropdown.classList.contains('is-open');
+            mobileDropdown.classList.toggle('is-open', willOpen);
+            mobileTrigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        };
+
+        window.closeMobileMenu = () => toggleMobileMenu(false);
+
+        mobileTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleMobileMenu();
+        });
+
+        if (mobileMenu) {
+            mobileMenu.querySelectorAll('.mobile-menu-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    toggleMobileMenu(false);
+                });
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!mobileDropdown.contains(e.target)) {
+                toggleMobileMenu(false);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && mobileDropdown.classList.contains('is-open')) {
+                toggleMobileMenu(false);
+            }
+        });
+    }
+
     // Draft & Submit buttons (Top bar & Studio Footer)
     document.getElementById('btnTopDraft')?.addEventListener('click', () => saveReportData(false, 'draft'));
+    document.getElementById('btnMobileDraft')?.addEventListener('click', () => {
+        window.closeMobileMenu?.();
+        saveReportData(false, 'draft');
+    });
     document.getElementById('btnFooterDraft')?.addEventListener('click', () => saveReportData(false, 'draft'));
     document.getElementById('btnTopSave')?.addEventListener('click', () => saveReportData(false, 'submit'));
     document.getElementById('btnFooterSubmit')?.addEventListener('click', () => saveReportData(false, 'submit'));
 
     // Save & Download Excel (Top bar - preserves draft if not yet submitted)
     document.getElementById('btnTopExportExcel')?.addEventListener('click', () => saveReportData(true));
+    document.getElementById('btnMobileExportExcel')?.addEventListener('click', () => {
+        window.closeMobileMenu?.();
+        saveReportData(true);
+    });
 
-    // Reset blank button
-    document.getElementById('btnResetBlank')?.addEventListener('click', async () => {
+    // Reset blank button (Studio footer & Top action bar)
+    const handleResetBlank = async () => {
         const ok = window.qcConfirm
             ? await window.qcConfirm({
                 title: 'Kosongkan Form Inspeksi',
@@ -1377,6 +1465,12 @@ function setupButtonActions() {
         if (ok) {
             loadDefaultBlankForm();
         }
+    };
+    document.getElementById('btnResetBlank')?.addEventListener('click', handleResetBlank);
+    document.getElementById('btnTopResetBlank')?.addEventListener('click', handleResetBlank);
+    document.getElementById('btnMobileResetBlank')?.addEventListener('click', () => {
+        window.closeMobileMenu?.();
+        handleResetBlank();
     });
 
     // Add recommendation row button
@@ -1391,6 +1485,11 @@ function setupButtonActions() {
     });
     document.getElementById('btnTopExportPdf')?.addEventListener('click', (e) => {
         e.preventDefault();
+        window.exportOfficialPdf();
+    });
+    document.getElementById('btnMobileExportPdf')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.closeMobileMenu?.();
         window.exportOfficialPdf();
     });
 

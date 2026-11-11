@@ -8,25 +8,68 @@
 
 @section('title', isset($isEdit) && $isEdit ? 'Edit Laporan QC' : 'Input Inspeksi Baru')
 @section('page_title', isset($isEdit) && $isEdit ? 'Edit Laporan QC' : 'Input Inspeksi Baru')
+@section('top_back_link', route('reports.index'))
+@section('top_back_title', 'Kembali ke Riwayat Laporan')
 
 @section('top_actions')
   <div class="top-action-bar">
-    <a href="{{ route('reports.index') }}" class="btn btn-secondary btn-sm" title="Kembali ke Riwayat">
-      <i data-lucide="arrow-left"></i> <span class="hide-mobile">Riwayat</span>
-    </a>
-    @if($isDraftReport)
-      <button type="button" id="btnTopDraft" class="btn btn-secondary btn-sm" title="Simpan sebagai Draft (Belum dikirim ke Waiting Review)">
-        <i data-lucide="file-clock"></i> <span class="hide-mobile">Simpan</span> Draft
+    <!-- Desktop Toolbar (Hanya Tampil di Layar PC/Tablet Lebar) -->
+    <div class="desktop-actions">
+      <!-- 1. Kosongkan Form -->
+      <button type="button" id="btnTopResetBlank" class="btn btn-secondary btn-sm" title="Kosongkan Semua Data Form" onclick="document.getElementById('btnResetBlank')?.click()">
+        <i data-lucide="rotate-ccw"></i> <span>Kosongkan</span>
       </button>
-    @endif
+
+      <!-- 2. Simpan Draft (Ikon Saja) -->
+      @if($isDraftReport)
+        <button type="button" id="btnTopDraft" class="btn btn-secondary btn-sm btn-icon" title="Simpan sebagai Draft (Belum dikirim ke Review)">
+          <i data-lucide="file-clock"></i>
+        </button>
+      @endif
+
+      <!-- 3. Ekspor Dokumen (Ikon Saja Dropdown: PDF & Excel) -->
+      <div class="export-dropdown" id="topExportDropdown">
+        <button type="button" class="btn btn-secondary btn-sm btn-icon export-dropdown-trigger" id="btnExportDropdownTrigger" aria-haspopup="true" aria-expanded="false" title="Ekspor Laporan (PDF / Excel)">
+          <i data-lucide="download"></i>
+        </button>
+        <div class="export-dropdown-menu" id="topExportDropdownMenu" role="menu">
+          <button type="button" class="export-menu-item" id="btnTopExportPdf" role="menuitem" onclick="window.exportOfficialPdf()">
+            <i data-lucide="file-text"></i> <span>Ekspor PDF</span>
+          </button>
+          <button type="button" class="export-menu-item" id="btnTopExportExcel" role="menuitem">
+            <i data-lucide="file-spreadsheet"></i> <span>Unduh Excel</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Action Dropdown [ ••• ] (Hanya Tampil di Layar HP/Mobile) -->
+    <div class="mobile-action-dropdown" id="mobileActionDropdown">
+      <button type="button" class="btn btn-secondary btn-sm btn-icon mobile-menu-trigger" id="btnMobileMenuTrigger" aria-haspopup="true" aria-expanded="false" title="Menu Opsi Form">
+        <i data-lucide="more-horizontal"></i>
+      </button>
+      <div class="mobile-menu-popup" id="mobileMenuPopup" role="menu">
+        <button type="button" class="mobile-menu-item text-danger" id="btnMobileResetBlank" role="menuitem">
+          <i data-lucide="rotate-ccw"></i> <span>Kosongkan Form</span>
+        </button>
+        @if($isDraftReport)
+          <button type="button" class="mobile-menu-item" id="btnMobileDraft" role="menuitem">
+            <i data-lucide="file-clock"></i> <span>Simpan Draft</span>
+          </button>
+        @endif
+        <div class="mobile-menu-divider"></div>
+        <button type="button" class="mobile-menu-item" id="btnMobileExportPdf" role="menuitem">
+          <i data-lucide="file-text"></i> <span>Ekspor PDF</span>
+        </button>
+        <button type="button" class="mobile-menu-item" id="btnMobileExportExcel" role="menuitem">
+          <i data-lucide="file-spreadsheet"></i> <span>Unduh Excel</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. Submit / Simpan Final (Tampil di Desktop & Mobile) -->
     <button type="button" id="btnTopSave" class="btn btn-primary btn-sm" title="{{ $isDraftReport ? 'Submit Pengajuan Laporan (Waiting Review)' : 'Simpan Perubahan Laporan' }}">
-      <i data-lucide="{{ $isDraftReport ? 'send' : 'save' }}"></i> <span class="hide-mobile">{{ $isDraftReport ? 'Submit' : 'Simpan' }}</span>
-    </button>
-    <button type="button" id="btnTopExportPdf" class="btn btn-secondary btn-sm" title="Ekspor 6 Lembar PDF Resmi" onclick="window.exportOfficialPdf()">
-      <i data-lucide="file-text"></i> <span class="hide-mobile">Ekspor</span> PDF
-    </button>
-    <button type="button" id="btnTopExportExcel" class="btn btn-secondary btn-sm" title="Unduh Excel (.xlsx)">
-      <i data-lucide="file-spreadsheet"></i> Excel
+      <i data-lucide="{{ $isDraftReport ? 'send' : 'save' }}"></i> <span>{{ $isDraftReport ? 'Submit' : 'Simpan' }}</span>
     </button>
   </div>
 @endsection
