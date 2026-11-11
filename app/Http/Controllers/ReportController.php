@@ -35,6 +35,14 @@ class ReportController extends Controller
 
         if ($activeTab === 'mine' && $user) {
             $query->ownedOrCheckedBy($user);
+            if ($request->filled('status') && $request->status !== 'All') {
+                $statusFilter = strtolower($request->status);
+                if ($statusFilter === 'draft') {
+                    $query->where('review_status', Report::STATUS_DRAFT);
+                } elseif (in_array($statusFilter, ['dikirim', 'submitted'], true)) {
+                    $query->where('review_status', '!=', Report::STATUS_DRAFT);
+                }
+            }
         } elseif ($activeTab === 'approval' && $user) {
             $query->pendingApprovalFor($user);
         } else {

@@ -111,12 +111,27 @@
 
       <!-- Sidebar User Footer -->
       <div class="sidebar-footer">
-        <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
-        <div class="user-info">
-          <h4>{{ auth()->user()->name }}</h4>
-          <p>{{ auth()->user()->email }} · <span style="color: {{ auth()->user()->isAdmin() ? 'var(--primary-text)' : 'var(--text-subtle)' }}; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">{{ auth()->user()->roleLabel() }}</span></p>
-        </div>
-        <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form">
+        <a href="{{ route('profile.show') }}" class="sidebar-user-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" title="{{ __('qc.nav.profile_tooltip') }}">
+          <div class="user-avatar">
+            @if(auth()->user()->avatar_url)
+              <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="user-avatar-img">
+            @else
+              {{ auth()->user()->initials() }}
+            @endif
+          </div>
+          <div class="user-info">
+            <h4>{{ auth()->user()->name }}</h4>
+            <p>{{ auth()->user()->email }} · <span style="color: {{ auth()->user()->isAdmin() ? 'var(--primary-text)' : 'var(--text-subtle)' }}; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">{{ auth()->user()->roleLabel() }}</span></p>
+          </div>
+        </a>
+        <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form" onsubmit="return window.qcConfirmForm(event, this, {
+          title: @json(__('qc.nav.logout_confirm_title')),
+          message: @json(__('qc.nav.logout_confirm_msg')),
+          confirmText: @json(__('qc.nav.yes')),
+          cancelText: @json(__('qc.nav.no')),
+          variant: 'danger',
+          icon: 'log-out'
+        })">
           @csrf
           <button type="submit" class="sidebar-logout" title="{{ __('qc.nav.logout') }}" aria-label="{{ __('qc.nav.logout') }}">
             <i data-lucide="log-out"></i>
@@ -276,7 +291,7 @@
         }
       }
 
-      function openQcDialog({ title, message, confirmText = commonI18n.continue || 'Lanjutkan', cancelText = commonI18n.cancel || 'Batal', variant = 'primary', showCancel = true }) {
+      function openQcDialog({ title, message, confirmText = commonI18n.continue || 'Lanjutkan', cancelText = commonI18n.cancel || 'Batal', variant = 'primary', icon = null, showCancel = true }) {
         const overlay = document.getElementById('qcDialogOverlay');
         const titleEl = document.getElementById('qcDialogTitle');
         const msgEl = document.getElementById('qcDialogMessage');
@@ -311,7 +326,8 @@
 
         confirmBtn.className = `btn btn-sm ${btnClassMap[variant] || 'btn-primary'}`;
         iconWrap.className = `qc-dialog-icon-wrap variant-${variant}`;
-        iconWrap.innerHTML = `<i data-lucide="${iconMap[variant] || 'help-circle'}"></i>`;
+        const chosenIcon = icon || iconMap[variant] || 'help-circle';
+        iconWrap.innerHTML = `<i data-lucide="${chosenIcon}"></i>`;
         if (window.lucide) lucide.createIcons({ root: iconWrap });
 
         overlay.classList.add('active');
@@ -330,6 +346,7 @@
           confirmText: options?.confirmText || commonI18n.continue || 'Ya, Lanjutkan',
           cancelText: options?.cancelText || commonI18n.cancel || 'Batal',
           variant: options?.variant || 'primary',
+          icon: options?.icon || null,
           showCancel: true,
         });
       };

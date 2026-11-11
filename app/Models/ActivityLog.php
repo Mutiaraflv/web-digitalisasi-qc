@@ -84,6 +84,8 @@ class ActivityLog extends Model
             'report_exported_excel' => ['label' => __('qc.activity.report_exported_excel'), 'tone' => 'success', 'icon' => 'file-spreadsheet'],
             'report_exported_pdf' => ['label' => __('qc.activity.report_exported_pdf'), 'tone' => 'primary', 'icon' => 'printer'],
             'user_created', 'user_updated', 'user_deleted' => ['label' => __('qc.activity.user_manage'), 'tone' => 'primary', 'icon' => 'user-cog'],
+            'profile_updated' => ['label' => __('qc.activity.profile_updated'), 'tone' => 'primary', 'icon' => 'user-check'],
+            'password_updated' => ['label' => __('qc.activity.password_updated'), 'tone' => 'warning', 'icon' => 'key'],
             'preferences_updated' => ['label' => __('qc.activity.preferences_updated'), 'tone' => 'primary', 'icon' => 'sliders-horizontal'],
             'login' => ['label' => __('qc.activity.login'), 'tone' => 'primary', 'icon' => 'log-in'],
             'logout' => ['label' => __('qc.activity.logout'), 'tone' => 'slate', 'icon' => 'log-out'],
@@ -114,6 +116,8 @@ class ActivityLog extends Model
             'user_created' => __('qc.activity.desc_user_created', ['name' => $ssc, 'role' => $roleName]),
             'user_updated' => __('qc.activity.desc_user_updated', ['name' => $ssc, 'role' => $roleName]),
             'user_deleted' => __('qc.activity.desc_user_deleted', ['name' => $ssc]),
+            'profile_updated' => __('qc.activity.desc_profile_updated', ['name' => $this->meta['name'] ?? ($this->user?->name ?? '-')]),
+            'password_updated' => __('qc.activity.desc_password_updated', ['name' => $this->user?->name ?? ($this->meta['user'] ?? '-')]),
             'preferences_updated' => __('qc.activity.desc_preferences_updated'),
             default => $this->description,
         };

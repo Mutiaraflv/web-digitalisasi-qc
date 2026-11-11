@@ -16,7 +16,7 @@
     <!-- Desktop Toolbar -->
     <div class="desktop-actions">
       <!-- 1. Clear Form -->
-      <button type="button" id="btnTopResetBlank" class="btn btn-secondary btn-sm" title="{{ __('qc.studio.clear_form') }}" onclick="document.getElementById('btnResetBlank')?.click()">
+      <button type="button" id="btnTopResetBlank" class="btn btn-secondary btn-sm" title="{{ __('qc.studio.clear_form') }}">
         <i data-lucide="rotate-ccw"></i> <span>{{ __('qc.studio.clear') }}</span>
       </button>
 
@@ -149,39 +149,6 @@
 @endphp
 
 <div class="workspace-container">
-  
-  <!-- Component Selector Bar -->
-  <div class="component-selector-bar">
-    <div class="selector-info">
-      <label for="componentSelect"><i data-lucide="layers"></i> {{ __('qc.studio.select_component') }}</label>
-      <div class="selector-wrapper">
-        <select id="componentSelect" class="form-select-lg">
-          <option value="output_shaft" selected>
-            {{ __('qc.studio.comp_output_shaft') }}
-          </option>
-          <option value="hydraulic_cylinder" disabled>
-            {{ __('qc.studio.comp_waiting_template', ['name' => 'Hydraulic Cylinder Rod']) }}
-          </option>
-          <option value="drive_pinion" disabled>
-            {{ __('qc.studio.comp_waiting_template', ['name' => 'Drive Pinion Gear']) }}
-          </option>
-          <option value="bearing_journal" disabled>
-            {{ __('qc.studio.comp_waiting_template', ['name' => 'Bearing Journal Sleeve']) }}
-          </option>
-          <option value="connecting_rod" disabled>
-            {{ __('qc.studio.comp_waiting_template', ['name' => 'Connecting Rod']) }}
-          </option>
-        </select>
-        <span class="badge badge-green" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;">{{ __('qc.studio.status_active') }}</span>
-      </div>
-    </div>
-    <div class="selector-meta">
-      <span class="meta-item"><i data-lucide="file-check"></i> Form: <strong>{{ $report?->doc_no ?? 'FORM-QC-002' }} (Rev {{ $report?->rev ?? '04' }})</strong></span>
-      <span class="meta-item"><i data-lucide="hash"></i> SSC ID: <strong id="top_badge_sscId" style="color: var(--primary-text);">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</strong></span>
-      <span class="meta-item"><i data-lucide="file-text"></i> {{ __('qc.studio.report_no') }}: <strong id="top_badge_reportNo">{{ $report?->report_no ?? ($nextReportNo ?? '0743') }}</strong></span>
-      <span class="meta-item"><i data-lucide="eye"></i> {{ __('qc.studio.live_preview') }}: <strong style="color: var(--success);">{{ __('qc.studio.status_active') }}</strong></span>
-    </div>
-  </div>
 
   <div class="notice-box">
     <i data-lucide="info" style="color: var(--primary-text); flex-shrink: 0;"></i>
@@ -196,28 +163,58 @@
     <!-- LEFT COLUMN: Form Inputs & Section Photo Uploaders -->
     <div class="studio-editor-pane">
       <div class="pane-card">
-        
-        <!-- Navigation Tabs -->
-        <div class="studio-tabs">
-          <button type="button" class="s-tab-btn active" data-target="stab-identitas">
-            {{ __('qc.studio.tab_1') }}
-          </button>
-          <button type="button" class="s-tab-btn" data-target="stab-dimensi">
-            {{ __('qc.studio.tab_2') }}
-          </button>
-          <button type="button" class="s-tab-btn" data-target="stab-foto">
-            {{ __('qc.studio.tab_3') }}
-            <span class="tab-photo-counter" id="photoCountBadge">0</span>
-          </button>
-          <button type="button" class="s-tab-btn" data-target="stab-tir">
-            {{ __('qc.studio.tab_4') }}
-          </button>
-          <button type="button" class="s-tab-btn" data-target="stab-rekomendasi">
-            {{ __('qc.studio.tab_5') }}
-          </button>
-          <button type="button" class="s-tab-btn" data-target="stab-ttd">
-            {{ __('qc.studio.tab_6') }}
-          </button>
+
+        <!-- Sticky Header: Bar Komponen & Bar Tab Form -->
+        <div class="editor-sticky-header">
+          <!-- Bar Komponen (Tepat di Atas Bar Form) -->
+          <div class="component-selector-bar">
+            <div class="selector-info">
+              <label for="componentSelect"><i data-lucide="layers"></i> {{ __('qc.studio.select_component') }}</label>
+              <div class="selector-wrapper">
+                <select id="componentSelect" class="form-select-lg">
+                  <option value="output_shaft" selected>
+                    {{ __('qc.studio.comp_output_shaft') }}
+                  </option>
+                  <option value="hydraulic_cylinder" disabled>
+                    {{ __('qc.studio.comp_waiting_template', ['name' => 'Hydraulic Cylinder Rod']) }}
+                  </option>
+                  <option value="drive_pinion" disabled>
+                    {{ __('qc.studio.comp_waiting_template', ['name' => 'Drive Pinion Gear']) }}
+                  </option>
+                  <option value="bearing_journal" disabled>
+                    {{ __('qc.studio.comp_waiting_template', ['name' => 'Bearing Journal Sleeve']) }}
+                  </option>
+                  <option value="connecting_rod" disabled>
+                    {{ __('qc.studio.comp_waiting_template', ['name' => 'Connecting Rod']) }}
+                  </option>
+                </select>
+                <span class="badge badge-green" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;">{{ __('qc.studio.status_active') }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation Tabs (Bar Form) -->
+          <div class="studio-tabs">
+            <button type="button" class="s-tab-btn active" data-target="stab-identitas">
+              {{ __('qc.studio.tab_1') }}
+            </button>
+            <button type="button" class="s-tab-btn" data-target="stab-dimensi">
+              {{ __('qc.studio.tab_2') }}
+            </button>
+            <button type="button" class="s-tab-btn" data-target="stab-foto">
+              {{ __('qc.studio.tab_3') }}
+              <span class="tab-photo-counter" id="photoCountBadge">0</span>
+            </button>
+            <button type="button" class="s-tab-btn" data-target="stab-tir">
+              {{ __('qc.studio.tab_4') }}
+            </button>
+            <button type="button" class="s-tab-btn" data-target="stab-rekomendasi">
+              {{ __('qc.studio.tab_5') }}
+            </button>
+            <button type="button" class="s-tab-btn" data-target="stab-ttd">
+              {{ __('qc.studio.tab_6') }}
+            </button>
+          </div>
         </div>
 
         <form id="qcMainForm" class="studio-form">
@@ -1150,25 +1147,6 @@
           </div>
 
         </form>
-
-        <!-- Studio Footer Actions -->
-        <div class="studio-footer">
-          <div class="footer-left">
-            <button type="button" class="btn btn-secondary btn-sm" id="btnResetBlank">
-              <i data-lucide="rotate-ccw"></i> {{ __('qc.studio.clear_form') }}
-            </button>
-          </div>
-          <div class="footer-right">
-            @if($isDraftReport)
-              <button type="button" class="btn btn-secondary btn-sm" id="btnFooterDraft">
-                <i data-lucide="file-clock"></i> {{ __('qc.studio.save_draft') }}
-              </button>
-            @endif
-            <button type="button" class="btn btn-primary btn-sm" id="btnFooterSubmit">
-              <i data-lucide="{{ $isDraftReport ? 'send' : 'save' }}"></i> {{ $isDraftReport ? __('qc.studio.submit_report') : __('qc.common.save_changes') }}
-            </button>
-          </div>
-        </div>
 
       </div>
     </div>

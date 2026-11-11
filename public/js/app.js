@@ -229,6 +229,7 @@ function setupStudioTabs() {
             btn.classList.add('active');
             const targetContent = document.getElementById(targetId);
             if (targetContent) targetContent.classList.add('active');
+            document.querySelector('.studio-form')?.scrollTo({ top: 0, behavior: 'smooth' });
         });
     });
 }
@@ -668,7 +669,8 @@ window.handleSlotUpload = function (input, slotKey) {
         });
 };
 
-window.removeSlotPhoto = function (slotKey) {
+window.removeSlotPhoto = function (slotKey, silent = false) {
+    const hadPhoto = Boolean(reportPhotos[slotKey]);
     reportPhotos[slotKey] = null;
     const S = window.qcI18n?.studio || {};
 
@@ -720,7 +722,9 @@ window.removeSlotPhoto = function (slotKey) {
     }
 
     updatePhotoBadgeCount();
-    showToast(S.photo_removed || 'Foto dihapus', 'success');
+    if (!silent && hadPhoto) {
+        showToast(S.photo_removed || 'Foto dihapus', 'success');
+    }
 };
 
 window.useDefaultBlueprint = function (slotKey) {
@@ -1546,7 +1550,7 @@ function loadDefaultBlankForm() {
 
     // Reset photos
     for (const key in reportPhotos) {
-        removeSlotPhoto(key);
+        removeSlotPhoto(key, true);
     }
 
     // Reset recommendations

@@ -62,6 +62,14 @@
     </div>
 
     <div class="filter-group">
+      @if(($activeTab ?? 'all') === 'mine')
+        <select id="statusFilter" class="select-filter" aria-label="{{ __('qc.common.status') }}">
+          <option value="All" {{ request('status') === 'All' || !request('status') ? 'selected' : '' }}>{{ __('qc.reports.all_statuses') }}</option>
+          <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>{{ __('qc.reports.status_draft') }}</option>
+          <option value="dikirim" {{ in_array(request('status'), ['dikirim', 'submitted'], true) ? 'selected' : '' }}>{{ __('qc.reports.status_sent') }}</option>
+        </select>
+      @endif
+
       <select id="typeFilter" class="select-filter">
         <option value="All">{{ __('qc.reports.all_types') }}</option>
         <option value="Pre">{{ __('qc.reports.pre_type') }}</option>
@@ -95,8 +103,9 @@
               $creatorLabel = $item->creator->name ?? ($item->signatures['createdBy']['name'] ?? '-');
               $checkerLabel = $item->checker->name ?? ($item->signatures['checkedBy']['name'] ?? '-');
               $reviewerLabel = $item->reviewer->name ?? ($item->signatures['reviewedBy']['name'] ?? '-');
+              $statusCategory = $item->isDraft() ? 'draft' : 'dikirim';
             @endphp
-            <tr data-type="{{ $item->inspection_type }}">
+            <tr data-type="{{ $item->inspection_type }}" data-status="{{ $statusCategory }}">
               <td class="mono" style="font-weight: 700; color: var(--primary-text);">
                 {{ $item->ssc_id }}
               </td>
@@ -132,12 +141,19 @@
                     <i data-lucide="clipboard-check"></i> {{ __('qc.reports.start_review') }}
                   </a>
                 @else
-                  <a href="{{ route('reports.export', $item->id) }}" class="btn btn-secondary btn-sm" title="{{ __('qc.reports.excel_btn') }}">
-                    <i data-lucide="file-spreadsheet"></i> {{ __('qc.reports.excel_btn') }}
-                  </a>
-                  <a href="{{ route('reports.pdf', $item->id) }}" target="_blank" class="btn btn-secondary btn-sm" title="{{ __('qc.reports.pdf_btn') }}">
-                    <i data-lucide="printer"></i> {{ __('qc.reports.pdf_btn') }}
-                  </a>
+                  <div class="row-dropdown">
+                    <button type="button" class="btn btn-secondary btn-sm row-dropdown-btn" onclick="toggleRowDropdown(event, this)" title="{{ __('qc.reports.download_title') }}">
+                      <i data-lucide="download"></i> <span>{{ __('qc.reports.download_btn') }}</span> <i data-lucide="chevron-down" style="width: 12px; height: 12px; margin-left: 2px;"></i>
+                    </button>
+                    <div class="row-dropdown-menu" role="menu">
+                      <a href="{{ route('reports.export', $item->id) }}" class="row-dropdown-item" role="menuitem">
+                        <i data-lucide="file-spreadsheet"></i> <span>{{ __('qc.reports.download_excel_full') }}</span>
+                      </a>
+                      <a href="{{ route('reports.pdf', $item->id) }}" target="_blank" class="row-dropdown-item" role="menuitem">
+                        <i data-lucide="printer"></i> <span>{{ __('qc.reports.view_print_pdf') }}</span>
+                      </a>
+                    </div>
+                  </div>
                   @if($item->canBeModifiedBy(auth()->user()))
                     <a href="{{ route('reports.edit', $item->id) }}" class="btn btn-secondary btn-sm" title="{{ __('qc.reports.edit_btn') }}">
                       <i data-lucide="edit"></i> {{ __('qc.reports.edit_btn') }}
@@ -215,25 +231,29 @@
     });
   }
 
-  // Search filter
+  // Search and filter
   document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('searchInput');
     const typeFilter = document.getElementById('typeFilter');
+    const statusFilter = document.getElementById('statusFilter');
     const tableBody = document.getElementById('reportTableBody');
 
     function applyFilter() {
       const q = (searchInput?.value || '').toLowerCase().trim();
       const t = typeFilter?.value || 'All';
+      const s = statusFilter?.value || 'All';
 
-      const rows = tableBody.querySelectorAll('tr');
+      const rows = tableBody ? tableBody.querySelectorAll('tr[data-type]') : [];
       rows.forEach(row => {
         const text = row.innerText.toLowerCase();
         const type = row.getAttribute('data-type');
+        const status = row.getAttribute('data-status');
 
         const matchQuery = !q || text.includes(q);
         const matchType = (t === 'All') || (type === t);
+        const matchStatus = (s === 'All') || (status === s);
 
-        if (matchQuery && matchType) {
+        if (matchQuery && matchType && matchStatus) {
           row.style.display = '';
         } else {
           row.style.display = 'none';
@@ -243,6 +263,63 @@
 
     if (searchInput) searchInput.addEventListener('input', applyFilter);
     if (typeFilter) typeFilter.addEventListener('change', applyFilter);
+    if (statusFilter) statusFilter.addEventListener('change', applyFilter);
+  });
+
+  // Table row dropdown handling
+  function toggleRowDropdown(event, btn) {
+    event.stopPropagation();
+    const dropdown = btn.closest('.row-dropdown');
+    if (!dropdown) return;
+
+    const isOpen = dropdown.classList.contains('is-open');
+
+    // Close any other open row dropdowns
+    document.querySelectorAll('.row-dropdown.is-open').forEach(d => {
+      if (d !== dropdown) {
+        d.classList.remove('is-open');
+        d.classList.remove('dropup');
+      }
+    });
+
+    if (!isOpen) {
+      const rect = btn.getBoundingClientRect();
+      const tableResp = btn.closest('.table-responsive');
+      const tableRespRect = tableResp ? tableResp.getBoundingClientRect() : null;
+
+      const spaceBelowViewport = window.innerHeight - rect.bottom;
+      const spaceBelowContainer = tableRespRect ? (tableRespRect.bottom - rect.bottom) : 999;
+
+      if (spaceBelowViewport < 125 || spaceBelowContainer < 115) {
+        dropdown.classList.add('dropup');
+      } else {
+        dropdown.classList.remove('dropup');
+      }
+      dropdown.classList.add('is-open');
+      if (window.lucide) lucide.createIcons({ root: dropdown });
+    } else {
+      dropdown.classList.remove('is-open');
+      dropdown.classList.remove('dropup');
+    }
+  }
+
+  // Close row dropdown when clicking outside or pressing Escape
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.row-dropdown')) {
+      document.querySelectorAll('.row-dropdown.is-open').forEach(d => {
+        d.classList.remove('is-open');
+        d.classList.remove('dropup');
+      });
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.row-dropdown.is-open').forEach(d => {
+        d.classList.remove('is-open');
+        d.classList.remove('dropup');
+      });
+    }
   });
 </script>
 @endsection
