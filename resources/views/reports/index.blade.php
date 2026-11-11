@@ -141,27 +141,32 @@
                     <i data-lucide="clipboard-check"></i> {{ __('qc.reports.start_review') }}
                   </a>
                 @else
-                  <div class="row-dropdown">
-                    <button type="button" class="btn btn-secondary btn-sm row-dropdown-btn" onclick="toggleRowDropdown(event, this)" title="{{ __('qc.reports.download_title') }}">
-                      <i data-lucide="download"></i> <span>{{ __('qc.reports.download_btn') }}</span> <i data-lucide="chevron-down" style="width: 12px; height: 12px; margin-left: 2px;"></i>
-                    </button>
-                    <div class="row-dropdown-menu" role="menu">
-                      <a href="{{ route('reports.export', $item->id) }}" class="row-dropdown-item" role="menuitem">
-                        <i data-lucide="file-spreadsheet"></i> <span>{{ __('qc.reports.download_excel_full') }}</span>
-                      </a>
-                      <a href="{{ route('reports.pdf', $item->id) }}" target="_blank" class="row-dropdown-item" role="menuitem">
-                        <i data-lucide="printer"></i> <span>{{ __('qc.reports.view_print_pdf') }}</span>
-                      </a>
+                  <div class="table-actions-stack">
+                    @if($item->canBeModifiedBy(auth()->user()))
+                      <div class="table-actions-row">
+                        <a href="{{ route('reports.edit', $item->id) }}" class="btn btn-secondary btn-sm" title="{{ __('qc.reports.edit_btn') }}">
+                          <i data-lucide="edit"></i> {{ __('qc.reports.edit_btn') }}
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteReport({{ $item->id }}, '{{ $item->ssc_id }}')" title="{{ __('qc.common.delete') }}">
+                          <i data-lucide="trash-2"></i>
+                        </button>
+                      </div>
+                    @endif
+
+                    <div class="row-dropdown">
+                      <button type="button" class="btn btn-secondary btn-sm row-dropdown-btn" onclick="toggleRowDropdown(event, this)" title="{{ __('qc.reports.download_title') }}">
+                        <i data-lucide="download"></i> <span>{{ __('qc.reports.download_btn') }}</span> <i data-lucide="chevron-down" style="width: 12px; height: 12px; margin-left: 2px;"></i>
+                      </button>
+                      <div class="row-dropdown-menu" role="menu">
+                        <a href="{{ route('reports.export', $item->id) }}" class="row-dropdown-item" role="menuitem">
+                          <i data-lucide="file-spreadsheet"></i> <span>{{ __('qc.reports.download_excel_full') }}</span>
+                        </a>
+                        <a href="{{ route('reports.pdf', $item->id) }}" target="_blank" class="row-dropdown-item" role="menuitem">
+                          <i data-lucide="printer"></i> <span>{{ __('qc.reports.view_print_pdf') }}</span>
+                        </a>
+                      </div>
                     </div>
                   </div>
-                  @if($item->canBeModifiedBy(auth()->user()))
-                    <a href="{{ route('reports.edit', $item->id) }}" class="btn btn-secondary btn-sm" title="{{ __('qc.reports.edit_btn') }}">
-                      <i data-lucide="edit"></i> {{ __('qc.reports.edit_btn') }}
-                    </a>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteReport({{ $item->id }}, '{{ $item->ssc_id }}')" title="{{ __('qc.common.delete') }}">
-                      <i data-lucide="trash-2"></i>
-                    </button>
-                  @endif
                 @endif
               </td>
             </tr>

@@ -5,20 +5,21 @@
 
 @section('content')
   <div class="profile-container" style="max-width: 760px; margin: 0 auto; padding-bottom: 2rem;">
-    <!-- Profile Card: Identitas Utama -->
+    <!-- Profile Card: Identitas Utama (Foto Profil, Nama, Jabatan, Tanggal Bergabung) -->
     <div class="profile-hero-card" style="margin-bottom: 1.25rem;">
       <div class="profile-hero-main">
         <div class="profile-hero-avatar-wrap">
-          <div class="profile-hero-avatar" id="heroAvatarBox">
+          <div class="profile-hero-avatar" id="heroAvatarBox" onclick="document.getElementById('avatarFileInput').click()" title="{{ __('qc.profile.pick_photo') }}">
             @if($user->avatar_url)
               <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="user-avatar-img" id="heroAvatarImg">
             @else
               <span id="heroAvatarInitials">{{ $user->initials() }}</span>
             @endif
+            <div class="avatar-hover-overlay">
+              <i data-lucide="camera"></i>
+              <span>{{ __('qc.profile.change_photo') }}</span>
+            </div>
           </div>
-          <label for="profile_avatar" class="avatar-edit-badge" title="{{ __('qc.profile.pick_photo') }}">
-            <i data-lucide="camera"></i>
-          </label>
         </div>
 
         <div class="profile-hero-info">
@@ -39,11 +40,38 @@
               <span>{{ __('qc.profile.joined_since', ['date' => $user->created_at ? $user->created_at->translatedFormat('d M Y') : '-']) }}</span>
             </span>
           </div>
+
+          <!-- Quick Action Buttons for Photo -->
+          <div class="avatar-quick-actions">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('avatarFileInput').click()" style="font-size: 0.76rem; padding: 0.28rem 0.65rem;">
+              <i data-lucide="camera"></i> {{ __('qc.profile.change_photo') }}
+            </button>
+            @if($user->avatar_url)
+              <button type="button" class="btn btn-secondary btn-sm" onclick="confirmDeleteAvatar()" style="font-size: 0.76rem; padding: 0.28rem 0.65rem; color: var(--danger); border-color: rgba(239, 68, 68, 0.35);" title="{{ __('qc.profile.remove_photo_title') }}">
+                <i data-lucide="trash-2"></i> {{ __('qc.profile.remove_photo') }}
+              </button>
+            @endif
+            <span style="font-size: 0.72rem; color: var(--text-subtle);">{{ __('qc.profile.photo_hint') }}</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Card 1: Akses Edit Informasi Profil & Foto -->
+    <!-- Hidden Form for Direct Avatar Upload -->
+    <form id="avatarUploadForm" method="POST" action="{{ route('profile.avatar.upload') }}" enctype="multipart/form-data" style="display: none;">
+      @csrf
+      <input type="file" id="avatarFileInput" name="avatar" accept="image/png, image/jpeg, image/jpg, image/webp" onchange="handleDirectAvatarUpload(this)">
+    </form>
+
+    <!-- Hidden Form for Avatar Deletion -->
+    @if($user->avatar_url)
+      <form id="formDeleteAvatar" method="POST" action="{{ route('profile.avatar.destroy') }}" style="display: none;">
+        @csrf
+        @method('DELETE')
+      </form>
+    @endif
+
+    <!-- Card 1: Akses Edit Informasi Profil (Nama & Email) -->
     <div class="profile-section-card">
       <div class="profile-card-header">
         <h3>
@@ -52,31 +80,11 @@
         </h3>
       </div>
       <div class="profile-card-body">
-        <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('profile.update') }}">
           @csrf
           @method('PUT')
 
           <div class="profile-form-grid">
-            <!-- Edit Foto Profil -->
-            <div class="form-group" style="border-bottom: 1px dashed var(--border-subtle); padding-bottom: 1rem; margin-bottom: 0.25rem;">
-              <label for="profile_avatar">{{ __('qc.profile.change_photo') }}</label>
-              <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-                <input type="file" id="profile_avatar" name="avatar" accept="image/png, image/jpeg, image/jpg, image/webp" onchange="previewAvatar(this)" style="font-size: 0.82rem; flex: 1; min-width: 200px;">
-                @if($user->avatar_url)
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="confirmDeleteAvatar()" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.35);" title="{{ __('qc.profile.remove_photo_title') }}">
-                    <i data-lucide="trash-2"></i> {{ __('qc.profile.remove_photo') }}
-                  </button>
-                @endif
-              </div>
-              <span style="font-size: 0.72rem; color: var(--text-subtle); margin-top: 4px; display: block;">
-                {{ __('qc.profile.photo_hint') }}
-              </span>
-              @error('avatar')
-                <span style="color: var(--danger); font-size: 0.76rem; margin-top: 3px; display: block;">{{ $message }}</span>
-              @enderror
-            </div>
-
-            <!-- Nama & Email -->
             <div class="profile-form-row">
               <div class="form-group">
                 <label for="profile_name">{{ __('qc.profile.full_name') }} <span style="color: var(--danger);">*</span></label>
@@ -110,13 +118,6 @@
             </div>
           </div>
         </form>
-
-        @if($user->avatar_url)
-          <form id="formDeleteAvatar" method="POST" action="{{ route('profile.avatar.destroy') }}" style="display: none;">
-            @csrf
-            @method('DELETE')
-          </form>
-        @endif
       </div>
     </div>
 
@@ -159,7 +160,7 @@
 
             <div style="display: flex; justify-content: flex-end; margin-top: 0.25rem;">
               <button type="submit" class="btn btn-secondary btn-sm" style="font-weight: 600;">
-                <i data-lucide="lock"></i> {{ __('qc.profile.update_password') }}
+                <i data-lucide="lock"></i> {{ __('qc.profile.save_password') }}
               </button>
             </div>
           </div>
@@ -171,32 +172,26 @@
 
 @section('scripts')
 <script>
-  function previewAvatar(input) {
+  function handleDirectAvatarUpload(input) {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       if (file.size > 3 * 1024 * 1024) {
-        window.qcNotify?.(@json(__('qc.profile.photo_too_large')), 'warning');
+        window.qcNotify?.('{{ __("qc.profile.photo_too_large") }}', 'warning');
         input.value = '';
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const avatarBox = document.getElementById('heroAvatarBox');
-        if (avatarBox) {
-          avatarBox.innerHTML = `<img src="${e.target.result}" alt="Preview" class="user-avatar-img" id="heroAvatarImg">`;
-        }
-      };
-      reader.readAsDataURL(file);
+      window.qcNotify?.('Menyimpan foto profil...', 'loading');
+      document.getElementById('avatarUploadForm')?.submit();
     }
   }
 
   async function confirmDeleteAvatar() {
     const confirmed = await window.qcConfirm({
-      title: @json(__('qc.profile.delete_avatar_title')),
-      message: @json(__('qc.profile.delete_avatar_msg')),
-      confirmText: @json(__('qc.common.yes_delete')),
-      cancelText: @json(__('qc.common.cancel')),
+      title: '{{ __("qc.profile.delete_avatar_title") }}',
+      message: '{{ __("qc.profile.delete_avatar_msg") }}',
+      confirmText: '{{ __("qc.reports.delete_confirm_btn") }}',
+      cancelText: '{{ __("qc.reports.cancel") }}',
       variant: 'danger'
     });
     if (confirmed) {

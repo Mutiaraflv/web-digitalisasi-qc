@@ -69,9 +69,44 @@ class ProfileController extends Controller
         );
 
         return redirect()->route('profile.show')
-            ->with('success', app()->getLocale() === 'en'
-                ? 'Profile details and avatar updated successfully.'
-                : 'Informasi profil dan foto akun Anda berhasil diperbarui.');
+            ->with('success', 'Informasi profil akun Anda berhasil diperbarui.');
+    }
+
+    /**
+     * Upload or replace the user's avatar image directly.
+     */
+    public function uploadAvatar(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'avatar' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:3072'],
+        ], [
+            'avatar.required' => 'Pilih file foto profil terlebih dahulu.',
+            'avatar.image' => 'File harus berupa gambar.',
+            'avatar.mimes' => 'Format foto harus JPG, PNG, atau WEBP.',
+            'avatar.max' => 'Ukuran foto maksimal 3 MB.',
+        ]);
+
+        if ($user->avatar && file_exists(public_path('uploads/avatars/' . $user->avatar))) {
+            @unlink(public_path('uploads/avatars/' . $user->avatar));
+        }
+
+        $file = $request->file('avatar');
+        $filename = 'avatar_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('uploads/avatars'), $filename);
+
+        $user->update(['avatar' => $filename]);
+
+        ActivityLog::record(
+            'profile_updated',
+            "Memperbarui foto profil akun ({$user->name})",
+            null,
+            ['user' => $user->email]
+        );
+
+        return redirect()->route('profile.show')
+            ->with('success', 'Foto profil berhasil diperbarui.');
     }
 
     /**
@@ -91,13 +126,11 @@ class ProfileController extends Controller
             'profile_updated',
             "Menghapus foto profil akun ({$user->name}) dan kembali ke inisial nama",
             null,
-            ['user' => $user->email, 'name' => $user->name]
+            ['user' => $user->email]
         );
 
         return redirect()->route('profile.show')
-            ->with('success', app()->getLocale() === 'en'
-                ? 'Profile photo removed and reverted to initials.'
-                : 'Foto profil berhasil dihapus dan kembali ke inisial nama.');
+            ->with('success', 'Foto profil berhasil dihapus dan kembali ke inisial nama.');
     }
 
     /**
@@ -110,14 +143,16 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'current_password' => ['required', 'string'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
+        ], [
+            'current_password.required' => 'Kata sandi saat ini wajib diisi.',
+            'password.required' => 'Kata sandi baru wajib diisi.',
+            'password.min' => 'Kata sandi baru minimal 6 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi baru tidak sesuai.',
         ]);
 
         if (!Hash::check($validated['current_password'], $user->password)) {
-            $err = app()->getLocale() === 'en'
-                ? 'The current password you entered is incorrect.'
-                : 'Kata sandi saat ini yang Anda masukkan tidak sesuai.';
             return back()->withErrors([
-                'current_password' => $err,
+                'current_password' => 'Kata sandi saat ini yang Anda masukkan tidak sesuai.',
             ])->withInput();
         }
 
@@ -133,9 +168,7 @@ class ProfileController extends Controller
         );
 
         return redirect()->route('profile.show')
-            ->with('success', app()->getLocale() === 'en'
-                ? 'Password updated successfully. Use your new password on your next login.'
-                : 'Kata sandi berhasil diperbarui. Gunakan kata sandi baru saat login berikutnya.');
+            ->with('success', 'Kata sandi berhasil diperbarui. Gunakan kata sandi baru saat login berikutnya.');
     }
 }
 

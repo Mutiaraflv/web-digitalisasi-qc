@@ -92,8 +92,12 @@
               </td>
               <td>
                 <div style="display: flex; align-items: center; gap: 0.65rem;">
-                  <div class="user-avatar {{ $u->isAdmin() ? 'is-admin' : ($u->isQcLeader() ? 'is-leader' : 'is-inspector') }}" style="width: 28px; height: 28px; font-size: 0.72rem; flex-shrink: 0;">
-                    {{ strtoupper(substr($u->name, 0, 2)) }}
+                  <div class="user-avatar {{ $u->isAdmin() ? 'is-admin' : ($u->isQcLeader() ? 'is-leader' : 'is-inspector') }}" style="width: 30px; height: 30px; font-size: 0.72rem; flex-shrink: 0; overflow: hidden;">
+                    @if($u->avatar_url)
+                      <img src="{{ $u->avatar_url }}" alt="{{ $u->name }}" class="user-avatar-img">
+                    @else
+                      {{ $u->initials() }}
+                    @endif
                   </div>
                   <div>
                     <strong style="color: var(--text-main); font-size: 0.88rem;">{{ $u->name }}</strong>
@@ -142,7 +146,9 @@
                             'name' => $u->name,
                             'email' => $u->email,
                             'role' => $u->role,
-                            'is_self' => $u->id === auth()->id()
+                            'is_self' => $u->id === auth()->id(),
+                            'avatar_url' => $u->avatar_url,
+                            'initials' => $u->initials(),
                           ]) }})">
                     <i data-lucide="edit-3"></i> {{ __('qc.common.edit') }}
                   </button>
@@ -257,6 +263,14 @@
         @csrf
         @method('PUT')
         <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.85rem; padding: 0.6rem 0.85rem; background: #f8fafc; border: 1px solid var(--border-subtle); border-radius: 10px;">
+            <div id="edit_avatar_preview" class="user-avatar" style="width: 38px; height: 38px; font-size: 0.85rem; flex-shrink: 0; overflow: hidden;"></div>
+            <div style="min-width: 0; flex: 1;">
+              <strong id="edit_name_preview" style="display: block; font-size: 0.88rem; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong>
+              <span id="edit_email_preview" style="font-size: 0.74rem; color: var(--text-subtle); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;"></span>
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="edit_name">{{ __('qc.settings.field_name') }} <span style="color: var(--danger);">*</span></label>
             <input type="text" id="edit_name" name="name" required>
@@ -322,6 +336,19 @@
     document.getElementById('edit_email').value = userData.email;
     document.getElementById('edit_role').value = userData.role;
     document.getElementById('edit_password').value = '';
+
+    const avatarEl = document.getElementById('edit_avatar_preview');
+    if (avatarEl) {
+      if (userData.avatar_url) {
+        avatarEl.innerHTML = `<img src="${userData.avatar_url}" alt="${userData.name}" class="user-avatar-img">`;
+      } else {
+        avatarEl.innerHTML = userData.initials || (userData.name ? userData.name.substring(0, 2).toUpperCase() : '-');
+      }
+    }
+    const namePrev = document.getElementById('edit_name_preview');
+    if (namePrev) namePrev.textContent = userData.name;
+    const emailPrev = document.getElementById('edit_email_preview');
+    if (emailPrev) emailPrev.textContent = userData.email;
 
     const roleNote = document.getElementById('edit_role_note');
     if (userData.is_self) {

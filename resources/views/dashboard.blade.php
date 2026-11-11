@@ -143,7 +143,13 @@
               };
             @endphp
             <div class="activity-item" data-log-id="{{ $log['id'] }}" data-action="{{ $log['action'] }}">
-              <div class="activity-avatar role-{{ $log['role_key'] }}">{{ $log['user_initials'] }}</div>
+              <div class="activity-avatar role-{{ $log['role_key'] }}" style="overflow: hidden;">
+                @if(!empty($log['avatar_url']))
+                  <img src="{{ $log['avatar_url'] }}" alt="{{ $log['user_name'] }}" class="user-avatar-img">
+                @else
+                  {{ $log['user_initials'] }}
+                @endif
+              </div>
               <div class="activity-content">
                 <div class="activity-top">
                   <span class="activity-user">{{ $log['user_name'] }}</span>
@@ -456,9 +462,12 @@
         const badgeCls = toneToBadgeClass(log.badge?.tone);
         const partHtml = log.part_name ? `<span class="activity-part">&bull; ${esc(log.part_name)}</span>` : '';
         const relHtml = log.time_relative ? `<span class="activity-rel">(${esc(log.time_relative)})</span>` : '';
+        const avatarContent = log.avatar_url
+          ? `<img src="${esc(log.avatar_url)}" alt="${esc(log.user_name)}" class="user-avatar-img">`
+          : esc(log.user_initials);
         return `
           <div class="activity-item ${isFresh ? 'is-fresh' : ''}" data-log-id="${esc(log.id)}" data-action="${esc(log.action)}">
-            <div class="activity-avatar role-${esc(log.role_key)}">${esc(log.user_initials)}</div>
+            <div class="activity-avatar role-${esc(log.role_key)}" style="overflow: hidden;">${avatarContent}</div>
             <div class="activity-content">
               <div class="activity-top">
                 <span class="activity-user">${esc(log.user_name)}</span>
