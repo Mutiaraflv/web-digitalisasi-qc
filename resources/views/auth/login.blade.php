@@ -7,7 +7,7 @@
   <title>{{ __('qc.auth.page_title') }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap">
   <!-- Inline theme detection preventing white flash -->
   <script>
     (function () {
@@ -23,39 +23,8 @@
   <style>
     :root {
       color-scheme: light;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      --bg-page: #ffffff;
-      --bg-panel: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --text-subtle: #64748b;
-      --border-color: #e2e8f0;
-      --input-bg: #ffffff;
-      --input-border: #cbd5e1;
-      --primary: #1312b6;
-      --primary-hover: #0e0d9b;
-      --primary-focus-ring: rgba(19, 18, 182, 0.15);
-      --danger: #dc2626;
-      --danger-bg: #fef2f2;
-      --danger-border: #fecaca;
-    }
-
-    [data-theme="dark"]:root {
-      color-scheme: dark;
-      --bg-page: #0b1120;
-      --bg-panel: #0b1120;
-      --text-main: #f8fafc;
-      --text-muted: #cbd5e1;
-      --text-subtle: #94a3b8;
-      --border-color: #1e293b;
-      --input-bg: #0f172a;
-      --input-border: #334155;
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --primary-focus-ring: rgba(99, 102, 241, 0.25);
-      --danger: #f87171;
-      --danger-bg: rgba(239, 68, 68, 0.15);
-      --danger-border: rgba(248, 113, 113, 0.35);
+      font-family: Inter, Arial, sans-serif;
+      color: #0f172a;
     }
 
     * {
@@ -64,518 +33,430 @@
       padding: 0;
     }
 
+    /* Edge-to-Edge Full Screen (No Card Box, No Outer Padding) */
     body {
       min-height: 100vh;
       width: 100%;
-      background: var(--bg-page);
-      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
       overflow-x: hidden;
       line-height: 1.5;
     }
 
-    /* Full-Screen Split Shell (Edge-to-Edge 50/50, No Cards) */
     .login-shell {
+      width: 100%;
+      min-height: 100vh;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      min-height: 100vh;
-      width: 100%;
+      background: #ffffff;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
     }
 
-    /* Left Column: Full-Height Brand Hero */
+    /* Left Brand Section: Original Composition, Full Height */
     .login-brand {
-      position: relative;
-      background: radial-gradient(110% 120% at 20% 15%, #181ba8 0%, #0c1048 50%, #05071a 100%);
-      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       padding: clamp(36px, 5vw, 64px);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    /* Subtle Technical Grid Background Overlay */
-    .login-brand::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: 
-        radial-gradient(circle at 15% 25%, rgba(99, 102, 241, 0.25) 0%, transparent 40%),
-        radial-gradient(circle at 85% 75%, rgba(19, 18, 182, 0.3) 0%, transparent 45%),
-        linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-      background-size: auto, auto, 48px 48px, 48px 48px;
-      pointer-events: none;
-    }
-
-    .brand-content {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      justify-content: space-between;
-    }
-
-    .brand-top-dummy {
-      height: 24px;
-    }
-
-    /* Minimalist Center Showcase */
-    .brand-center-showcase {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      margin: auto 0;
-      padding: 2rem 1.5rem;
-    }
-
-    .brand-big-logo {
-      width: 92px;
-      height: 92px;
-      object-fit: contain;
-      filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.4));
-      margin-bottom: 1.5rem;
-      transition: transform 0.3s ease;
-    }
-
-    .brand-big-logo:hover {
-      transform: scale(1.05);
-    }
-
-    .brand-headline {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 2.35rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
       color: #ffffff;
-      line-height: 1.1;
-      margin-bottom: 0.35rem;
-    }
-
-    .brand-company-sub {
-      font-size: 0.95rem;
-      font-weight: 700;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: #a5b4fc;
-      margin-bottom: 1.25rem;
-    }
-
-    .brand-slogan-line {
-      font-size: 0.96rem;
-      color: #cbd5e1;
-      font-weight: 400;
-      max-width: 380px;
-      line-height: 1.6;
-      border-top: 1px solid rgba(255, 255, 255, 0.14);
-      padding-top: 1.1rem;
-      letter-spacing: 0.01em;
-    }
-
-    /* Brand Footer */
-    .brand-footer {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.74rem;
-      color: #94a3b8;
-      letter-spacing: 0.03em;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      padding-top: 1.25rem;
-    }
-
-    /* Right Column: Full-Height Clean Form Panel */
-    .login-panel {
-      position: relative;
-      background: var(--bg-panel);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: clamp(32px, 5vw, 64px);
+      background: linear-gradient(155deg, #090a2a 0%, #1312b6 100%);
+      border-right: 1px solid #1e2560;
       min-height: 100vh;
     }
 
-    .login-form-container {
-      width: 100%;
-      max-width: 410px;
-      margin: 0 auto;
-    }
-
-    /* Mobile-only Header */
-    .mobile-brand-header {
-      display: none;
+    .brand-mark {
+      display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 2rem;
+      gap: 14px;
     }
 
-    .mobile-brand-header img {
-      width: 44px;
-      height: 44px;
+    .brand-mark img {
+      width: 56px;
+      height: 56px;
       object-fit: contain;
+      background: transparent;
+      padding: 0;
+      border: none;
     }
 
-    .mobile-brand-header h3 {
+    .brand-name {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.15rem;
+      font-size: 17px;
       font-weight: 800;
-      color: var(--text-main);
+      letter-spacing: .08em;
+      color: #ffffff;
     }
 
-    .mobile-brand-header p {
-      font-size: 0.72rem;
-      color: var(--text-subtle);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    /* Form Heading */
-    .form-eyebrow {
-      font-size: 0.76rem;
+    .brand-subtitle {
+      margin-top: 3px;
+      color: #a5b4fc;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.12em;
+      letter-spacing: .08em;
       text-transform: uppercase;
-      color: var(--primary);
-      margin-bottom: 0.4rem;
     }
 
-    .form-title {
-      font-size: 1.75rem;
+    .brand-copy {
+      border-left: 3px solid #818cf8;
+      padding-left: 20px;
+      margin: 40px 0;
+      max-width: 480px;
+    }
+
+    .brand-copy h1 {
+      margin: 0 0 14px;
+      font-size: clamp(26px, 3.4vw, 38px);
+      line-height: 1.18;
+      letter-spacing: -.03em;
+      color: #ffffff;
       font-weight: 800;
-      letter-spacing: -0.03em;
-      color: var(--text-main);
-      margin-bottom: 0.45rem;
     }
 
-    .form-subtitle {
-      font-size: 0.88rem;
-      color: var(--text-subtle);
-      margin-bottom: 2rem;
-      line-height: 1.5;
+    .brand-copy p {
+      max-width: 420px;
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 14px;
+      line-height: 1.65;
     }
 
-    /* Form Fields */
-    .form-field {
-      margin-bottom: 1.25rem;
+    .brand-foot {
+      color: #94a3b8;
+      font-size: 11.5px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: .04em;
     }
 
-    .form-label {
+    /* Right Panel Section: Original Form on Full-Height Seamless Canvas */
+    .login-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(36px, 5vw, 64px);
+      background: #ffffff;
+      min-height: 100vh;
+    }
+
+    .login-form {
+      width: 100%;
+      max-width: 380px;
+      margin: auto;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #1312b6;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -.03em;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    .intro {
+      margin: 10px 0 28px;
+      color: #64748b;
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    label {
       display: block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-main);
-      margin-bottom: 0.45rem;
+      margin-bottom: 7px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #334155;
+      text-transform: uppercase;
+      letter-spacing: .05em;
     }
 
-    .input-wrapper {
+    .input-wrap {
       position: relative;
       display: flex;
       align-items: center;
     }
 
-    .input-icon-lead {
-      position: absolute;
-      left: 14px;
-      width: 17px;
-      height: 17px;
-      color: var(--text-subtle);
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .input-control {
+    input[type=email], input[type=password], input[type=text] {
       width: 100%;
       height: 46px;
-      padding: 0 14px 0 42px;
-      border: 1.5px solid var(--input-border);
-      border-radius: 10px;
-      background: var(--input-bg);
-      color: var(--text-main);
-      font-family: inherit;
-      font-size: 0.88rem;
+      padding: 0 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #0f172a;
+      font: inherit;
+      font-size: 13.5px;
       outline: none;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+      transition: border-color .15s, box-shadow .15s;
     }
 
-    .input-control:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-focus-ring);
+    .input-wrap input {
+      padding-right: 42px;
     }
 
-    .input-control.is-invalid {
-      border-color: var(--danger);
-      background-color: var(--danger-bg);
+    input:focus {
+      border-color: #1312b6;
+      box-shadow: 0 0 0 3px rgba(19, 18, 182, .15);
     }
 
-    .input-icon-btn {
+    .field-error {
+      display: block;
+      margin-top: 6px;
+      color: #be123c;
+      font-size: 11.5px;
+    }
+
+    .btn-toggle-pwd {
       position: absolute;
       right: 10px;
-      width: 32px;
-      height: 32px;
       background: transparent;
       border: none;
-      color: var(--text-subtle);
+      color: #64748b;
+      cursor: pointer;
+      padding: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      border-radius: 6px;
+      border-radius: 4px;
       transition: color 0.15s ease;
-      padding: 0;
     }
 
-    .input-icon-btn:hover {
-      color: var(--text-main);
+    .btn-toggle-pwd:hover {
+      color: #0f172a;
     }
 
-    .input-icon-btn svg {
+    .btn-toggle-pwd svg {
       width: 17px;
       height: 17px;
     }
 
-    .field-error-msg {
+    .remember {
       display: flex;
-      align-items: center;
-      gap: 5px;
-      margin-top: 0.4rem;
-      color: var(--danger);
-      font-size: 0.78rem;
-      font-weight: 500;
-    }
-
-    .field-error-msg svg {
-      width: 13px;
-      height: 13px;
-      flex-shrink: 0;
-    }
-
-    /* Remember Checkbox */
-    .form-options-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 0.5rem 0 1.6rem;
-    }
-
-    .checkbox-label {
-      display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.82rem;
-      color: var(--text-muted);
+      margin: 2px 0 24px;
+      color: #475569;
+      font-size: 12.5px;
       cursor: pointer;
-      user-select: none;
     }
 
-    .checkbox-label input[type="checkbox"] {
+    .remember input {
       width: 16px;
       height: 16px;
-      border-radius: 4px;
-      border: 1.5px solid var(--input-border);
-      accent-color: var(--primary);
+      margin: 0;
+      accent-color: #1312b6;
       cursor: pointer;
     }
 
-    /* Submit Button */
-    .btn-submit-login {
+    .submit {
       width: 100%;
-      height: 48px;
-      border: none;
-      border-radius: 10px;
-      background: var(--primary);
+      height: 46px;
+      border: 0;
+      border-radius: 8px;
+      background: #1312b6;
       color: #ffffff;
-      font-family: inherit;
-      font-size: 0.92rem;
+      font: inherit;
+      font-size: 13.5px;
       font-weight: 700;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 14px rgba(19, 18, 182, 0.25);
-      transition: background-color 0.16s ease, transform 0.1s ease, box-shadow 0.16s ease;
+      box-shadow: 0 4px 14px rgba(19, 18, 182, .25);
+      transition: background-color .15s, transform .1s;
     }
 
-    .btn-submit-login:hover {
-      background: var(--primary-hover);
-      box-shadow: 0 6px 20px rgba(19, 18, 182, 0.35);
+    .submit:hover {
+      background: #0e0d9b;
     }
 
-    .btn-submit-login:active {
+    .submit:active {
       transform: scale(0.99);
     }
 
-    .btn-submit-login svg {
-      width: 17px;
-      height: 17px;
-      transition: transform 0.15s ease;
-    }
-
-    .btn-submit-login:hover svg {
-      transform: translateX(3px);
-    }
-
-    /* Footer Notice */
-    .login-footer-notice {
-      margin-top: 1.75rem;
+    .form-notice {
+      margin: 20px 0 0;
+      color: #94a3b8;
       text-align: center;
-      font-size: 0.78rem;
-      color: var(--text-subtle);
+      font-size: 11.5px;
       line-height: 1.5;
     }
 
-    /* Responsive Breakpoints */
+    /* Full-Screen Dark Theme */
+    [data-theme="dark"]:root {
+      color-scheme: dark;
+      color: #f1f5f9;
+    }
+
+    [data-theme="dark"] body {
+      background: #0b1120;
+    }
+
+    [data-theme="dark"] .login-shell {
+      background: #0b1120;
+      border: none;
+      box-shadow: none;
+    }
+
+    [data-theme="dark"] .login-panel {
+      background: #0b1120;
+    }
+
+    [data-theme="dark"] .eyebrow {
+      color: #a5b4fc;
+    }
+
+    [data-theme="dark"] h2 {
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] .intro {
+      color: #94a3b8;
+    }
+
+    [data-theme="dark"] label {
+      color: #cbd5e1;
+    }
+
+    [data-theme="dark"] input[type=email],
+    [data-theme="dark"] input[type=password],
+    [data-theme="dark"] input[type=text] {
+      background: #0f172a;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] input:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(129, 140, 248, .25);
+    }
+
+    [data-theme="dark"] .btn-toggle-pwd {
+      color: #94a3b8;
+    }
+
+    [data-theme="dark"] .btn-toggle-pwd:hover {
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] .remember {
+      color: #cbd5e1;
+    }
+
+    [data-theme="dark"] .submit {
+      background: #6366f1;
+    }
+
+    [data-theme="dark"] .submit:hover {
+      background: #4f46e5;
+    }
+
+    [data-theme="dark"] .form-notice {
+      color: #94a3b8;
+    }
+
+    [data-theme="dark"] .field-error {
+      color: #fda4af;
+    }
+
     @media (max-width: 900px) {
       .login-shell {
         grid-template-columns: 1fr;
+        min-height: 100vh;
       }
 
       .login-brand {
+        min-height: auto;
+        padding: 32px 24px;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .brand-copy {
+        margin: 20px 0;
+      }
+
+      .brand-copy h1 {
+        font-size: 24px;
+      }
+
+      .brand-copy p, .brand-foot {
         display: none;
       }
 
-      .mobile-brand-header {
-        display: flex;
-      }
-
       .login-panel {
-        padding: 40px 24px;
-        align-items: center;
+        min-height: auto;
+        padding: 36px 24px 44px;
       }
 
-      .form-title {
-        font-size: 1.55rem;
+      .intro {
+        margin-bottom: 22px;
       }
     }
   </style>
 </head>
 <body>
   <main class="login-shell">
-    <!-- Left Column: Full-Height Brand Showcase (Minimalist Center) -->
+    <!-- Left Section: Original Content with Clean Full-Height Split -->
     <section class="login-brand" aria-label="QCMS PT SSC Works">
-      <div class="brand-content">
-        <!-- Top Spacer for balanced vertical centering -->
-        <div class="brand-top-dummy"></div>
-
-        <!-- Center: Big Logo, QCMS Title, and Single-line Slogan -->
-        <div class="brand-center-showcase">
-          <img src="{{ asset('images/logo.png') }}" alt="Logo PT SSC Works" class="brand-big-logo">
-          <h1 class="brand-headline">QCMS</h1>
-          <div class="brand-company-sub">PT SSC Works</div>
-          <p class="brand-slogan-line">Quality Control Management System</p>
-        </div>
-
-        <!-- Bottom: Version & Security Notice -->
-        <div class="brand-footer">
-          <span>QCMS v2.0 • PT SSC Works</span>
-          <span>{{ __('qc.auth.brand_foot') }}</span>
+      <div class="brand-mark">
+        <img src="{{ asset('images/logo.png') }}" alt="Logo PT SSC Works">
+        <div>
+          <div class="brand-name">QCMS</div>
+          <div class="brand-subtitle">PT SSC Works</div>
         </div>
       </div>
+      <div class="brand-copy">
+        <h1>{{ __('qc.auth.system_title') }}</h1>
+        <p>{{ __('qc.auth.brand_desc') }}</p>
+      </div>
+      <div class="brand-foot">{{ __('qc.auth.brand_foot') }}</div>
     </section>
 
-    <!-- Right Column: Full-Height Clean Form Panel (No Card Border / Shadow) -->
+    <!-- Right Section: Original Form on Full-Height Canvas (No Card Box) -->
     <section class="login-panel">
-      <div class="login-form-container">
-        <!-- Mobile Logo Header (shown on mobile screens) -->
-        <div class="mobile-brand-header">
-          <img src="{{ asset('images/logo.png') }}" alt="Logo PT SSC Works">
-          <div>
-            <h3>QCMS</h3>
-            <p>PT SSC Works</p>
-          </div>
+      <form class="login-form" method="POST" action="{{ route('login.store') }}">
+        @csrf
+        <p class="eyebrow">{{ __('qc.auth.welcome_back') }}</p>
+        <h2>{{ __('qc.auth.sign_in_title') }}</h2>
+        <p class="intro">{{ __('qc.auth.sign_in_desc') }}</p>
+
+        <div class="field">
+          <label for="email">{{ __('qc.auth.email') }}</label>
+          <input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="username" required autofocus>
+          @error('email') <span class="field-error">{{ $message }}</span> @enderror
         </div>
 
-        <!-- Form Heading -->
-        <div class="form-eyebrow">{{ __('qc.auth.welcome_back') }}</div>
-        <h2 class="form-title">{{ __('qc.auth.sign_in_title') }}</h2>
-        <p class="form-subtitle">{{ __('qc.auth.sign_in_desc') }}</p>
-
-        <!-- Form Element -->
-        <form method="POST" action="{{ route('login.store') }}" autocomplete="on">
-          @csrf
-
-          <!-- Email Field -->
-          <div class="form-field">
-            <label for="email" class="form-label">{{ __('qc.auth.email') }}</label>
-            <div class="input-wrapper">
-              <span class="input-icon-lead">
-                <i data-lucide="mail"></i>
-              </span>
-              <input id="email"
-                     type="email"
-                     name="email"
-                     class="input-control {{ $errors->has('email') ? 'is-invalid' : '' }}"
-                     value="{{ old('email') }}"
-                     placeholder="contoh: user@sscworks.com"
-                     autocomplete="username"
-                     required
-                     autofocus>
-            </div>
-            @error('email')
-              <div class="field-error-msg">
-                <i data-lucide="alert-circle"></i>
-                <span>{{ $message }}</span>
-              </div>
-            @enderror
+        <div class="field">
+          <label for="password">{{ __('qc.auth.password') }}</label>
+          <div class="input-wrap">
+            <input id="password" type="password" name="password" autocomplete="current-password" required>
+            <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility()" title="Lihat kata sandi" aria-label="Lihat kata sandi">
+              <i data-lucide="eye" id="eyeIcon"></i>
+            </button>
           </div>
+          @error('password') <span class="field-error">{{ $message }}</span> @enderror
+        </div>
 
-          <!-- Password Field -->
-          <div class="form-field">
-            <label for="password" class="form-label">{{ __('qc.auth.password') }}</label>
-            <div class="input-wrapper">
-              <span class="input-icon-lead">
-                <i data-lucide="lock"></i>
-              </span>
-              <input id="password"
-                     type="password"
-                     name="password"
-                     class="input-control {{ $errors->has('password') ? 'is-invalid' : '' }}"
-                     placeholder="Masukkan kata sandi akun"
-                     autocomplete="current-password"
-                     required>
-              <button type="button"
-                      class="input-icon-btn"
-                      id="btnTogglePassword"
-                      onclick="togglePasswordVisibility()"
-                      aria-label="Lihat kata sandi"
-                      title="Lihat kata sandi">
-                <i data-lucide="eye" id="eyeIcon"></i>
-              </button>
-            </div>
-            @error('password')
-              <div class="field-error-msg">
-                <i data-lucide="alert-circle"></i>
-                <span>{{ $message }}</span>
-              </div>
-            @enderror
-          </div>
+        <label class="remember" for="remember">
+          <input id="remember" type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
+          <span>{{ __('qc.auth.remember') }}</span>
+        </label>
 
-          <!-- Remember Me Checkbox -->
-          <div class="form-options-row">
-            <label class="checkbox-label" for="remember">
-              <input id="remember" type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
-              <span>{{ __('qc.auth.remember') }}</span>
-            </label>
-          </div>
-
-          <!-- Submit Button -->
-          <button class="btn-submit-login" type="submit">
-            <span>{{ __('qc.auth.sign_in_btn') }}</span>
-            <i data-lucide="arrow-right"></i>
-          </button>
-
-          <!-- Help / Registration Notice -->
-          <p class="login-footer-notice">
-            {{ __('qc.auth.no_account') }}
-          </p>
-        </form>
-      </div>
+        <button class="submit" type="submit">{{ __('qc.auth.sign_in_btn') }}</button>
+        <p class="form-notice">{{ __('qc.auth.no_account') }}</p>
+      </form>
     </section>
   </main>
 
