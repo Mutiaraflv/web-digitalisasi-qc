@@ -9,17 +9,37 @@
     <div class="profile-hero-card" style="margin-bottom: 1.25rem;">
       <div class="profile-hero-main">
         <div class="profile-hero-avatar-wrap">
-          <div class="profile-hero-avatar" id="heroAvatarBox" onclick="document.getElementById('avatarFileInput').click()" title="{{ __('qc.profile.pick_photo') }}">
+          <div class="profile-hero-avatar" id="heroAvatarBox" onclick="handleAvatarClick()" title="{{ __('qc.profile.pick_photo') }}">
             @if($user->avatar_url)
               <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="user-avatar-img" id="heroAvatarImg">
             @else
               <span id="heroAvatarInitials">{{ $user->initials() }}</span>
             @endif
-            <div class="avatar-hover-overlay">
-              <i data-lucide="camera"></i>
-              <span>{{ __('qc.profile.change_photo') }}</span>
-            </div>
           </div>
+
+          <!-- Circular Camera Badge Button -->
+          <button type="button"
+                  class="avatar-camera-badge"
+                  id="btnAvatarBadge"
+                  onclick="handleAvatarBadgeClick(event)"
+                  title="{{ __('qc.profile.pick_photo') }}"
+                  aria-label="{{ __('qc.profile.pick_photo') }}">
+            <i data-lucide="camera"></i>
+          </button>
+
+          @if($user->avatar_url)
+            <!-- Mini Action Menu if Photo Exists -->
+            <div class="avatar-badge-menu" id="avatarBadgeMenu">
+              <button type="button" class="avatar-badge-menu-item" onclick="openAvatarPicker(event)">
+                <i data-lucide="image-up"></i>
+                <span>{{ __('qc.profile.change_photo') }}</span>
+              </button>
+              <button type="button" class="avatar-badge-menu-item item-danger" onclick="triggerDeleteAvatar(event)">
+                <i data-lucide="trash-2"></i>
+                <span>{{ __('qc.profile.remove_photo') }}</span>
+              </button>
+            </div>
+          @endif
         </div>
 
         <div class="profile-hero-info">
@@ -39,19 +59,6 @@
               <i data-lucide="calendar"></i>
               <span>{{ __('qc.profile.joined_since', ['date' => $user->created_at ? $user->created_at->translatedFormat('d M Y') : '-']) }}</span>
             </span>
-          </div>
-
-          <!-- Quick Action Buttons for Photo -->
-          <div class="avatar-quick-actions">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('avatarFileInput').click()" style="font-size: 0.76rem; padding: 0.28rem 0.65rem;">
-              <i data-lucide="camera"></i> {{ __('qc.profile.change_photo') }}
-            </button>
-            @if($user->avatar_url)
-              <button type="button" class="btn btn-secondary btn-sm" onclick="confirmDeleteAvatar()" style="font-size: 0.76rem; padding: 0.28rem 0.65rem; color: var(--danger); border-color: rgba(239, 68, 68, 0.35);" title="{{ __('qc.profile.remove_photo_title') }}">
-                <i data-lucide="trash-2"></i> {{ __('qc.profile.remove_photo') }}
-              </button>
-            @endif
-            <span style="font-size: 0.72rem; color: var(--text-subtle);">{{ __('qc.profile.photo_hint') }}</span>
           </div>
         </div>
       </div>
@@ -172,6 +179,57 @@
 
 @section('scripts')
 <script>
+  const hasAvatar = {{ $user->avatar_url ? 'true' : 'false' }};
+
+  function handleAvatarBadgeClick(event) {
+    event?.stopPropagation();
+    if (hasAvatar) {
+      const menu = document.getElementById('avatarBadgeMenu');
+      if (menu) {
+        menu.classList.toggle('show');
+        if (window.lucide) lucide.createIcons();
+      }
+    } else {
+      document.getElementById('avatarFileInput')?.click();
+    }
+  }
+
+  function handleAvatarClick() {
+    if (hasAvatar) {
+      const menu = document.getElementById('avatarBadgeMenu');
+      if (menu) {
+        menu.classList.toggle('show');
+        if (window.lucide) lucide.createIcons();
+      }
+    } else {
+      document.getElementById('avatarFileInput')?.click();
+    }
+  }
+
+  function openAvatarPicker(event) {
+    event?.stopPropagation();
+    document.getElementById('avatarBadgeMenu')?.classList.remove('show');
+    document.getElementById('avatarFileInput')?.click();
+  }
+
+  function triggerDeleteAvatar(event) {
+    event?.stopPropagation();
+    document.getElementById('avatarBadgeMenu')?.classList.remove('show');
+    confirmDeleteAvatar();
+  }
+
+  // Close menu on click outside
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('avatarBadgeMenu');
+    const badge = document.getElementById('btnAvatarBadge');
+    const box = document.getElementById('heroAvatarBox');
+    if (menu && menu.classList.contains('show')) {
+      if (!menu.contains(e.target) && !badge?.contains(e.target) && !box?.contains(e.target)) {
+        menu.classList.remove('show');
+      }
+    }
+  });
+
   function handleDirectAvatarUpload(input) {
     if (input.files && input.files[0]) {
       const file = input.files[0];

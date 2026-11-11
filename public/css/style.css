@@ -5814,13 +5814,14 @@ body {
 .profile-hero-avatar-wrap {
   position: relative;
   flex-shrink: 0;
+  display: inline-block;
 }
 
 .profile-hero-avatar {
   position: relative;
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
   color: var(--primary);
   display: flex;
@@ -5829,8 +5830,8 @@ body {
   font-size: 1.85rem;
   font-weight: 700;
   font-family: var(--font-mono);
-  border: 2px solid var(--primary-border);
-  box-shadow: 0 4px 12px rgba(19, 18, 182, 0.08);
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(19, 18, 182, 0.12);
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -5838,43 +5839,120 @@ body {
 
 .profile-hero-avatar:hover {
   transform: scale(1.02);
-  box-shadow: 0 6px 16px rgba(19, 18, 182, 0.14);
+  box-shadow: 0 6px 18px rgba(19, 18, 182, 0.18);
 }
 
-.avatar-hover-overlay {
+.profile-hero-avatar .user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.avatar-camera-badge {
   position: absolute;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(2px);
+  right: 0;
+  bottom: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--primary);
   color: #ffffff;
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(19, 18, 182, 0.28);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  font-size: 0.68rem;
-  font-weight: 600;
-  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  padding: 0;
+  z-index: 3;
 }
 
-.avatar-hover-overlay svg,
-.avatar-hover-overlay i {
-  width: 20px;
-  height: 20px;
+.avatar-camera-badge:hover {
+  background: var(--primary-hover);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(19, 18, 182, 0.38);
 }
 
-.profile-hero-avatar:hover .avatar-hover-overlay {
-  opacity: 1;
+.avatar-camera-badge svg,
+.avatar-camera-badge i {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.2;
 }
 
-.avatar-quick-actions {
+/* Floating Action Menu for Avatar (Change / Delete) */
+.avatar-badge-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 175px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+  padding: 0.35rem;
+  z-index: 50;
+  display: none;
+  animation: qcTabFade 0.16s ease-out;
+}
+
+.avatar-badge-menu.show {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.avatar-badge-menu-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-top: 0.65rem;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s ease, color 0.14s ease;
+  font-family: inherit;
+}
+
+.avatar-badge-menu-item svg,
+.avatar-badge-menu-item i {
+  width: 15px;
+  height: 15px;
+  color: var(--text-subtle);
+  flex-shrink: 0;
+}
+
+.avatar-badge-menu-item:hover {
+  background: var(--bg-sidebar-hover);
+  color: var(--primary);
+}
+
+.avatar-badge-menu-item:hover svg,
+.avatar-badge-menu-item:hover i {
+  color: var(--primary);
+}
+
+.avatar-badge-menu-item.item-danger {
+  color: var(--danger);
+}
+
+.avatar-badge-menu-item.item-danger svg,
+.avatar-badge-menu-item.item-danger i {
+  color: var(--danger);
+}
+
+.avatar-badge-menu-item.item-danger:hover {
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 .profile-hero-info h2 {
@@ -6894,6 +6972,45 @@ body {
   background: #162033;
   border-color: var(--border-strong);
   color: var(--text-main);
+}
+
+[data-theme="dark"] .profile-hero-avatar {
+  border-color: #1e293b;
+  background: #1e293b;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .avatar-camera-badge {
+  border-color: #162033;
+  background: #6366f1;
+}
+
+[data-theme="dark"] .avatar-camera-badge:hover {
+  background: #4f46e5;
+}
+
+[data-theme="dark"] .avatar-badge-menu {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .avatar-badge-menu-item {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .avatar-badge-menu-item:hover {
+  background: #334155;
+  color: #a5b4fc;
+}
+
+[data-theme="dark"] .avatar-badge-menu-item.item-danger {
+  color: #f87171;
+}
+
+[data-theme="dark"] .avatar-badge-menu-item.item-danger:hover {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
 }
 
 [data-theme="dark"] .profile-card-header {
