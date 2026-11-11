@@ -14,7 +14,16 @@
 </head>
 <body>
 
-  <div class="app-shell">
+  <div class="app-shell" id="appShell">
+    <script>
+      (function () {
+        try {
+          if (window.innerWidth > 900 && localStorage.getItem('qc_sidebar_collapsed') === '1') {
+            document.getElementById('appShell')?.classList.add('sidebar-collapsed');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <!-- Sidebar Navigation -->
     <aside class="app-sidebar" id="appSidebar">
       <!-- Sidebar Header -->
@@ -24,6 +33,9 @@
           <h2>QCMS</h2>
           <p>PT SSC Works</p>
         </div>
+        <button type="button" class="sidebar-close-mobile" id="btnCloseSidebarMobile" aria-label="Tutup Menu" title="Tutup Menu">
+          <i data-lucide="x"></i>
+        </button>
       </div>
 
       <!-- Navigation Links -->
@@ -323,31 +335,79 @@
       document.addEventListener('DOMContentLoaded', () => {
         if (window.lucide) lucide.createIcons();
 
+        const appShell = document.getElementById('appShell');
         const btnToggle = document.getElementById('btnToggleSidebar');
+        const btnCloseMobile = document.getElementById('btnCloseSidebarMobile');
         const sidebar = document.getElementById('appSidebar');
         const backdrop = document.getElementById('sidebarBackdrop');
 
-        function toggleSidebar() {
+        function syncToggleButtonState() {
+          if (!btnToggle) return;
+          const isMobile = window.innerWidth <= 900;
+          const isOpen = isMobile
+            ? Boolean(sidebar?.classList.contains('show'))
+            : !Boolean(appShell?.classList.contains('sidebar-collapsed'));
+          btnToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          btnToggle.title = isOpen ? 'Tutup Sidebar' : 'Buka Sidebar';
+        }
+
+        function openMobileSidebar() {
           if (!sidebar) return;
-          const isOpen = sidebar.classList.toggle('show');
-          if (backdrop) {
-            backdrop.classList.toggle('show', isOpen);
+          sidebar.classList.add('show');
+          backdrop?.classList.add('show');
+          document.body.style.overflow = 'hidden';
+          syncToggleButtonState();
+        }
+
+        function closeMobileSidebar() {
+          if (sidebar) sidebar.classList.remove('show');
+          if (backdrop) backdrop.classList.remove('show');
+          document.body.style.overflow = '';
+          syncToggleButtonState();
+        }
+
+        function toggleSidebar() {
+          if (window.innerWidth <= 900) {
+            const isOpen = sidebar?.classList.contains('show');
+            if (isOpen) closeMobileSidebar();
+            else openMobileSidebar();
+            return;
+          }
+
+          if (appShell) {
+            const isCollapsed = appShell.classList.toggle('sidebar-collapsed');
+            try {
+              localStorage.setItem('qc_sidebar_collapsed', isCollapsed ? '1' : '0');
+            } catch (e) {}
+            syncToggleButtonState();
+            setTimeout(() => window.dispatchEvent(new Event('resize')), 260);
           }
         }
 
-        function closeSidebar() {
-          if (sidebar) sidebar.classList.remove('show');
-          if (backdrop) backdrop.classList.remove('show');
-        }
-
         btnToggle?.addEventListener('click', toggleSidebar);
-        backdrop?.addEventListener('click', closeSidebar);
+        btnCloseMobile?.addEventListener('click', closeMobileSidebar);
+        backdrop?.addEventListener('click', closeMobileSidebar);
+
+        window.addEventListener('resize', () => {
+          if (window.innerWidth > 900) {
+            closeMobileSidebar();
+            try {
+              const saved = localStorage.getItem('qc_sidebar_collapsed') === '1';
+              appShell?.classList.toggle('sidebar-collapsed', saved);
+            } catch (e) {}
+          } else {
+            appShell?.classList.remove('sidebar-collapsed');
+          }
+          syncToggleButtonState();
+        });
 
         document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
           item.addEventListener('click', () => {
-            if (window.innerWidth <= 900) closeSidebar();
+            if (window.innerWidth <= 900) closeMobileSidebar();
           });
         });
+
+        syncToggleButtonState();
 
         // Dialog button handlers
         document.getElementById('qcDialogConfirm')?.addEventListener('click', () => closeQcDialog(true));
@@ -359,6 +419,8 @@
           const overlay = document.getElementById('qcDialogOverlay');
           if (e.key === 'Escape' && overlay?.classList.contains('active')) {
             closeQcDialog(false);
+          } else if (e.key === 'Escape' && sidebar?.classList.contains('show')) {
+            closeMobileSidebar();
           }
         });
 
