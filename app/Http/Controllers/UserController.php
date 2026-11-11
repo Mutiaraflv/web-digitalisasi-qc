@@ -28,7 +28,7 @@ class UserController extends Controller
             });
         }
 
-        if ($roleFilter && in_array($roleFilter, ['admin', 'user'])) {
+        if ($roleFilter && in_array($roleFilter, array_keys(User::roleLabels()), true)) {
             $query->where('role', $roleFilter);
         }
 
@@ -36,8 +36,9 @@ class UserController extends Controller
 
         $stats = [
             'total' => User::count(),
-            'admin' => User::where('role', 'admin')->count(),
-            'user' => User::where('role', 'user')->count(),
+            'admin' => User::where('role', User::ROLE_ADMIN)->count(),
+            'qc_leader' => User::where('role', User::ROLE_QC_LEADER)->count(),
+            'user' => User::where('role', User::ROLE_USER)->count(),
         ];
 
         return view('settings.users.index', compact('users', 'stats', 'search', 'roleFilter'));
@@ -51,14 +52,15 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', 'string', Rule::in(['admin', 'user'])],
+            'role' => ['required', 'string', Rule::in(array_keys(User::roleLabels()))],
             'password' => ['required', 'string', 'min:6'],
         ], [
             'name.required' => 'Nama pengguna wajib diisi.',
             'email.required' => 'Alamat email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'email.unique' => 'Email ini sudah terdaftar di sistem.',
-            'role.required' => 'Peran (role) pengguna wajib dipilih.',
+            'role.required' => 'Role pengguna wajib dipilih.',
+            'role.in' => 'Role yang dipilih tidak valid.',
             'password.required' => 'Kata sandi wajib diisi.',
             'password.min' => 'Kata sandi minimal 6 karakter.',
         ]);
@@ -82,14 +84,15 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role' => ['required', 'string', Rule::in(['admin', 'user'])],
+            'role' => ['required', 'string', Rule::in(array_keys(User::roleLabels()))],
             'password' => ['nullable', 'string', 'min:6'],
         ], [
             'name.required' => 'Nama pengguna wajib diisi.',
             'email.required' => 'Alamat email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'email.unique' => 'Email ini sudah digunakan oleh akun lain.',
-            'role.required' => 'Peran (role) pengguna wajib dipilih.',
+            'role.required' => 'Role pengguna wajib dipilih.',
+            'role.in' => 'Role yang dipilih tidak valid.',
             'password.min' => 'Kata sandi baru minimal 6 karakter.',
         ]);
 

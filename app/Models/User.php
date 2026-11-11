@@ -13,6 +13,24 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_QC_LEADER = 'qc_leader';
+    public const ROLE_USER = 'user';
+
+    /**
+     * Supported application roles mapped to display labels.
+     *
+     * @return array<string, string>
+     */
+    public static function roleLabels(): array
+    {
+        return [
+            self::ROLE_USER => 'Inspector QC',
+            self::ROLE_QC_LEADER => 'QC Leader',
+            self::ROLE_ADMIN => 'Administrator',
+        ];
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -30,7 +48,23 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    /**
+     * Check if user has QC Leader role.
+     */
+    public function isQcLeader(): bool
+    {
+        return $this->role === self::ROLE_QC_LEADER;
+    }
+
+    /**
+     * Human-readable role label.
+     */
+    public function roleLabel(): string
+    {
+        return self::roleLabels()[$this->role] ?? ucfirst(str_replace('_', ' ', (string) $this->role));
     }
 
     /**

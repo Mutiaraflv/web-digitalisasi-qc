@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Report;
+use App\Models\User;
 use App\Services\ExcelReportService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 
 class ReportController extends Controller
@@ -21,7 +23,22 @@ class ReportController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Report::query()->orderBy('created_at', 'desc');
+        $user = Auth::user();
+        $activeTab = $request->input('tab', 'all');
+        if (!in_array($activeTab, ['all', 'mine', 'approval'], true)) {
+            $activeTab = 'all';
+        }
+
+        $query = Report::with(['creator:id,name', 'checker:id,name', 'reviewer:id,name', 'reviewerUser:id,name'])
+            ->orderBy('created_at', 'desc');
+
+        if ($activeTab === 'mine' && $user) {
+            $query->ownedOrCheckedBy($user);
+        } elseif ($activeTab === 'approval' && $user) {
+            $query->pendingApprovalFor($user);
+        } else {
+            $query->nonDraft();
+        }
 
         if ($request->filled('search')) {
             $s = $request->search;
@@ -44,11 +61,21 @@ class ReportController extends Controller
             return response()->json($reports);
         }
 
-        $totalCount = Report::count();
-        $acceptCount = Report::where('has_rejects', false)->count();
-        $rejectCount = Report::where('has_rejects', true)->count();
+        $totalCount = Report::nonDraft()->count();
+        $waitingCount = Report::where('review_status', Report::STATUS_WAITING_REVIEW)->count();
+        $reviewedCount = Report::where('review_status', Report::STATUS_REVIEWED)->count();
+        $mySubmissionsCount = $user ? Report::ownedOrCheckedBy($user)->count() : 0;
+        $waitingApprovalCount = $user ? Report::pendingApprovalFor($user)->count() : 0;
 
-        return view('reports.index', compact('reports', 'totalCount', 'acceptCount', 'rejectCount'));
+        return view('reports.index', compact(
+            'reports',
+            'activeTab',
+            'totalCount',
+            'waitingCount',
+            'reviewedCount',
+            'mySubmissionsCount',
+            'waitingApprovalCount'
+        ));
     }
 
     /**
@@ -57,12 +84,14 @@ class ReportController extends Controller
     public function create()
     {
         $identifiers = $this->generateNextIdentifiers();
+        $users = User::orderBy('name')->get(['id', 'name', 'role']);
 
         return view('reports.create', [
             'report' => null,
             'isEdit' => false,
             'nextReportNo' => $identifiers['nextReportNo'],
             'nextSscId' => $identifiers['nextSscId'],
+            'users' => $users,
         ]);
     }
 
@@ -71,11 +100,19 @@ class ReportController extends Controller
      */
     public function edit(Report $report)
     {
+        if (!$report->canBeModifiedBy(Auth::user())) {
+            return redirect()->route('reports.index')
+                ->with('error', 'Anda hanya dapat mengedit laporan yang Anda buat atau periksa.');
+        }
+
+        $users = User::orderBy('name')->get(['id', 'name', 'role']);
+
         return view('reports.create', [
             'report' => $report,
             'isEdit' => true,
             'nextReportNo' => $report->report_no,
             'nextSscId' => $report->ssc_id,
+            'users' => $users,
         ]);
     }
 
@@ -131,20 +168,29 @@ class ReportController extends Controller
      */
     public function store(Request $request)
     {
+        $submitAction = strtolower(trim((string) ($request->input('submit_action') ?? $request->input('action') ?? 'submit')));
+        $isDraft = ($submitAction === 'draft');
+
         $data = $this->extractReportData($request);
         $data['has_rejects'] = $this->checkHasRejects($data);
+        $data['created_by'] = Auth::id();
+        $data['review_status'] = $isDraft ? Report::STATUS_DRAFT : Report::STATUS_WAITING_REVIEW;
+        $data['submitted_at'] = $isDraft ? null : now();
 
         $report = Report::create($data);
+        $message = $isDraft
+            ? "Draft laporan {$report->ssc_id} berhasil disimpan!"
+            : "Laporan {$report->ssc_id} berhasil disubmit (Waiting Review)!";
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
                 'success' => true,
-                'message' => "Laporan {$report->ssc_id} berhasil disimpan!",
+                'message' => $message,
                 'report' => $report
             ], 201);
         }
 
-        return redirect()->route('reports.index')->with('success', "Laporan {$report->ssc_id} berhasil dibuat!");
+        return redirect()->route('reports.index', ['tab' => 'mine'])->with('success', $message);
     }
 
     /**
@@ -152,20 +198,44 @@ class ReportController extends Controller
      */
     public function update(Request $request, Report $report)
     {
+        if (!$report->canBeModifiedBy(Auth::user())) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda hanya dapat mengubah laporan yang Anda buat atau periksa.'
+                ], 403);
+            }
+            return redirect()->route('reports.index')->with('error', 'Anda hanya dapat mengubah laporan yang Anda buat atau periksa.');
+        }
+
+        $submitAction = strtolower(trim((string) ($request->input('submit_action') ?? $request->input('action') ?? '')));
         $data = $this->extractReportData($request);
         $data['has_rejects'] = $this->checkHasRejects($data);
+
+        if ($report->isDraft()) {
+            if ($submitAction === 'submit') {
+                $data['review_status'] = Report::STATUS_WAITING_REVIEW;
+                $data['submitted_at'] = now();
+                $message = "Laporan {$report->ssc_id} berhasil disubmit (Waiting Review)!";
+            } else {
+                $data['review_status'] = Report::STATUS_DRAFT;
+                $message = "Draft laporan {$report->ssc_id} berhasil disimpan!";
+            }
+        } else {
+            $message = "Laporan {$report->ssc_id} berhasil diperbarui!";
+        }
 
         $report->update($data);
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
                 'success' => true,
-                'message' => "Laporan {$report->ssc_id} berhasil diperbarui!",
-                'report' => $report
+                'message' => $message,
+                'report' => $report->fresh(),
             ]);
         }
 
-        return redirect()->route('reports.index')->with('success', "Laporan {$report->ssc_id} berhasil diperbarui!");
+        return redirect()->route('reports.index', ['tab' => 'mine'])->with('success', $message);
     }
 
     /**
@@ -173,6 +243,16 @@ class ReportController extends Controller
      */
     public function destroy(Report $report)
     {
+        if (!$report->canBeModifiedBy(Auth::user())) {
+            if (request()->wantsJson() || request()->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda hanya dapat menghapus laporan yang Anda buat atau periksa.'
+                ], 403);
+            }
+            return redirect()->route('reports.index')->with('error', 'Anda hanya dapat menghapus laporan yang Anda buat atau periksa.');
+        }
+
         $sscId = $report->ssc_id;
         $report->delete();
 
@@ -181,24 +261,6 @@ class ReportController extends Controller
         }
 
         return redirect()->route('reports.index')->with('success', "Laporan {$sscId} berhasil dihapus!");
-    }
-
-    /**
-     * Duplicate existing report
-     */
-    public function duplicate(Report $report)
-    {
-        $replica = $report->replicate();
-        $replica->ssc_id = $report->ssc_id . ' (COPY-' . rand(100, 999) . ')';
-        $replica->report_no = ($report->report_no ?? '') . '-CPY';
-        $replica->date = date('Y-m-d');
-        $replica->save();
-
-        if (request()->wantsJson() || request()->is('api/*')) {
-            return response()->json($replica);
-        }
-
-        return redirect()->route('reports.index')->with('success', "Laporan berhasil diduplikat menjadi {$replica->ssc_id}!");
     }
 
     /**
@@ -270,13 +332,30 @@ class ReportController extends Controller
      */
     public function submitAndDownload(Request $request)
     {
+        $submitAction = strtolower(trim((string) ($request->input('submit_action') ?? $request->input('action') ?? 'submit')));
+        $isDraft = ($submitAction === 'draft');
+
         $data = $this->extractReportData($request);
         $data['has_rejects'] = $this->checkHasRejects($data);
 
-        $report = Report::updateOrCreate(
-            ['ssc_id' => $data['ssc_id']],
-            $data
-        );
+        $existing = Report::where('ssc_id', $data['ssc_id'])->first();
+        if ($existing && !$existing->canBeModifiedBy(Auth::user())) {
+            return back()->with('error', 'Anda hanya dapat mengubah laporan yang Anda buat atau periksa.');
+        }
+
+        if ($existing) {
+            if ($existing->isDraft() && $submitAction === 'submit') {
+                $data['review_status'] = Report::STATUS_WAITING_REVIEW;
+                $data['submitted_at'] = now();
+            }
+            $existing->update($data);
+            $report = $existing;
+        } else {
+            $data['created_by'] = Auth::id();
+            $data['review_status'] = $isDraft ? Report::STATUS_DRAFT : Report::STATUS_WAITING_REVIEW;
+            $data['submitted_at'] = $isDraft ? null : now();
+            $report = Report::create($data);
+        }
 
         $filePath = $this->excelService->generateExcelFile($report);
         $filename = $this->buildExportFilename($report);
@@ -291,7 +370,89 @@ class ReportController extends Controller
      */
     public function pdf(Report $report)
     {
-        return view('reports.print', compact('report'));
+        return view('reports.print', [
+            'report' => $report,
+            'isReviewMode' => false,
+        ]);
+    }
+
+    /**
+     * Reviewer preview mode for approving/finishing review of a QC report
+     */
+    public function review(Report $report)
+    {
+        $report->loadMissing(['creator:id,name', 'reviewer:id,name', 'reviewerUser:id,name']);
+
+        return view('reports.print', [
+            'report' => $report,
+            'isReviewMode' => true,
+        ]);
+    }
+
+    /**
+     * Mark report as Reviewed by the assigned reviewer
+     */
+    public function finishReview(Request $request, Report $report)
+    {
+        $user = Auth::user();
+        if ($report->isDraft()) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Laporan masih berstatus Draft dan belum disubmit.'
+                ], 422);
+            }
+            return redirect()->route('reports.index', ['tab' => 'approval'])
+                ->with('error', 'Laporan masih berstatus Draft dan belum disubmit.');
+        }
+
+        if (!$report->canBeReviewedBy($user)) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak terdaftar sebagai peninjau (Reviewed by) untuk laporan ini.'
+                ], 403);
+            }
+            return redirect()->route('reports.index', ['tab' => 'approval'])
+                ->with('error', 'Anda tidak terdaftar sebagai peninjau (Reviewed by) untuk laporan ini.');
+        }
+
+        if ($report->isReviewed()) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Laporan {$report->ssc_id} sudah berstatus Reviewed.",
+                    'report' => $report
+                ]);
+            }
+            return redirect()->route('reports.index', ['tab' => 'approval'])
+                ->with('success', "Laporan {$report->ssc_id} sudah berstatus Reviewed.");
+        }
+
+        $signatures = is_array($report->signatures) ? $report->signatures : [];
+        $signatures['reviewedBy'] = array_merge($signatures['reviewedBy'] ?? [], [
+            'name' => !empty($signatures['reviewedBy']['name']) ? $signatures['reviewedBy']['name'] : $user->name,
+            'date' => !empty($signatures['reviewedBy']['date']) ? $signatures['reviewedBy']['date'] : date('Y-m-d'),
+        ]);
+
+        $report->update([
+            'review_status' => Report::STATUS_REVIEWED,
+            'reviewed_at' => now(),
+            'reviewed_by' => $user->id,
+            'reviewer_id' => $report->reviewer_id ?: $user->id,
+            'signatures' => $signatures,
+        ]);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'message' => "Laporan {$report->ssc_id} berhasil diselesaikan (Reviewed)!",
+                'report' => $report->fresh(),
+            ]);
+        }
+
+        return redirect()->route('reports.index', ['tab' => 'approval'])
+            ->with('success', "Laporan {$report->ssc_id} berhasil diselesaikan (Reviewed)!");
     }
 
     /**
@@ -323,7 +484,33 @@ class ReportController extends Controller
         $signatures = $request->input('signatures', []);
         $photos = $request->input('photos', []);
 
+        $rawCheckerId = $request->input('checker_id') ?? ($g['checkerId'] ?? ($g['checker_id'] ?? null));
+        $resolvedCheckerId = null;
+        if (is_numeric($rawCheckerId)) {
+            $resolvedCheckerId = User::where('id', (int) $rawCheckerId)->value('id');
+        }
+        if (!$resolvedCheckerId && !empty($signatures['checkedBy']['name'])) {
+            $checkerName = mb_strtolower(trim((string) $signatures['checkedBy']['name']));
+            if ($checkerName !== '') {
+                $resolvedCheckerId = User::whereRaw('LOWER(TRIM(name)) = ?', [$checkerName])->value('id');
+            }
+        }
+
+        $rawReviewerId = $request->input('reviewer_id') ?? ($g['reviewerId'] ?? ($g['reviewer_id'] ?? null));
+        $resolvedReviewerId = null;
+        if (is_numeric($rawReviewerId)) {
+            $resolvedReviewerId = User::where('id', (int) $rawReviewerId)->value('id');
+        }
+        if (!$resolvedReviewerId && !empty($signatures['reviewedBy']['name'])) {
+            $reviewerName = mb_strtolower(trim((string) $signatures['reviewedBy']['name']));
+            if ($reviewerName !== '') {
+                $resolvedReviewerId = User::whereRaw('LOWER(TRIM(name)) = ?', [$reviewerName])->value('id');
+            }
+        }
+
         return [
+            'checker_id' => $resolvedCheckerId,
+            'reviewer_id' => $resolvedReviewerId,
             'ssc_id' => trim($sscId),
             'report_no' => $reportNo ? trim($reportNo) : null,
             'date' => $date ?: null,

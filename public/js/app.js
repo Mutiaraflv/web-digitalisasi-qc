@@ -146,6 +146,9 @@ function initPersonnelAutoRole() {
         'agus': 'Leader QC',
         'agus riyanto': 'Leader QC',
         'firman': 'Workshop Supervisor',
+        'qc inspector': 'QC Inspector',
+        'qc leader': 'Leader QC',
+        'leader qc': 'Leader QC',
     };
 
     const pairs = [
@@ -161,8 +164,20 @@ function initPersonnelAutoRole() {
 
         const updateTitle = () => {
             const val = (nameInput.value || '').trim().toLowerCase();
-            if (rolesMap[val]) {
-                titleInput.value = rolesMap[val];
+            const userRole = nameInput.selectedOptions?.[0]?.dataset?.userRole || '';
+            let resolvedTitle = rolesMap[val] || '';
+            if (!resolvedTitle && val) {
+                if (val.includes('leader')) resolvedTitle = 'Leader QC';
+                else if (val.includes('supervisor')) resolvedTitle = 'Workshop Supervisor';
+                else if (val.includes('engineer')) resolvedTitle = 'QC Engineer';
+                else if (val.includes('inspector')) resolvedTitle = 'QC Inspector';
+            }
+            if (!resolvedTitle && userRole) {
+                if (userRole === 'qc_leader') resolvedTitle = 'Leader QC';
+                else if (userRole === 'user') resolvedTitle = 'QC Inspector';
+            }
+            if (resolvedTitle) {
+                titleInput.value = resolvedTitle;
                 titleInput.dispatchEvent(new Event('change', { bubbles: true }));
                 titleInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
@@ -1216,6 +1231,16 @@ function extractFormData() {
             createdBy: { name: document.getElementById('sig_createdName')?.value || '', title: document.getElementById('sig_createdTitle')?.value || '', date: document.getElementById('sig_createdDate')?.value || '' },
             reviewedBy: { name: document.getElementById('sig_reviewedName')?.value || '', title: document.getElementById('sig_reviewedTitle')?.value || '', date: document.getElementById('sig_reviewedDate')?.value || '' }
         },
+        checker_id: (() => {
+            const sel = document.getElementById('sig_checkedName');
+            const uid = sel?.selectedOptions?.[0]?.dataset?.userId;
+            return uid ? Number(uid) : null;
+        })(),
+        reviewer_id: (() => {
+            const sel = document.getElementById('sig_reviewedName');
+            const uid = sel?.selectedOptions?.[0]?.dataset?.userId;
+            return uid ? Number(uid) : null;
+        })(),
         photos: reportPhotos
     };
 
@@ -1232,7 +1257,11 @@ function extractFormData() {
     return payload;
 }
 
-function saveReportData(andDownloadExcel = false) {
+let isSavingReport = false;
+
+function saveReportData(andDownloadExcel = false, submitAction = null) {
+    if (isSavingReport) return;
+
     let sscEl = document.getElementById('g_sscId');
     if (!sscEl || !sscEl.value.trim()) {
         showToast('Mohon isi SSC ID terlebih dahulu!', 'error');
@@ -1242,12 +1271,22 @@ function saveReportData(andDownloadExcel = false) {
     const payload = extractFormData();
     if (!payload) return;
 
-    const reportId = document.getElementById('reportId')?.value;
+    const reportIdInput = document.getElementById('reportId');
+    const reportId = reportIdInput?.value;
     const isUpdate = Boolean(reportId);
     const url = isUpdate ? `/reports/${reportId}` : '/reports';
     const method = isUpdate ? 'PUT' : 'POST';
 
-    showToast('Menyimpan data laporan...', 'success');
+    const resolvedAction = submitAction || (andDownloadExcel
+        ? ((!isUpdate || window.qcReportStatus === 'draft') ? 'draft' : 'save')
+        : 'submit');
+    payload.submit_action = resolvedAction;
+
+    isSavingReport = true;
+    const progressMsg = resolvedAction === 'draft'
+        ? 'Menyimpan draft laporan...'
+        : (isUpdate && window.qcReportStatus !== 'draft' ? 'Menyimpan perubahan laporan...' : 'Mengirim pengajuan laporan...');
+    showToast(progressMsg, 'success');
 
     fetch(url, {
         method: method,
@@ -1258,19 +1297,34 @@ function saveReportData(andDownloadExcel = false) {
         },
         body: JSON.stringify(payload)
     })
-        .then(r => r.json())
+        .then(async r => {
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) {
+                throw new Error(data.message || `HTTP ${r.status}`);
+            }
+            return data;
+        })
         .then(data => {
             if (data.success || data.id || data.report) {
                 const savedReport = data.report || data;
                 const savedId = savedReport.id || reportId;
-                document.getElementById('reportId').value = savedId;
+                if (reportIdInput) reportIdInput.value = savedId;
                 currentReportId = savedId;
+                if (savedReport.review_status) {
+                    window.qcReportStatus = savedReport.review_status;
+                }
+                if (!isUpdate && savedId && window.history?.replaceState) {
+                    window.history.replaceState({}, '', `/reports/${savedId}/edit`);
+                }
 
                 showToast(data.message || 'Laporan berhasil disimpan!', 'success');
 
                 if (andDownloadExcel) {
-                    // Trigger Excel download
                     window.location.href = `/reports/${savedId}/export`;
+                } else {
+                    setTimeout(() => {
+                        window.location.href = '/reports?tab=mine';
+                    }, 750);
                 }
             } else {
                 showToast('Gagal menyimpan laporan: ' + (data.message || 'Unknown error'), 'error');
@@ -1278,15 +1332,21 @@ function saveReportData(andDownloadExcel = false) {
         })
         .catch(err => {
             console.error('Save error:', err);
-            showToast('Terjadi kesalahan koneksi saat menyimpan.', 'error');
+            showToast('Gagal menyimpan: ' + (err.message || 'Terjadi kesalahan koneksi.'), 'error');
+        })
+        .finally(() => {
+            isSavingReport = false;
         });
 }
 
 function setupButtonActions() {
-    // Save button (Top bar)
-    document.getElementById('btnTopSave')?.addEventListener('click', () => saveReportData(false));
+    // Draft & Submit buttons (Top bar & Studio Footer)
+    document.getElementById('btnTopDraft')?.addEventListener('click', () => saveReportData(false, 'draft'));
+    document.getElementById('btnFooterDraft')?.addEventListener('click', () => saveReportData(false, 'draft'));
+    document.getElementById('btnTopSave')?.addEventListener('click', () => saveReportData(false, 'submit'));
+    document.getElementById('btnFooterSubmit')?.addEventListener('click', () => saveReportData(false, 'submit'));
 
-    // Save & Download Excel (Top bar)
+    // Save & Download Excel (Top bar - preserves draft if not yet submitted)
     document.getElementById('btnTopExportExcel')?.addEventListener('click', () => saveReportData(true));
 
     // Reset blank button
@@ -1354,12 +1414,12 @@ function loadDefaultBlankForm() {
         { item: "01", remarks: "", recommendation: "" }
     ]);
 
-    // Reset signatures to defaults (empty by default for user input)
+    // Reset signatures to defaults (Created by defaults to logged-in account)
     setValue('sig_checkedName', '');
     setValue('sig_checkedTitle', 'QC Inspector');
     setValue('sig_checkedDate', new Date().toISOString().split('T')[0]);
 
-    setValue('sig_createdName', '');
+    setValue('sig_createdName', window.qcCurrentUserName || '');
     setValue('sig_createdTitle', 'QC Inspector');
     setValue('sig_createdDate', new Date().toISOString().split('T')[0]);
 
@@ -1488,12 +1548,23 @@ function populateFormWithData(data) {
     const recs = typeof data.recommendations === 'string' ? JSON.parse(data.recommendations) : (data.recommendations || []);
     setupRecommendations(recs);
 
+    if (data.review_status) {
+        window.qcReportStatus = data.review_status;
+    }
+
     // Signatures
     const sig = typeof data.signatures === 'string' ? JSON.parse(data.signatures) : (data.signatures || {});
     if (sig.checkedBy) {
         setValue('sig_checkedName', sig.checkedBy.name);
         setValue('sig_checkedTitle', sig.checkedBy.title);
         setValue('sig_checkedDate', sig.checkedBy.date);
+    }
+    if (data.checker_id) {
+        const chkSelect = document.getElementById('sig_checkedName');
+        const matchedChk = chkSelect ? Array.from(chkSelect.options).find(opt => Number(opt.dataset.userId) === Number(data.checker_id)) : null;
+        if (matchedChk) {
+            chkSelect.value = matchedChk.value;
+        }
     }
     if (sig.createdBy) {
         setValue('sig_createdName', sig.createdBy.name);
@@ -1504,6 +1575,13 @@ function populateFormWithData(data) {
         setValue('sig_reviewedName', sig.reviewedBy.name);
         setValue('sig_reviewedTitle', sig.reviewedBy.title);
         setValue('sig_reviewedDate', sig.reviewedBy.date);
+    }
+    if (data.reviewer_id) {
+        const revSelect = document.getElementById('sig_reviewedName');
+        const matchedById = revSelect ? Array.from(revSelect.options).find(opt => Number(opt.dataset.userId) === Number(data.reviewer_id)) : null;
+        if (matchedById) {
+            revSelect.value = matchedById.value;
+        }
     }
 
     if (window.syncSigChips) {
@@ -1523,7 +1601,20 @@ function populateFormWithData(data) {
 
 function setValue(id, val) {
     const el = document.getElementById(id);
-    if (el) el.value = (val !== null && val !== undefined) ? val : '';
+    if (!el) return;
+    const cleanVal = (val !== null && val !== undefined) ? String(val) : '';
+    if (el.tagName === 'SELECT' && cleanVal !== '') {
+        const matched = Array.from(el.options).find(opt => opt.value.toLowerCase() === cleanVal.trim().toLowerCase());
+        if (matched) {
+            el.value = matched.value;
+            return;
+        }
+        const opt = document.createElement('option');
+        opt.value = cleanVal;
+        opt.textContent = cleanVal;
+        el.appendChild(opt);
+    }
+    el.value = cleanVal;
 }
 
 // -------------------------------------------------------------
@@ -1595,6 +1686,9 @@ window.exportOfficialPdf = function () {
     const url = isUpdate ? `/reports/${existingId}` : '/reports';
     const method = isUpdate ? 'PUT' : 'POST';
 
+    // Preserve draft status when exporting/printing before submitting
+    payload.submit_action = (!isUpdate || window.qcReportStatus === 'draft') ? 'draft' : 'save';
+
     showToast('Menyiapkan dokumen resmi 6 lembar (PDF)...', 'info');
 
     fetch(url, {
@@ -1606,13 +1700,25 @@ window.exportOfficialPdf = function () {
         },
         body: JSON.stringify(payload)
     })
-        .then(r => r.json())
+        .then(async r => {
+            const data = await r.json().catch(() => ({}));
+            if (!r.ok) {
+                throw new Error(data.message || `HTTP ${r.status}`);
+            }
+            return data;
+        })
         .then(data => {
             if (data.success || data.report || data.id) {
                 const savedReport = data.report || data;
                 const savedId = savedReport.id || existingId;
                 if (reportIdInput) reportIdInput.value = savedId;
                 currentReportId = savedId;
+                if (savedReport.review_status) {
+                    window.qcReportStatus = savedReport.review_status;
+                }
+                if (!isUpdate && savedId && window.history?.replaceState) {
+                    window.history.replaceState({}, '', `/reports/${savedId}/edit`);
+                }
 
                 showToast('Membuka PDF Dokumen Resmi 6 Lembar...', 'success');
                 // Open dedicated 6-page A4 print view in new window/tab

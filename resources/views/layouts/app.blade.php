@@ -38,6 +38,9 @@
         <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.index') && !request()->has('create') ? 'active' : '' }}">
           <i data-lucide="archive"></i>
           <span>Riwayat Laporan</span>
+          @if(($pendingApprovalCount ?? 0) > 0)
+            <span class="nav-badge-alert" title="{{ $pendingApprovalCount }} laporan menunggu review Anda">{{ $pendingApprovalCount }}</span>
+          @endif
         </a>
 
         <a href="{{ route('templates.index') }}" class="nav-item {{ request()->routeIs('templates.*') || request()->routeIs('parts.*') ? 'active' : '' }}">
@@ -82,7 +85,7 @@
         <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
         <div class="user-info">
           <h4>{{ auth()->user()->name }}</h4>
-          <p>{{ auth()->user()->email }} · <span style="color: {{ auth()->user()->isAdmin() ? 'var(--primary)' : 'var(--text-subtle)' }}; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">{{ auth()->user()->role ?? 'user' }}</span></p>
+          <p>{{ auth()->user()->email }} · <span style="color: {{ auth()->user()->isAdmin() ? 'var(--primary)' : 'var(--text-subtle)' }}; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">{{ auth()->user()->roleLabel() }}</span></p>
         </div>
         <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form">
           @csrf

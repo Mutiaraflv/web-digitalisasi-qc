@@ -625,13 +625,38 @@
 
   <!-- Top Action Bar (Hidden on print) -->
   <div class="print-actions">
-    <div>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
       <strong>PT. SSC WORKS &mdash; COMPONENT CONDITION REPORT (FORM-QC-002 REV 04)</strong>
-      <span style="margin-left: 10px; color: #94a3b8;">Total 6 Lembar Dokumen Resmi</span>
+      @if(!empty($isReviewMode))
+        <span style="padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; {{ $report->isReviewed() ? 'background: #10b981; color: #fff;' : 'background: #f59e0b; color: #1e293b;' }}">
+          {{ $report->isReviewed() ? 'Reviewed' : 'Waiting Review' }}
+        </span>
+        <span style="color: #cbd5e1; font-size: 12px;">
+          SSC ID: <strong>{{ $report->ssc_id }}</strong>
+          @if($report->creator)
+            &bull; Pengaju: <strong>{{ $report->creator->name }}</strong>
+          @endif
+        </span>
+      @else
+        <span style="margin-left: 10px; color: #94a3b8;">Total 6 Lembar Dokumen Resmi</span>
+      @endif
     </div>
-    <div>
-      <button class="btn" onclick="window.close()">✕ Tutup</button>
-      <button class="btn btn-primary" onclick="window.print()">🖨 Cetak Semua (6 Halaman A4)</button>
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      @if(!empty($isReviewMode))
+        <a href="{{ route('reports.index', ['tab' => 'approval']) }}" class="btn" style="text-decoration: none;">← Kembali</a>
+        <button class="btn" onclick="window.print()">🖨 Cetak / PDF</button>
+        @if(!$report->isReviewed() && $report->canBeReviewedBy(auth()->user()))
+          <form method="POST" action="{{ route('reports.finishReview', $report->id) }}" style="display: inline; margin: 0;" onsubmit="return confirm('Selesaikan review untuk laporan {{ $report->ssc_id }}? Status akan berubah menjadi Reviewed.');">
+            @csrf
+            <button type="submit" class="btn" style="background: #10b981; color: #fff; border-color: #10b981; font-weight: 700;">✓ Finish Review</button>
+          </form>
+        @elseif($report->isReviewed())
+          <span style="color: #86efac; font-weight: 700; font-size: 12px; padding: 0 6px;">✓ Sudah Direview</span>
+        @endif
+      @else
+        <button class="btn" onclick="window.close()">✕ Tutup</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨 Cetak Semua (6 Halaman A4)</button>
+      @endif
     </div>
   </div>
 

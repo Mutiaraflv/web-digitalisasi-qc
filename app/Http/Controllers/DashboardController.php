@@ -10,10 +10,10 @@ class DashboardController extends Controller
     public function index()
     {
         try {
-            $totalReports = Report::count();
-            $acceptCount = Report::where('has_rejects', false)->count();
-            $rejectCount = Report::where('has_rejects', true)->count();
-            $recentReports = Report::orderBy('created_at', 'desc')->take(6)->get();
+            $totalReports = Report::nonDraft()->count();
+            $acceptCount = Report::nonDraft()->where('has_rejects', false)->count();
+            $rejectCount = Report::nonDraft()->where('has_rejects', true)->count();
+            $recentReports = Report::nonDraft()->orderBy('created_at', 'desc')->take(6)->get();
         } catch (\Exception $e) {
             $totalReports = 0;
             $acceptCount = 0;

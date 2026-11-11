@@ -42,9 +42,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/{report}/edit', [ReportController::class, 'edit'])->name('edit');
         Route::put('/{report}', [ReportController::class, 'update'])->name('update');
         Route::delete('/{report}', [ReportController::class, 'destroy'])->name('destroy');
-        Route::post('/{report}/duplicate', [ReportController::class, 'duplicate'])->name('duplicate');
         Route::get('/{report}/export', [ReportController::class, 'export'])->name('export');
         Route::get('/{report}/pdf', [ReportController::class, 'pdf'])->name('pdf');
+        Route::get('/{report}/review', [ReportController::class, 'review'])->name('review');
+        Route::post('/{report}/finish-review', [ReportController::class, 'finishReview'])->name('finishReview');
     });
 
     // 4. Manajemen Template & Katalog Komponen

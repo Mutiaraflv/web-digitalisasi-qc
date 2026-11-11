@@ -1,5 +1,11 @@
 @extends('layouts.app')
 
+@php
+  $isExistingReport = isset($report) && $report;
+  $reportStatus = $isExistingReport ? ($report->review_status ?? 'waiting_review') : \App\Models\Report::STATUS_DRAFT;
+  $isDraftReport = !$isExistingReport || $reportStatus === \App\Models\Report::STATUS_DRAFT;
+@endphp
+
 @section('title', isset($isEdit) && $isEdit ? 'Edit Laporan QC' : 'Input Inspeksi Baru')
 @section('page_title', isset($isEdit) && $isEdit ? 'Edit Laporan QC' : 'Input Inspeksi Baru')
 
@@ -8,13 +14,18 @@
     <a href="{{ route('reports.index') }}" class="btn btn-secondary btn-sm" title="Kembali ke Riwayat">
       <i data-lucide="arrow-left"></i> <span class="hide-mobile">Riwayat</span>
     </a>
-    <button type="button" id="btnTopSave" class="btn btn-secondary btn-sm" onclick="window.saveReportData(false)" title="Simpan Data">
-      <i data-lucide="save"></i> <span class="hide-mobile">Simpan</span>
+    @if($isDraftReport)
+      <button type="button" id="btnTopDraft" class="btn btn-secondary btn-sm" title="Simpan sebagai Draft (Belum dikirim ke Waiting Review)">
+        <i data-lucide="file-clock"></i> <span class="hide-mobile">Simpan</span> Draft
+      </button>
+    @endif
+    <button type="button" id="btnTopSave" class="btn btn-primary btn-sm" title="{{ $isDraftReport ? 'Submit Pengajuan Laporan (Waiting Review)' : 'Simpan Perubahan Laporan' }}">
+      <i data-lucide="{{ $isDraftReport ? 'send' : 'save' }}"></i> <span class="hide-mobile">{{ $isDraftReport ? 'Submit' : 'Simpan' }}</span>
     </button>
-    <button type="button" id="btnTopExportPdf" class="btn btn-primary btn-sm" title="Ekspor 6 Lembar PDF Resmi" onclick="window.exportOfficialPdf()">
+    <button type="button" id="btnTopExportPdf" class="btn btn-secondary btn-sm" title="Ekspor 6 Lembar PDF Resmi" onclick="window.exportOfficialPdf()">
       <i data-lucide="file-text"></i> <span class="hide-mobile">Ekspor</span> PDF
     </button>
-    <button type="button" id="btnTopExportExcel" class="btn btn-secondary btn-sm" onclick="window.saveReportData(true)" title="Unduh Excel (.xlsx)">
+    <button type="button" id="btnTopExportExcel" class="btn btn-secondary btn-sm" title="Unduh Excel (.xlsx)">
       <i data-lucide="file-spreadsheet"></i> Excel
     </button>
   </div>
@@ -22,6 +33,9 @@
 
 @section('content')
 @php
+  $userList = $users ?? \App\Models\User::orderBy('name')->get(['id', 'name', 'role']);
+  $currentAuthName = auth()->user()->name ?? '';
+
   $photos = isset($report) && $report && $report->photos ? (is_array($report->photos) ? $report->photos : json_decode($report->photos, true)) : [];
   if (!is_array($photos)) $photos = [];
 
@@ -31,7 +45,7 @@
   $checkedTitle = $signatures['checkedBy']['title'] ?? '';
   $checkedDate = !empty($signatures['checkedBy']['date']) ? \Carbon\Carbon::parse($signatures['checkedBy']['date'])->format('Y-m-d') : date('Y-m-d');
 
-  $createdName = $signatures['createdBy']['name'] ?? '';
+  $createdName = $signatures['createdBy']['name'] ?? (($isEdit ?? false) ? '' : $currentAuthName);
   $createdTitle = $signatures['createdBy']['title'] ?? '';
   $createdDate = !empty($signatures['createdBy']['date']) ? \Carbon\Carbon::parse($signatures['createdBy']['date'])->format('Y-m-d') : date('Y-m-d');
 
@@ -996,15 +1010,17 @@
                 <h5>Checked by:</h5>
                 <div class="form-group">
                   <label for="sig_checkedName">Nama Pemeriksa</label>
-                  <input type="text" id="sig_checkedName" list="listCheckedBy" value="{{ $checkedName }}" placeholder="Pilih atau ketik nama..." autocomplete="off">
-                  <datalist id="listCheckedBy">
-                    <option value="Indra"></option>
-                    <option value="Faqih"></option>
-                    <option value="Sahid"></option>
-                    <option value="Agus"></option>
-                    <option value="Kevin"></option>
-                    <option value="Rafli"></option>
-                  </datalist>
+                  <select id="sig_checkedName">
+                    <option value="">Pilih pemeriksa...</option>
+                    @foreach($userList as $u)
+                      <option value="{{ $u->name }}" data-user-id="{{ $u->id }}" data-user-role="{{ $u->role }}" {{ $checkedName !== '' && strcasecmp($checkedName, $u->name) === 0 ? 'selected' : '' }}>
+                        {{ $u->name }}
+                      </option>
+                    @endforeach
+                    @if($checkedName !== '' && !$userList->contains(fn($u) => strcasecmp($checkedName, $u->name) === 0))
+                      <option value="{{ $checkedName }}" selected>{{ $checkedName }}</option>
+                    @endif
+                  </select>
                 </div>
                 <div class="form-group">
                   <label for="sig_checkedTitle">Jabatan</label>
@@ -1026,15 +1042,17 @@
                 <h5>Created by:</h5>
                 <div class="form-group">
                   <label for="sig_createdName">Nama Pembuat</label>
-                  <input type="text" id="sig_createdName" list="listCreatedBy" value="{{ $createdName }}" placeholder="Pilih atau ketik nama..." autocomplete="off">
-                  <datalist id="listCreatedBy">
-                    <option value="Indra"></option>
-                    <option value="Faqih"></option>
-                    <option value="Sahid"></option>
-                    <option value="Agus"></option>
-                    <option value="Kevin"></option>
-                    <option value="Rafli"></option>
-                  </datalist>
+                  <select id="sig_createdName">
+                    <option value="">Pilih pembuat...</option>
+                    @foreach($userList as $u)
+                      <option value="{{ $u->name }}" data-user-id="{{ $u->id }}" data-user-role="{{ $u->role }}" {{ $createdName !== '' && strcasecmp($createdName, $u->name) === 0 ? 'selected' : '' }}>
+                        {{ $u->name }}
+                      </option>
+                    @endforeach
+                    @if($createdName !== '' && !$userList->contains(fn($u) => strcasecmp($createdName, $u->name) === 0))
+                      <option value="{{ $createdName }}" selected>{{ $createdName }}</option>
+                    @endif
+                  </select>
                 </div>
                 <div class="form-group">
                   <label for="sig_createdTitle">Jabatan</label>
@@ -1055,12 +1073,23 @@
               <div class="sig-box">
                 <h5>Reviewed by:</h5>
                 <div class="form-group">
-                  <label for="sig_reviewedName">Nama Peninjau</label>
-                  <input type="text" id="sig_reviewedName" list="listReviewedBy" value="{{ $reviewedName }}" placeholder="Pilih atau ketik nama..." autocomplete="off">
-                  <datalist id="listReviewedBy">
-                    <option value="Agus"></option>
-                    <option value="Firman"></option>
-                  </datalist>
+                  <label for="sig_reviewedName">Nama Peninjau </label>
+                  <select id="sig_reviewedName">
+                    <option value="">Pilih akun peninjau...</option>
+                    @foreach($userList as $u)
+                      @php
+                        $isReviewedSelected = (isset($report) && $report && $report->reviewer_id)
+                          ? ((int) $report->reviewer_id === (int) $u->id)
+                          : ($reviewedName !== '' && strcasecmp($reviewedName, $u->name) === 0);
+                      @endphp
+                      <option value="{{ $u->name }}" data-user-id="{{ $u->id }}" data-user-role="{{ $u->role }}" {{ $isReviewedSelected ? 'selected' : '' }}>
+                        {{ $u->name }}
+                      </option>
+                    @endforeach
+                    @if($reviewedName !== '' && !$userList->contains(fn($u) => strcasecmp($reviewedName, $u->name) === 0))
+                      <option value="{{ $reviewedName }}" selected>{{ $reviewedName }}</option>
+                    @endif
+                  </select>
                 </div>
                 <div class="form-group">
                   <label for="sig_reviewedTitle">Jabatan</label>
@@ -1087,6 +1116,16 @@
           <div class="footer-left">
             <button type="button" class="btn btn-secondary btn-sm" id="btnResetBlank">
               <i data-lucide="rotate-ccw"></i> Kosongkan Form
+            </button>
+          </div>
+          <div class="footer-right">
+            @if($isDraftReport)
+              <button type="button" class="btn btn-secondary btn-sm" id="btnFooterDraft">
+                <i data-lucide="file-clock"></i> Simpan Draft
+              </button>
+            @endif
+            <button type="button" class="btn btn-primary btn-sm" id="btnFooterSubmit">
+              <i data-lucide="{{ $isDraftReport ? 'send' : 'save' }}"></i> {{ $isDraftReport ? 'Submit Laporan' : 'Simpan Perubahan' }}
             </button>
           </div>
         </div>
@@ -1878,5 +1917,9 @@
 @endsection
 
 @section('scripts')
+  <script>
+    window.qcCurrentUserName = @json(auth()->user()->name ?? '');
+    window.qcReportStatus = @json($reportStatus);
+  </script>
   <script src="{{ asset('js/app.js') }}?v={{ file_exists(public_path('js/app.js')) ? filemtime(public_path('js/app.js')) : time() }}"></script>
 @endsection

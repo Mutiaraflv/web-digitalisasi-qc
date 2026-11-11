@@ -26,15 +26,21 @@
     </div>
 
     <div class="stat-card">
-      <p>Hak Akses Administrator</p>
+      <p>Administrator</p>
       <h3 style="color: var(--primary);">{{ $stats['admin'] }}</h3>
-      <div class="stat-sub">Dapat mengelola pengaturan</div>
+      <div class="stat-sub">Pengelola sistem & akun</div>
     </div>
 
     <div class="stat-card">
-      <p>Operator / Inspector QC</p>
+      <p>QC Leader</p>
+      <h3 style="color: #d97706;">{{ $stats['qc_leader'] }}</h3>
+      <div class="stat-sub">Peninjau & approval QC</div>
+    </div>
+
+    <div class="stat-card">
+      <p>Inspector QC</p>
       <h3>{{ $stats['user'] }}</h3>
-      <div class="stat-sub">Akses pencatatan & laporan</div>
+      <div class="stat-sub">Pencatatan & pengajuan QC</div>
     </div>
   </div>
 
@@ -48,9 +54,10 @@
 
       <div class="filter-group">
         <select name="role" class="select-filter" onchange="this.form.submit()">
-          <option value="">Semua Peran</option>
+          <option value="">Semua Role</option>
           <option value="admin" {{ ($roleFilter ?? '') === 'admin' ? 'selected' : '' }}>Administrator</option>
-          <option value="user" {{ ($roleFilter ?? '') === 'user' ? 'selected' : '' }}>Operator / Inspector</option>
+          <option value="qc_leader" {{ ($roleFilter ?? '') === 'qc_leader' ? 'selected' : '' }}>QC Leader</option>
+          <option value="user" {{ ($roleFilter ?? '') === 'user' ? 'selected' : '' }}>Inspector QC</option>
         </select>
 
         @if(!empty($search) || !empty($roleFilter))
@@ -71,7 +78,7 @@
             <th style="width: 45px;">No.</th>
             <th>Nama Personil</th>
             <th>Alamat Email</th>
-            <th>Peran (Role)</th>
+            <th>Role</th>
             <th>Status Akun</th>
             <th>Tanggal Registrasi</th>
             <th style="text-align: right; width: 140px;">Aksi</th>
@@ -85,7 +92,7 @@
               </td>
               <td>
                 <div style="display: flex; align-items: center; gap: 0.65rem;">
-                  <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.72rem; flex-shrink: 0; background: {{ $u->isAdmin() ? 'var(--primary-light)' : 'var(--graphite-light)' }}; color: {{ $u->isAdmin() ? 'var(--primary)' : 'var(--graphite)' }}; border-color: {{ $u->isAdmin() ? 'var(--primary-border)' : 'var(--border-strong)' }};">
+                  <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.72rem; flex-shrink: 0; background: {{ $u->isAdmin() ? 'var(--primary-light)' : ($u->isQcLeader() ? '#fff7ed' : 'var(--graphite-light)') }}; color: {{ $u->isAdmin() ? 'var(--primary)' : ($u->isQcLeader() ? '#d97706' : 'var(--graphite)') }}; border-color: {{ $u->isAdmin() ? 'var(--primary-border)' : ($u->isQcLeader() ? '#fed7aa' : 'var(--border-strong)') }};">
                     {{ strtoupper(substr($u->name, 0, 2)) }}
                   </div>
                   <div>
@@ -103,6 +110,10 @@
                 @if($u->isAdmin())
                   <span class="badge badge-blue">
                     <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i> Administrator
+                  </span>
+                @elseif($u->isQcLeader())
+                  <span class="badge badge-orange">
+                    <i data-lucide="award" style="width: 12px; height: 12px;"></i> QC Leader
                   </span>
                 @else
                   <span class="badge badge-purple">
@@ -208,14 +219,12 @@
           </div>
 
           <div class="form-group">
-            <label for="add_role">Tingkat Hak Akses / Peran <span style="color: var(--danger);">*</span></label>
+            <label for="add_role">Role <span style="color: var(--danger);">*</span></label>
             <select id="add_role" name="role" required>
-              <option value="user" {{ old('role') === 'user' ? 'selected' : '' }}>Operator / Inspector QC (Input & Cetak Laporan)</option>
-              <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Administrator (Akses Penuh & Kelola Akun)</option>
+              <option value="user" {{ old('role') === 'user' ? 'selected' : '' }}>Inspector QC</option>
+              <option value="qc_leader" {{ old('role') === 'qc_leader' ? 'selected' : '' }}>QC Leader</option>
+              <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Administrator</option>
             </select>
-            <span style="font-size: 0.72rem; color: var(--text-subtle); margin-top: 2px;">
-              *Administrator dapat mengakses menu Pengaturan ini dan mengelola akun pengguna lainnya.
-            </span>
             @error('role') <span style="color: var(--danger); font-size: 0.75rem;">{{ $message }}</span> @enderror
           </div>
 
@@ -258,10 +267,11 @@
           </div>
 
           <div class="form-group">
-            <label for="edit_role">Tingkat Hak Akses / Peran <span style="color: var(--danger);">*</span></label>
+            <label for="edit_role">Role <span style="color: var(--danger);">*</span></label>
             <select id="edit_role" name="role" required>
-              <option value="user">Operator / Inspector QC (Input & Cetak Laporan)</option>
-              <option value="admin">Administrator (Akses Penuh & Kelola Akun)</option>
+              <option value="user">Inspector QC</option>
+              <option value="qc_leader">QC Leader</option>
+              <option value="admin">Administrator</option>
             </select>
             <span id="edit_role_note" style="font-size: 0.72rem; color: var(--text-subtle); margin-top: 2px;"></span>
           </div>
@@ -316,11 +326,10 @@
     const roleSelect = document.getElementById('edit_role');
 
     if (userData.is_self) {
-      roleNote.textContent = 'Perhatian: Anda sedang mengedit akun Anda sendiri. Peran harus tetap Administrator.';
+      roleNote.textContent = 'Perhatian: Anda sedang mengedit akun Anda sendiri. Role harus tetap Administrator.';
       roleNote.style.color = '#d97706';
     } else {
-      roleNote.textContent = 'Administrator dapat mengakses menu Pengaturan dan mengelola seluruh akun pengguna.';
-      roleNote.style.color = 'var(--text-subtle)';
+      roleNote.textContent = '';
     }
 
     modal.classList.add('active');
