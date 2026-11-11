@@ -1,45 +1,33 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard')
-@section('page_title', 'Dashboard')
+@section('title', __('qc.dashboard.title'))
+@section('page_title', __('qc.dashboard.heading'))
 
 @section('content')
-  <div class="page-header dash-page-header">
-    <div class="page-title">
-      <h1>Dashboard</h1>
-      <p>Ringkasan inspeksi komponen &amp; aktivitas QC PT SSC Works.</p>
-    </div>
-    <div class="dash-live-pill" id="dashLiveIndicator" title="Sinkronisasi otomatis setiap 5 detik">
-      <span class="live-dot"></span>
-      <span>LIVE</span>
-      <span class="live-time" id="dashLiveTime">{{ now()->timezone('Asia/Jakarta')->format('H:i:s') }} WIB</span>
-    </div>
-  </div>
-
   <!-- 3 Interactive Visual Charts (Clean & Focused) -->
   <div class="dashboard-charts-grid">
     <!-- Chart 1: Total Inspeksi (Bar Chart) -->
     <div class="chart-card">
       <div class="chart-card-head">
         <div>
-          <span class="chart-kicker">Total Inspeksi</span>
+          <span class="chart-kicker">{{ __('qc.dashboard.total_inspections') }}</span>
           <h2 class="chart-metric-val" id="chartValTotal">{{ $totalReports }}</h2>
         </div>
       </div>
 
-      <div class="bar-chart-wrap" id="barChartArea" aria-label="Grafik Total Inspeksi">
+      <div class="bar-chart-wrap" id="barChartArea" aria-label="{{ __('qc.dashboard.total_inspections') }}">
         @php
           $barMax = max(1, $preCount, $postCount, $waitingCount, $reviewedCount);
           $bars = [
-            ['key' => 'pre', 'label' => 'Pre', 'value' => $preCount, 'color' => '#1312b6'],
-            ['key' => 'post', 'label' => 'Post', 'value' => $postCount, 'color' => '#6366f1'],
-            ['key' => 'waiting', 'label' => 'Waiting', 'value' => $waitingCount, 'color' => '#f59e0b'],
-            ['key' => 'reviewed', 'label' => 'Reviewed', 'value' => $reviewedCount, 'color' => '#10b981'],
+            ['key' => 'pre', 'label' => __('qc.dashboard.bar_pre'), 'value' => $preCount, 'color' => '#4f46e5'],
+            ['key' => 'post', 'label' => __('qc.dashboard.bar_post'), 'value' => $postCount, 'color' => '#6366f1'],
+            ['key' => 'waiting', 'label' => __('qc.dashboard.waiting'), 'value' => $waitingCount, 'color' => '#f59e0b'],
+            ['key' => 'reviewed', 'label' => __('qc.dashboard.reviewed'), 'value' => $reviewedCount, 'color' => '#10b981'],
           ];
         @endphp
         @foreach($bars as $bar)
           @php $pct = round(($bar['value'] / $barMax) * 100, 1); @endphp
-          <div class="bar-col" data-bar-key="{{ $bar['key'] }}" title="{{ $bar['label'] }}: {{ $bar['value'] }} laporan">
+          <div class="bar-col" data-bar-key="{{ $bar['key'] }}" title="{{ $bar['label'] }}: {{ $bar['value'] }}">
             <span class="bar-val">{{ $bar['value'] }}</span>
             <div class="bar-track">
               <div class="bar-fill" style="height: {{ $bar['value'] > 0 ? max(10, $pct) : 4 }}%; background: {{ $bar['color'] }};"></div>
@@ -54,15 +42,15 @@
     <div class="chart-card">
       <div class="chart-card-head">
         <div>
-          <span class="chart-kicker">Lolos (Accept)</span>
+          <span class="chart-kicker">{{ __('qc.dashboard.passed_accept') }}</span>
           <h2 class="chart-metric-val" style="color: var(--success);" id="chartValAccept">{{ $acceptCount }}</h2>
         </div>
       </div>
 
       <div class="donut-chart-layout">
         <div class="donut-svg-box">
-          <svg viewBox="0 0 120 120" class="donut-svg" id="donutChartSvg" role="img" aria-label="Pie Chart Status Inspeksi">
-            <circle cx="60" cy="60" r="44" fill="none" stroke="#f1f5f9" stroke-width="14"></circle>
+          <svg viewBox="0 0 120 120" class="donut-svg" id="donutChartSvg" role="img" aria-label="{{ __('qc.dashboard.passed_accept') }}">
+            <circle cx="60" cy="60" r="44" fill="none" class="chart-ring-track" stroke-width="14"></circle>
             <g id="donutSegments"></g>
           </svg>
           <div class="donut-center">
@@ -77,8 +65,8 @@
     <div class="chart-card">
       <div class="chart-card-head">
         <div>
-          <span class="chart-kicker">First Pass Yield</span>
-          <h2 class="chart-metric-val" style="color: var(--primary);" id="chartValYield">{{ $yieldRate }}%</h2>
+          <span class="chart-kicker">{{ __('qc.dashboard.first_pass_yield') }}</span>
+          <h2 class="chart-metric-val" style="color: var(--primary-text);" id="chartValYield">{{ $yieldRate }}%</h2>
         </div>
       </div>
 
@@ -89,14 +77,14 @@
             $circ = 2 * pi() * $r;
             $offset = $circ - ($circ * min(100, max(0, $yieldRate)) / 100);
           @endphp
-          <svg viewBox="0 0 120 120" class="gauge-svg" id="yieldGaugeSvg" role="img" aria-label="First Pass Yield Chart">
+          <svg viewBox="0 0 120 120" class="gauge-svg" id="yieldGaugeSvg" role="img" aria-label="{{ __('qc.dashboard.first_pass_yield') }}">
             <defs>
               <linearGradient id="yieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#1312b6" />
+                <stop offset="0%" stop-color="#4f46e5" />
                 <stop offset="100%" stop-color="#10b981" />
               </linearGradient>
             </defs>
-            <circle cx="60" cy="60" r="46" fill="none" stroke="#eef2ff" stroke-width="12"></circle>
+            <circle cx="60" cy="60" r="46" fill="none" class="chart-ring-track-indigo" stroke-width="12"></circle>
             <circle id="yieldGaugeArc"
                     cx="60" cy="60" r="46"
                     fill="none"
@@ -114,12 +102,12 @@
 
         <div class="gauge-meta-list" id="yieldMetaList">
           <div class="gauge-meta-item">
-            <span>Lolos</span>
+            <span>{{ __('qc.dashboard.passed') }}</span>
             <strong><span id="yieldMetaAccept">{{ $acceptCount }}</span> / <span id="yieldMetaTotal">{{ $totalReports }}</span></strong>
           </div>
           <div class="gauge-meta-item">
-            <span>Reviewed</span>
-            <strong style="color: #059669;" id="yieldMetaReviewed">{{ $reviewedCount }}</strong>
+            <span>{{ __('qc.dashboard.reviewed') }}</span>
+            <strong style="color: var(--success);" id="yieldMetaReviewed">{{ $reviewedCount }}</strong>
           </div>
         </div>
       </div>
@@ -133,14 +121,13 @@
       <div class="card activity-panel-card">
         <div class="card-header activity-card-header">
           <div class="activity-header-title">
-            <h3>Log Activity Real-Time</h3>
-            <span class="badge badge-blue">Semua Akun (Admin)</span>
+            <h3>{{ __('qc.dashboard.realtime_log_title') }}</h3>
           </div>
           <div class="activity-filter-group" id="adminLogFilters">
-            <button type="button" class="activity-filter-btn active" data-filter="all">Semua</button>
-            <button type="button" class="activity-filter-btn" data-filter="submit">Submit / Draft</button>
-            <button type="button" class="activity-filter-btn" data-filter="review">Finish Review</button>
-            <button type="button" class="activity-filter-btn" data-filter="auth">Akun &amp; Login</button>
+            <button type="button" class="activity-filter-btn active" data-filter="all">{{ __('qc.dashboard.filter_all') }}</button>
+            <button type="button" class="activity-filter-btn" data-filter="submit">{{ __('qc.dashboard.filter_submit') }}</button>
+            <button type="button" class="activity-filter-btn" data-filter="review">{{ __('qc.dashboard.filter_review') }}</button>
+            <button type="button" class="activity-filter-btn" data-filter="auth">{{ __('qc.dashboard.filter_auth') }}</button>
           </div>
         </div>
 
@@ -181,7 +168,7 @@
           @empty
             <div class="activity-empty">
               <i data-lucide="activity"></i>
-              <p>Belum ada aktivitas tercatat di sistem.</p>
+              <p>{{ __('qc.dashboard.empty_admin_logs') }}</p>
             </div>
           @endforelse
         </div>
@@ -191,10 +178,10 @@
       <div class="card activity-panel-card">
         <div class="card-header activity-card-header">
           <div class="activity-header-title">
-            <h3>Aktivitas Laporan Saya</h3>
-            <span class="badge badge-purple">Riwayat Pribadi</span>
+            <h3>{{ __('qc.dashboard.my_activity_title') }}</h3>
+            <span class="badge badge-purple">{{ __('qc.dashboard.personal_history') }}</span>
           </div>
-          <a href="{{ route('reports.index', ['tab' => 'mine']) }}" class="btn btn-secondary btn-sm">Buka Pengajuan Saya</a>
+          <a href="{{ route('reports.index', ['tab' => 'mine']) }}" class="btn btn-secondary btn-sm">{{ __('qc.dashboard.open_my_submissions') }}</a>
         </div>
 
         <div class="personal-timeline-wrap" id="userTimelineList">
@@ -209,29 +196,29 @@
                 <div class="pt-status-group">
                   <span class="pt-role-tag">{{ $item['role_in_report'] }}</span>
                   @if($item['review_status'] === 'reviewed')
-                    <span class="badge badge-green">Reviewed</span>
+                    <span class="badge badge-green">{{ __('qc.reports.status_reviewed') }}</span>
                   @elseif($item['review_status'] === 'draft')
-                    <span class="badge badge-slate">Draft</span>
+                    <span class="badge badge-slate">{{ __('qc.reports.status_draft') }}</span>
                   @else
-                    <span class="badge badge-orange">Waiting Review</span>
+                    <span class="badge badge-orange">{{ __('qc.reports.status_waiting') }}</span>
                   @endif
                 </div>
               </div>
               <div class="pt-steps">
                 <div class="pt-step">
                   <i data-lucide="send"></i>
-                  <span><strong>Mengajukan:</strong> {{ $item['submitted_at_str'] ?? 'Masih Draft (belum diajukan)' }}</span>
+                  <span><strong>{{ __('qc.dashboard.submitting_label') }}</strong> {{ $item['submitted_at_str'] ?? __('qc.dashboard.still_draft') }}</span>
                 </div>
                 <div class="pt-step">
                   <i data-lucide="check-circle-2"></i>
                   <span>
-                    <strong>Ter-Reviewed:</strong>
+                    <strong>{{ __('qc.dashboard.reviewed_label') }}</strong>
                     @if($item['reviewed_at_str'])
                       {{ $item['reviewed_at_str'] }} ({{ $item['reviewer_name'] }})
                     @elseif($item['review_status'] === 'draft')
-                      Menunggu Submit
+                      {{ __('qc.dashboard.awaiting_submit') }}
                     @else
-                      Menunggu Review ({{ $item['reviewer_name'] }})
+                      {{ __('qc.dashboard.awaiting_review') }} ({{ $item['reviewer_name'] }})
                     @endif
                   </span>
                 </div>
@@ -240,13 +227,13 @@
           @empty
             <div class="activity-empty">
               <i data-lucide="clipboard-list"></i>
-              <p>Anda belum memiliki aktivitas laporan. Mulai dengan membuat inspeksi baru.</p>
+              <p>{{ __('qc.dashboard.empty_my_timeline') }}</p>
             </div>
           @endforelse
         </div>
 
         <div class="personal-sublog-header">
-          <h4>Jejak Aktivitas Akun Anda</h4>
+          <h4>{{ __('qc.dashboard.account_trail_title') }}</h4>
         </div>
         <div class="activity-feed compact" id="userOwnLogList">
           @forelse($myActivityLogs as $log)
@@ -270,7 +257,7 @@
             </div>
           @empty
             <div class="activity-empty compact">
-              <p>Belum ada catatan aktivitas terbaru.</p>
+              <p>{{ __('qc.dashboard.empty_account_trail') }}</p>
             </div>
           @endforelse
         </div>
@@ -280,27 +267,27 @@
     <!-- Quick Operational Links -->
     <div class="card">
       <div class="card-header">
-        <h3>Menu Cepat Operasional</h3>
+        <h3>{{ __('qc.dashboard.quick_menu_title') }}</h3>
       </div>
       <div class="card-body" style="display: flex; flex-direction: column; gap: 0.6rem;">
         <a href="{{ route('inspection.create') }}" class="btn btn-primary btn-sm" style="justify-content: flex-start;">
-          <i data-lucide="file-plus-2"></i> Buat Laporan Inspeksi Baru
+          <i data-lucide="file-plus-2"></i> {{ __('qc.dashboard.quick_create') }}
         </a>
         <a href="{{ route('reports.index') }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
-          <i data-lucide="archive"></i> Riwayat &amp; Arsip Laporan QC
+          <i data-lucide="archive"></i> {{ __('qc.dashboard.quick_history') }}
         </a>
         <a href="{{ route('reports.index', ['tab' => 'approval']) }}" class="btn btn-secondary btn-sm" style="justify-content: space-between;">
           <span style="display: inline-flex; align-items: center; gap: 0.45rem;">
-            <i data-lucide="clipboard-check"></i> Waiting My Approval
+            <i data-lucide="clipboard-check"></i> {{ __('qc.dashboard.quick_approval') }}
           </span>
           <span class="badge {{ ($myPendingApprovalCount ?? 0) > 0 ? 'badge-red' : 'badge-slate' }}" id="quickApprovalBadge">{{ $myPendingApprovalCount ?? 0 }}</span>
         </a>
         <a href="{{ route('templates.index') }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
-          <i data-lucide="file-spreadsheet"></i> Template Komponen
+          <i data-lucide="file-spreadsheet"></i> {{ __('qc.dashboard.quick_templates') }}
         </a>
         @if($isAdmin)
           <a href="{{ route('settings.users.index') }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
-            <i data-lucide="shield-check"></i> Kelola Akun Web
+            <i data-lucide="shield-check"></i> {{ __('qc.dashboard.quick_users') }}
           </a>
         @endif
       </div>
@@ -311,6 +298,8 @@
 @section('scripts')
 <script>
   (function () {
+    const D = window.qcI18n?.dashboard || {};
+    const R = window.qcI18n?.reports || {};
     const isAdmin = @json($isAdmin);
     let currentCharts = @json($charts);
     let activeAdminFilter = 'all';
@@ -337,22 +326,22 @@
       const area = document.getElementById('barChartArea');
       if (!area) return;
       const items = [
-        { key: 'pre', label: 'Pre', value: Number(c.preCount || 0), color: '#1312b6' },
-        { key: 'post', label: 'Post', value: Number(c.postCount || 0), color: '#6366f1' },
-        { key: 'waiting', label: 'Waiting', value: Number(c.waitingCount || 0), color: '#f59e0b' },
-        { key: 'reviewed', label: 'Reviewed', value: Number(c.reviewedCount || 0), color: '#10b981' },
+        { key: 'pre', label: D.bar_pre || 'Pre', value: Number(c.preCount || 0), color: '#4f46e5' },
+        { key: 'post', label: D.bar_post || 'Post', value: Number(c.postCount || 0), color: '#6366f1' },
+        { key: 'waiting', label: D.waiting || 'Waiting', value: Number(c.waitingCount || 0), color: '#f59e0b' },
+        { key: 'reviewed', label: D.reviewed || 'Reviewed', value: Number(c.reviewedCount || 0), color: '#10b981' },
       ];
       const maxVal = Math.max(1, ...items.map(i => i.value));
 
       area.innerHTML = items.map(item => {
         const pct = item.value > 0 ? Math.max(12, Math.round((item.value / maxVal) * 1000) / 10) : 4;
         return `
-          <div class="bar-col" data-bar-key="${item.key}" title="${item.label}: ${item.value} laporan">
+          <div class="bar-col" data-bar-key="${item.key}" title="${esc(item.label)}: ${item.value}">
             <span class="bar-val">${item.value}</span>
             <div class="bar-track">
               <div class="bar-fill" style="height: ${pct}%; background: ${item.color};"></div>
             </div>
-            <span class="bar-lbl">${item.label}</span>
+            <span class="bar-lbl">${esc(item.label)}</span>
           </div>
         `;
       }).join('');
@@ -370,8 +359,8 @@
       if (centerVal) centerVal.textContent = String(accept);
 
       const segments = [
-        { label: 'Reviewed', value: reviewed, color: '#10b981' },
-        { label: 'Waiting Review', value: waiting, color: '#f59e0b' },
+        { label: D.reviewed || 'Reviewed', value: reviewed, color: '#10b981' },
+        { label: D.waiting_review || 'Waiting Review', value: waiting, color: '#f59e0b' },
       ];
       const total = segments.reduce((acc, s) => acc + s.value, 0);
       const r = 44;
@@ -379,7 +368,7 @@
       let accumulated = 0;
 
       if (total === 0) {
-        segGroup.innerHTML = `<circle cx="60" cy="60" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="14"></circle>`;
+        segGroup.innerHTML = `<circle cx="60" cy="60" r="${r}" fill="none" class="chart-ring-track" stroke-width="14"></circle>`;
       } else {
         segGroup.innerHTML = segments.map(seg => {
           if (seg.value <= 0) return '';
@@ -396,7 +385,7 @@
                     stroke-dasharray="${dashLen.toFixed(2)} ${gap.toFixed(2)}"
                     transform="rotate(${rotateDeg.toFixed(2)} 60 60)"
                     class="donut-slice">
-              <title>${seg.label}: ${seg.value} (${Math.round(frac * 100)}%)</title>
+              <title>${esc(seg.label)}: ${seg.value} (${Math.round(frac * 100)}%)</title>
             </circle>
           `;
         }).join('');
@@ -405,7 +394,7 @@
       legend.innerHTML = segments.map(seg => `
         <div class="donut-legend-row">
           <span class="donut-dot" style="background: ${seg.color};"></span>
-          <span class="donut-lbl">${seg.label}</span>
+          <span class="donut-lbl">${esc(seg.label)}</span>
           <strong class="donut-num">${seg.value}</strong>
         </div>
       `).join('');
@@ -442,7 +431,7 @@
       if (filter === 'all') return true;
       if (filter === 'submit') return ['report_submitted', 'report_draft_created', 'report_draft_updated', 'report_updated', 'report_deleted'].includes(action);
       if (filter === 'review') return action === 'report_reviewed';
-      if (filter === 'auth') return ['login', 'logout', 'user_created', 'user_updated', 'user_deleted'].includes(action);
+      if (filter === 'auth') return ['login', 'logout', 'user_created', 'user_updated', 'user_deleted', 'preferences_updated'].includes(action);
       return true;
     }
 
@@ -455,7 +444,7 @@
         container.innerHTML = `
           <div class="activity-empty">
             <i data-lucide="activity"></i>
-            <p>Belum ada aktivitas pada kategori ini.</p>
+            <p>${esc(D.empty_filtered_logs || 'No activity in this category yet.')}</p>
           </div>
         `;
         if (window.lucide) lucide.createIcons({ root: container });
@@ -498,21 +487,21 @@
           tlWrap.innerHTML = `
             <div class="activity-empty">
               <i data-lucide="clipboard-list"></i>
-              <p>Anda belum memiliki aktivitas laporan. Mulai dengan membuat inspeksi baru.</p>
+              <p>${esc(D.empty_my_timeline || 'You have no report activity yet.')}</p>
             </div>
           `;
         } else {
           tlWrap.innerHTML = timeline.map(item => {
             const typeBadge = item.inspection_type === 'Pre' ? 'badge-blue' : 'badge-purple';
             const statusBadge = item.review_status === 'reviewed'
-              ? '<span class="badge badge-green">Reviewed</span>'
+              ? `<span class="badge badge-green">${esc(R.status_reviewed || 'Reviewed')}</span>`
               : (item.review_status === 'draft'
-                ? '<span class="badge badge-slate">Draft</span>'
-                : '<span class="badge badge-orange">Waiting Review</span>');
-            const submitText = item.submitted_at_str ? esc(item.submitted_at_str) : 'Masih Draft (belum diajukan)';
+                ? `<span class="badge badge-slate">${esc(R.status_draft || 'Draft')}</span>`
+                : `<span class="badge badge-orange">${esc(R.status_waiting || 'Waiting Review')}</span>`);
+            const submitText = item.submitted_at_str ? esc(item.submitted_at_str) : esc(D.still_draft || 'Still Draft');
             const reviewText = item.reviewed_at_str
               ? `${esc(item.reviewed_at_str)} (${esc(item.reviewer_name)})`
-              : (item.review_status === 'draft' ? 'Menunggu Submit' : `Menunggu Review (${esc(item.reviewer_name)})`);
+              : (item.review_status === 'draft' ? esc(D.awaiting_submit || 'Awaiting Submit') : `${esc(D.awaiting_review || 'Awaiting Review')} (${esc(item.reviewer_name)})`);
 
             return `
               <div class="personal-timeline-item">
@@ -530,11 +519,11 @@
                 <div class="pt-steps">
                   <div class="pt-step">
                     <i data-lucide="send"></i>
-                    <span><strong>Mengajukan:</strong> ${submitText}</span>
+                    <span><strong>${esc(D.submitting_label || 'Submitted:')}</strong> ${submitText}</span>
                   </div>
                   <div class="pt-step">
                     <i data-lucide="check-circle-2"></i>
-                    <span><strong>Ter-Reviewed:</strong> ${reviewText}</span>
+                    <span><strong>${esc(D.reviewed_label || 'Reviewed:')}</strong> ${reviewText}</span>
                   </div>
                 </div>
               </div>
@@ -547,7 +536,7 @@
       const logWrap = document.getElementById('userOwnLogList');
       if (logWrap) {
         if (!ownLogs || !ownLogs.length) {
-          logWrap.innerHTML = `<div class="activity-empty compact"><p>Belum ada catatan aktivitas terbaru.</p></div>`;
+          logWrap.innerHTML = `<div class="activity-empty compact"><p>${esc(D.empty_account_trail || 'No recent activity records yet.')}</p></div>`;
         } else {
           logWrap.innerHTML = ownLogs.map(log => `
             <div class="activity-item compact" data-log-id="${esc(log.id)}">

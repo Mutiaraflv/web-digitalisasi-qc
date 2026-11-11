@@ -1,46 +1,46 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Akun Pengguna')
-@section('page_title', 'Pengaturan / Kelola Akun')
+@section('title', __('qc.settings.users_title'))
+@section('page_title', __('qc.settings.users_page_title'))
 
 @section('top_actions')
   <button type="button" class="btn btn-primary btn-sm" onclick="openAddModal()">
-    <i data-lucide="user-plus"></i> Tambah Akun Baru
+    <i data-lucide="user-plus"></i> {{ __('qc.settings.add_user_btn') }}
   </button>
 @endsection
 
 @section('content')
   <div class="page-header">
     <div class="page-title">
-      <h1>Pengaturan Akun Pengguna</h1>
-      <p>Kelola hak akses personil workshop, kredensial inspektor mutu, dan izin tingkat administrator.</p>
+      <h1>{{ __('qc.settings.users_heading') }}</h1>
+      <p>{{ __('qc.settings.users_subtitle') }}</p>
     </div>
   </div>
 
   <!-- KPI Stats Grid -->
   <div class="stats-grid">
     <div class="stat-card">
-      <p>Total Akun Terdaftar</p>
+      <p>{{ __('qc.settings.kpi_total') }}</p>
       <h3>{{ $stats['total'] }}</h3>
-      <div class="stat-sub">Seluruh personil sistem</div>
+      <div class="stat-sub">{{ __('qc.settings.kpi_total_sub') }}</div>
     </div>
 
     <div class="stat-card">
-      <p>Administrator</p>
-      <h3 style="color: var(--primary);">{{ $stats['admin'] }}</h3>
-      <div class="stat-sub">Pengelola sistem & akun</div>
+      <p>{{ __('qc.roles.admin') }}</p>
+      <h3 style="color: var(--primary-text);">{{ $stats['admin'] }}</h3>
+      <div class="stat-sub">{{ __('qc.settings.kpi_admin_sub') }}</div>
     </div>
 
     <div class="stat-card">
-      <p>QC Leader</p>
-      <h3 style="color: #d97706;">{{ $stats['qc_leader'] }}</h3>
-      <div class="stat-sub">Peninjau & approval QC</div>
+      <p>{{ __('qc.roles.qc_leader') }}</p>
+      <h3 style="color: var(--warning);">{{ $stats['qc_leader'] }}</h3>
+      <div class="stat-sub">{{ __('qc.settings.kpi_leader_sub') }}</div>
     </div>
 
     <div class="stat-card">
-      <p>Inspector QC</p>
+      <p>{{ __('qc.roles.user') }}</p>
       <h3>{{ $stats['user'] }}</h3>
-      <div class="stat-sub">Pencatatan & pengajuan QC</div>
+      <div class="stat-sub">{{ __('qc.settings.kpi_user_sub') }}</div>
     </div>
   </div>
 
@@ -49,20 +49,20 @@
     <form method="GET" action="{{ route('settings.users.index') }}" style="display: flex; gap: 0.75rem; flex: 1; flex-wrap: wrap; align-items: center;">
       <div class="search-box">
         <i data-lucide="search" class="search-icon"></i>
-        <input type="text" name="q" value="{{ $search ?? '' }}" placeholder="Cari nama atau email pengguna...">
+        <input type="text" name="q" value="{{ $search ?? '' }}" placeholder="{{ __('qc.settings.search_placeholder') }}">
       </div>
 
       <div class="filter-group">
         <select name="role" class="select-filter" onchange="this.form.submit()">
-          <option value="">Semua Role</option>
-          <option value="admin" {{ ($roleFilter ?? '') === 'admin' ? 'selected' : '' }}>Administrator</option>
-          <option value="qc_leader" {{ ($roleFilter ?? '') === 'qc_leader' ? 'selected' : '' }}>QC Leader</option>
-          <option value="user" {{ ($roleFilter ?? '') === 'user' ? 'selected' : '' }}>Inspector QC</option>
+          <option value="">{{ __('qc.settings.all_roles') }}</option>
+          <option value="admin" {{ ($roleFilter ?? '') === 'admin' ? 'selected' : '' }}>{{ __('qc.roles.admin') }}</option>
+          <option value="qc_leader" {{ ($roleFilter ?? '') === 'qc_leader' ? 'selected' : '' }}>{{ __('qc.roles.qc_leader') }}</option>
+          <option value="user" {{ ($roleFilter ?? '') === 'user' ? 'selected' : '' }}>{{ __('qc.roles.user') }}</option>
         </select>
 
         @if(!empty($search) || !empty($roleFilter))
-          <a href="{{ route('settings.users.index') }}" class="btn btn-secondary btn-sm" title="Reset Filter">
-            <i data-lucide="x"></i> Reset
+          <a href="{{ route('settings.users.index') }}" class="btn btn-secondary btn-sm" title="{{ __('qc.common.reset') }}">
+            <i data-lucide="x"></i> {{ __('qc.common.reset') }}
           </a>
         @endif
       </div>
@@ -75,13 +75,13 @@
       <table class="qc-table">
         <thead>
           <tr>
-            <th style="width: 45px;">No.</th>
-            <th>Nama Personil</th>
-            <th>Alamat Email</th>
-            <th>Role</th>
-            <th>Status Akun</th>
-            <th>Tanggal Registrasi</th>
-            <th style="text-align: right; width: 140px;">Aksi</th>
+            <th style="width: 45px;">{{ __('qc.settings.col_no') }}</th>
+            <th>{{ __('qc.settings.col_name') }}</th>
+            <th>{{ __('qc.settings.col_email') }}</th>
+            <th>{{ __('qc.settings.col_role') }}</th>
+            <th>{{ __('qc.settings.col_status') }}</th>
+            <th>{{ __('qc.settings.col_created') }}</th>
+            <th style="text-align: right; width: 140px;">{{ __('qc.common.actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -92,13 +92,13 @@
               </td>
               <td>
                 <div style="display: flex; align-items: center; gap: 0.65rem;">
-                  <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.72rem; flex-shrink: 0; background: {{ $u->isAdmin() ? 'var(--primary-light)' : ($u->isQcLeader() ? '#fff7ed' : 'var(--graphite-light)') }}; color: {{ $u->isAdmin() ? 'var(--primary)' : ($u->isQcLeader() ? '#d97706' : 'var(--graphite)') }}; border-color: {{ $u->isAdmin() ? 'var(--primary-border)' : ($u->isQcLeader() ? '#fed7aa' : 'var(--border-strong)') }};">
+                  <div class="user-avatar {{ $u->isAdmin() ? 'is-admin' : ($u->isQcLeader() ? 'is-leader' : 'is-inspector') }}" style="width: 28px; height: 28px; font-size: 0.72rem; flex-shrink: 0;">
                     {{ strtoupper(substr($u->name, 0, 2)) }}
                   </div>
                   <div>
                     <strong style="color: var(--text-main); font-size: 0.88rem;">{{ $u->name }}</strong>
                     @if($u->id === auth()->id())
-                      <span style="font-size: 0.7rem; color: var(--primary); font-weight: 700; margin-left: 4px;">(Anda)</span>
+                      <span style="font-size: 0.7rem; color: var(--primary-text); font-weight: 700; margin-left: 4px;">{{ __('qc.common.you') }}</span>
                     @endif
                   </div>
                 </div>
@@ -109,23 +109,23 @@
               <td>
                 @if($u->isAdmin())
                   <span class="badge badge-blue">
-                    <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i> Administrator
+                    <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i> {{ __('qc.roles.admin') }}
                   </span>
                 @elseif($u->isQcLeader())
                   <span class="badge badge-orange">
-                    <i data-lucide="award" style="width: 12px; height: 12px;"></i> QC Leader
+                    <i data-lucide="award" style="width: 12px; height: 12px;"></i> {{ __('qc.roles.qc_leader') }}
                   </span>
                 @else
                   <span class="badge badge-purple">
-                    <i data-lucide="user-check" style="width: 12px; height: 12px;"></i> Inspector QC
+                    <i data-lucide="user-check" style="width: 12px; height: 12px;"></i> {{ __('qc.roles.user') }}
                   </span>
                 @endif
               </td>
               <td>
                 @if($u->id === auth()->id())
-                  <span class="badge badge-green">Sedang Aktif</span>
+                  <span class="badge badge-green">{{ __('qc.settings.status_active') }}</span>
                 @else
-                  <span class="badge" style="background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0;">Terdaftar</span>
+                  <span class="badge badge-slate">{{ __('qc.settings.status_registered') }}</span>
                 @endif
               </td>
               <td style="font-size: 0.78rem; color: var(--text-subtle);">
@@ -133,11 +133,10 @@
               </td>
               <td style="text-align: right;">
                 <div style="display: inline-flex; gap: 0.35rem; align-items: center;">
-                  <!-- Tombol Edit -->
                   <button type="button" 
                           class="btn btn-secondary btn-sm" 
                           style="padding: 0.3rem 0.55rem; font-size: 0.75rem;" 
-                          title="Ubah Data Akun"
+                          title="{{ __('qc.settings.edit_user_tooltip') }}"
                           onclick="openEditModal({{ json_encode([
                             'id' => $u->id,
                             'name' => $u->name,
@@ -145,26 +144,28 @@
                             'role' => $u->role,
                             'is_self' => $u->id === auth()->id()
                           ]) }})">
-                    <i data-lucide="edit-3"></i> Edit
+                    <i data-lucide="edit-3"></i> {{ __('qc.common.edit') }}
                   </button>
 
-                  <!-- Tombol Hapus -->
                   @if($u->id === auth()->id())
                     <button type="button" 
                             class="btn btn-secondary btn-sm" 
                             style="padding: 0.3rem 0.55rem; font-size: 0.75rem; opacity: 0.45; cursor: not-allowed;" 
-                            title="Tidak dapat menghapus akun Anda sendiri" 
+                            title="{{ __('qc.settings.self_delete_disabled') }}" 
                             disabled>
                       <i data-lucide="trash-2"></i>
                     </button>
                   @else
-                    <form method="POST" action="{{ route('settings.users.destroy', $u) }}" onsubmit="return window.qcConfirmForm(event, this, { title: 'Hapus Akun Pengguna', message: 'Apakah Anda yakin ingin menghapus akun \'{{ addslashes($u->name) }}\'? Tindakan ini tidak dapat dibatalkan.', confirmText: 'Ya, Hapus', variant: 'danger' });" style="display: inline;">
+                    @php
+                      $delMsg = __('qc.settings.delete_user_confirm', ['name' => $u->name]);
+                    @endphp
+                    <form method="POST" action="{{ route('settings.users.destroy', $u) }}" onsubmit="return window.qcConfirmForm(event, this, { title: @json(__('qc.settings.delete_user_title')), message: @json($delMsg), confirmText: @json(__('qc.common.yes_delete')), cancelText: @json(__('qc.common.cancel')), variant: 'danger' });" style="display: inline;">
                       @csrf
                       @method('DELETE')
                       <button type="submit" 
                               class="btn btn-danger btn-sm" 
                               style="padding: 0.3rem 0.55rem; font-size: 0.75rem;" 
-                              title="Hapus Akun">
+                              title="{{ __('qc.settings.delete_user_tooltip') }}">
                         <i data-lucide="trash-2"></i>
                       </button>
                     </form>
@@ -176,7 +177,7 @@
             <tr>
               <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-subtle);">
                 <i data-lucide="users" style="width: 32px; height: 32px; margin: 0 auto 0.5rem; display: block; opacity: 0.4;"></i>
-                Tidak ada akun pengguna yang sesuai dengan kriteria pencarian.
+                {{ __('qc.settings.empty_users') }}
               </td>
             </tr>
           @endforelse
@@ -187,7 +188,7 @@
     @if($users->hasPages())
       <div style="padding: 0.85rem 1.15rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
         <span style="font-size: 0.78rem; color: var(--text-subtle);">
-          Menampilkan {{ $users->firstItem() }} - {{ $users->lastItem() }} dari total {{ $users->total() }} akun
+          {{ $users->firstItem() }} - {{ $users->lastItem() }} / {{ $users->total() }}
         </span>
         <div>
           {{ $users->links() }}
@@ -200,45 +201,45 @@
   <div class="modal-overlay" id="modalAddUser">
     <div class="modal-dialog" style="max-width: 520px;">
       <div class="modal-header">
-        <h2><i data-lucide="user-plus" style="width: 18px; height: 18px; vertical-align: -2px; color: var(--primary);"></i> Tambah Akun Personil Baru</h2>
+        <h2><i data-lucide="user-plus" style="width: 18px; height: 18px; vertical-align: -2px; color: var(--primary-text);"></i> {{ __('qc.settings.add_modal_title') }}</h2>
         <button type="button" class="modal-close" onclick="closeAddModal()">&times;</button>
       </div>
       <form method="POST" action="{{ route('settings.users.store') }}">
         @csrf
         <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
           <div class="form-group">
-            <label for="add_name">Nama Lengkap Personil <span style="color: var(--danger);">*</span></label>
-            <input type="text" id="add_name" name="name" value="{{ old('name') }}" placeholder="Contoh: Budi Santoso" required>
+            <label for="add_name">{{ __('qc.settings.field_name') }} <span style="color: var(--danger);">*</span></label>
+            <input type="text" id="add_name" name="name" value="{{ old('name') }}" required>
             @error('name') <span style="color: var(--danger); font-size: 0.75rem;">{{ $message }}</span> @enderror
           </div>
 
           <div class="form-group">
-            <label for="add_email">Alamat Email <span style="color: var(--danger);">*</span></label>
-            <input type="email" id="add_email" name="email" value="{{ old('email') }}" placeholder="Contoh: budi@sscworks.com" required>
+            <label for="add_email">{{ __('qc.settings.field_email') }} <span style="color: var(--danger);">*</span></label>
+            <input type="email" id="add_email" name="email" value="{{ old('email') }}" required>
             @error('email') <span style="color: var(--danger); font-size: 0.75rem;">{{ $message }}</span> @enderror
           </div>
 
           <div class="form-group">
-            <label for="add_role">Role <span style="color: var(--danger);">*</span></label>
+            <label for="add_role">{{ __('qc.settings.field_role') }} <span style="color: var(--danger);">*</span></label>
             <select id="add_role" name="role" required>
-              <option value="user" {{ old('role') === 'user' ? 'selected' : '' }}>Inspector QC</option>
-              <option value="qc_leader" {{ old('role') === 'qc_leader' ? 'selected' : '' }}>QC Leader</option>
-              <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Administrator</option>
+              <option value="user" {{ old('role') === 'user' ? 'selected' : '' }}>{{ __('qc.roles.user') }}</option>
+              <option value="qc_leader" {{ old('role') === 'qc_leader' ? 'selected' : '' }}>{{ __('qc.roles.qc_leader') }}</option>
+              <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>{{ __('qc.roles.admin') }}</option>
             </select>
             @error('role') <span style="color: var(--danger); font-size: 0.75rem;">{{ $message }}</span> @enderror
           </div>
 
           <div class="form-group">
-            <label for="add_password">Kata Sandi Awal <span style="color: var(--danger);">*</span></label>
-            <input type="password" id="add_password" name="password" placeholder="Minimal 6 karakter" minlength="6" required>
+            <label for="add_password">{{ __('qc.settings.field_password') }} <span style="color: var(--danger);">*</span></label>
+            <input type="password" id="add_password" name="password" minlength="6" required>
             @error('password') <span style="color: var(--danger); font-size: 0.75rem;">{{ $message }}</span> @enderror
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="closeAddModal()">Batal</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeAddModal()">{{ __('qc.common.cancel') }}</button>
           <button type="submit" class="btn btn-primary btn-sm">
-            <i data-lucide="check"></i> Simpan Akun Baru
+            <i data-lucide="check"></i> {{ __('qc.settings.save_new_user') }}
           </button>
         </div>
       </form>
@@ -249,7 +250,7 @@
   <div class="modal-overlay" id="modalEditUser">
     <div class="modal-dialog" style="max-width: 520px;">
       <div class="modal-header">
-        <h2><i data-lucide="user-cog" style="width: 18px; height: 18px; vertical-align: -2px; color: var(--primary);"></i> Ubah Data Akun Pengguna</h2>
+        <h2><i data-lucide="user-cog" style="width: 18px; height: 18px; vertical-align: -2px; color: var(--primary-text);"></i> {{ __('qc.settings.edit_modal_title') }}</h2>
         <button type="button" class="modal-close" onclick="closeEditModal()">&times;</button>
       </div>
       <form id="formEditUser" method="POST" action="">
@@ -257,38 +258,38 @@
         @method('PUT')
         <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
           <div class="form-group">
-            <label for="edit_name">Nama Lengkap Personil <span style="color: var(--danger);">*</span></label>
+            <label for="edit_name">{{ __('qc.settings.field_name') }} <span style="color: var(--danger);">*</span></label>
             <input type="text" id="edit_name" name="name" required>
           </div>
 
           <div class="form-group">
-            <label for="edit_email">Alamat Email <span style="color: var(--danger);">*</span></label>
+            <label for="edit_email">{{ __('qc.settings.field_email') }} <span style="color: var(--danger);">*</span></label>
             <input type="email" id="edit_email" name="email" required>
           </div>
 
           <div class="form-group">
-            <label for="edit_role">Role <span style="color: var(--danger);">*</span></label>
+            <label for="edit_role">{{ __('qc.settings.field_role') }} <span style="color: var(--danger);">*</span></label>
             <select id="edit_role" name="role" required>
-              <option value="user">Inspector QC</option>
-              <option value="qc_leader">QC Leader</option>
-              <option value="admin">Administrator</option>
+              <option value="user">{{ __('qc.roles.user') }}</option>
+              <option value="qc_leader">{{ __('qc.roles.qc_leader') }}</option>
+              <option value="admin">{{ __('qc.roles.admin') }}</option>
             </select>
             <span id="edit_role_note" style="font-size: 0.72rem; color: var(--text-subtle); margin-top: 2px;"></span>
           </div>
 
           <div class="form-group" style="border-top: 1px dashed var(--border-subtle); padding-top: 0.75rem;">
-            <label for="edit_password">Kata Sandi Baru (Opsional)</label>
-            <input type="password" id="edit_password" name="password" placeholder="Kosongkan jika tidak ingin mengubah kata sandi" minlength="6">
+            <label for="edit_password">{{ __('qc.settings.field_new_password') }}</label>
+            <input type="password" id="edit_password" name="password" placeholder="{{ __('qc.settings.password_hint') }}" minlength="6">
             <span style="font-size: 0.72rem; color: var(--text-subtle); margin-top: 2px;">
-              Isi hanya jika Anda ingin mereset atau mengganti kata sandi pengguna ini.
+              {{ __('qc.settings.password_note') }}
             </span>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="closeEditModal()">Batal</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeEditModal()">{{ __('qc.common.cancel') }}</button>
           <button type="submit" class="btn btn-primary btn-sm">
-            <i data-lucide="check"></i> Simpan Perubahan
+            <i data-lucide="check"></i> {{ __('qc.common.save_changes') }}
           </button>
         </div>
       </form>
@@ -323,11 +324,9 @@
     document.getElementById('edit_password').value = '';
 
     const roleNote = document.getElementById('edit_role_note');
-    const roleSelect = document.getElementById('edit_role');
-
     if (userData.is_self) {
-      roleNote.textContent = 'Perhatian: Anda sedang mengedit akun Anda sendiri. Role harus tetap Administrator.';
-      roleNote.style.color = '#d97706';
+      roleNote.textContent = @json(__('qc.settings.self_admin_note'));
+      roleNote.style.color = 'var(--warning)';
     } else {
       roleNote.textContent = '';
     }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ app()->getLocale() }}">
 <head>
   <meta charset="UTF-8">
   <title>FORM-QC-002 - {{ $report->ssc_id }} - PT SSC Works</title>
@@ -708,33 +708,33 @@
       <strong>PT. SSC WORKS &mdash; COMPONENT CONDITION REPORT (FORM-QC-002 REV 04)</strong>
       @if(!empty($isReviewMode))
         <span style="padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; {{ $report->isReviewed() ? 'background: #10b981; color: #fff;' : 'background: #f59e0b; color: #1e293b;' }}">
-          {{ $report->isReviewed() ? 'Reviewed' : 'Waiting Review' }}
+          {{ $report->isReviewed() ? __('qc.reports.status_reviewed') : __('qc.reports.status_waiting') }}
         </span>
         <span style="color: #cbd5e1; font-size: 12px;">
           SSC ID: <strong>{{ $report->ssc_id }}</strong>
           @if($report->creator)
-            &bull; Pengaju: <strong>{{ $report->creator->name }}</strong>
+            &bull; {{ __('qc.print.creator_prefix') }} <strong>{{ $report->creator->name }}</strong>
           @endif
         </span>
       @else
-        <span style="margin-left: 10px; color: #94a3b8;">Total 6 Lembar Dokumen Resmi</span>
+        <span style="margin-left: 10px; color: #94a3b8;">{{ __('qc.print.total_sheets') }}</span>
       @endif
     </div>
     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
       @if(!empty($isReviewMode))
-        <a href="{{ route('reports.index', ['tab' => 'approval']) }}" class="btn" style="text-decoration: none;">← Kembali</a>
-        <button class="btn" onclick="window.print()">🖨 Cetak / PDF</button>
+        <a href="{{ route('reports.index', ['tab' => 'approval']) }}" class="btn" style="text-decoration: none;">{{ __('qc.print.back_to_approval') }}</a>
+        <button class="btn" onclick="window.print()">{{ __('qc.print.print_pdf') }}</button>
         @if(!$report->isReviewed() && $report->canBeReviewedBy(auth()->user()))
           <form id="finishReviewForm" method="POST" action="{{ route('reports.finishReview', $report->id) }}" style="display: inline; margin: 0;">
             @csrf
-            <button type="button" id="btnTriggerFinishReview" class="btn" style="background: #10b981; color: #fff; border-color: #10b981; font-weight: 700;">✓ Finish Review</button>
+            <button type="button" id="btnTriggerFinishReview" class="btn" style="background: #10b981; color: #fff; border-color: #10b981; font-weight: 700;">{{ __('qc.print.finish_review') }}</button>
           </form>
         @elseif($report->isReviewed())
-          <span style="color: #86efac; font-weight: 700; font-size: 12px; padding: 0 6px;">✓ Sudah Direview</span>
+          <span style="color: #86efac; font-weight: 700; font-size: 12px; padding: 0 6px;">{{ __('qc.print.already_reviewed') }}</span>
         @endif
       @else
-        <button class="btn" onclick="window.close()">✕ Tutup</button>
-        <button class="btn btn-primary" onclick="window.print()">🖨 Cetak Semua (6 Halaman A4)</button>
+        <button class="btn" onclick="window.close()">{{ __('qc.print.close') }}</button>
+        <button class="btn btn-primary" onclick="window.print()">{{ __('qc.print.print_all') }}</button>
       @endif
     </div>
   </div>
@@ -1710,13 +1710,13 @@
     <div class="review-modal-overlay" id="reviewConfirmModal" aria-hidden="true">
       <div class="review-modal-card" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
         <div class="review-modal-badge">✓</div>
-        <div class="review-modal-title" id="reviewModalTitle">Selesaikan Review Laporan?</div>
+        <div class="review-modal-title" id="reviewModalTitle">{{ __('qc.print.modal_title') }}</div>
         <div class="review-modal-desc">
-          Laporan <strong>{{ $report->ssc_id }}</strong> akan ditandai sebagai <strong>Reviewed</strong> dan dipindahkan dari daftar <em>Waiting My Approval</em>.
+          {{ __('qc.print.modal_desc', ['ssc' => $report->ssc_id]) }}
         </div>
         <div class="review-modal-actions">
-          <button type="button" class="btn" id="btnCancelFinishReview">Batal</button>
-          <button type="button" class="btn btn-confirm" id="btnConfirmFinishReview">Ya, Finish Review</button>
+          <button type="button" class="btn" id="btnCancelFinishReview">{{ __('qc.common.cancel') }}</button>
+          <button type="button" class="btn btn-confirm" id="btnConfirmFinishReview">{{ __('qc.print.modal_confirm') }}</button>
         </div>
       </div>
     </div>
@@ -1758,7 +1758,7 @@
       });
       confirmBtn?.addEventListener('click', () => {
         confirmBtn.disabled = true;
-        confirmBtn.textContent = 'Menyimpan...';
+        confirmBtn.textContent = @json(__('qc.common.saving'));
         form.submit();
       });
     })();

@@ -78,8 +78,11 @@ class UserController extends Controller
             'role' => $newUser->role,
         ]);
 
-        return redirect()->route('settings.users.index')
-            ->with('success', "Akun '{$validated['name']}' berhasil ditambahkan ke sistem.");
+        $msg = app()->getLocale() === 'en'
+            ? "Account '{$validated['name']}' added successfully."
+            : "Akun '{$validated['name']}' berhasil ditambahkan ke sistem.";
+
+        return redirect()->route('settings.users.index')->with('success', $msg);
     }
 
     /**
@@ -92,19 +95,13 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'role' => ['required', 'string', Rule::in(array_keys(User::roleLabels()))],
             'password' => ['nullable', 'string', 'min:6'],
-        ], [
-            'name.required' => 'Nama pengguna wajib diisi.',
-            'email.required' => 'Alamat email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'email.unique' => 'Email ini sudah digunakan oleh akun lain.',
-            'role.required' => 'Role pengguna wajib dipilih.',
-            'role.in' => 'Role yang dipilih tidak valid.',
-            'password.min' => 'Kata sandi baru minimal 6 karakter.',
         ]);
 
-        // Pencegahan: Jangan biarkan admin yang sedang login menurunkan perannya sendiri jika tidak ada admin lain
         if ($user->id === auth()->id() && $validated['role'] !== 'admin') {
-            return back()->with('error', 'Anda tidak dapat menghapus hak Administrator dari akun Anda sendiri.');
+            $err = app()->getLocale() === 'en'
+                ? 'You cannot remove Administrator role from your own account.'
+                : 'Anda tidak dapat menghapus hak Administrator dari akun Anda sendiri.';
+            return back()->with('error', $err);
         }
 
         $user->name = $validated['name'];
@@ -122,8 +119,11 @@ class UserController extends Controller
             'role' => $user->role,
         ]);
 
-        return redirect()->route('settings.users.index')
-            ->with('success', "Data akun '{$user->name}' berhasil diperbarui.");
+        $msg = app()->getLocale() === 'en'
+            ? "Account '{$user->name}' updated successfully."
+            : "Data akun '{$user->name}' berhasil diperbarui.";
+
+        return redirect()->route('settings.users.index')->with('success', $msg);
     }
 
     /**
@@ -131,14 +131,18 @@ class UserController extends Controller
      */
     public function destroy(User $user): RedirectResponse
     {
-        // Pencegahan 1: Jangan biarkan admin menghapus akunnya sendiri yang sedang aktif
         if ($user->id === auth()->id()) {
-            return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif digunakan.');
+            $err = app()->getLocale() === 'en'
+                ? 'You cannot delete your own active account.'
+                : 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif digunakan.';
+            return back()->with('error', $err);
         }
 
-        // Pencegahan 2: Pastikan setidaknya masih ada satu admin di sistem
         if ($user->isAdmin() && User::where('role', 'admin')->count() <= 1) {
-            return back()->with('error', 'Tidak dapat menghapus satu-satunya akun Administrator tersisa di sistem.');
+            $err = app()->getLocale() === 'en'
+                ? 'Cannot delete the only remaining Administrator account.'
+                : 'Tidak dapat menghapus satu-satunya akun Administrator tersisa di sistem.';
+            return back()->with('error', $err);
         }
 
         $name = $user->name;
@@ -148,8 +152,11 @@ class UserController extends Controller
             'subject' => $name,
         ]);
 
-        return redirect()->route('settings.users.index')
-            ->with('success', "Akun '{$name}' telah berhasil dihapus dari sistem.");
+        $msg = app()->getLocale() === 'en'
+            ? "Account '{$name}' deleted from the system."
+            : "Akun '{$name}' telah berhasil dihapus dari sistem.";
+
+        return redirect()->route('settings.users.index')->with('success', $msg);
     }
 }
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\NcrController;
 use App\Http\Controllers\CalibrationController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 
 /*
@@ -58,12 +59,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/ncrs', [NcrController::class, 'index'])->name('ncrs.index');
     Route::get('/calibration-tools', [CalibrationController::class, 'index'])->name('calibration.index');
 
-    // 6. Pengaturan Sistem & Kelola Akun (Khusus Administrator)
-    Route::middleware('admin')->prefix('settings')->name('settings.')->group(function () {
-        Route::get('/users', [UserController::class, 'index'])->name('users.index');
-        Route::post('/users', [UserController::class, 'store'])->name('users.store');
-        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    // 6. Pengaturan Sistem (Umum untuk semua user & Kelola Akun khusus Administrator)
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('index');
+        Route::get('/preferences', [SettingsController::class, 'index'])->name('preferences');
+        Route::post('/preferences', [SettingsController::class, 'updatePreferences'])->name('preferences.update');
+
+        Route::middleware('admin')->group(function () {
+            Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::post('/users', [UserController::class, 'store'])->name('users.store');
+            Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+            Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        });
     });
 
     // API Endpoint Template Default (Blank)

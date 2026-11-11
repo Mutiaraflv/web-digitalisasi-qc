@@ -649,25 +649,28 @@ window.handleSlotUpload = function (input, slotKey) {
         .then(r => r.json())
         .then(data => {
             if (card) card.style.opacity = '1';
+            const S = window.qcI18n?.studio || {};
             if (data.success) {
                 reportPhotos[slotKey] = data.url;
                 renderSlotPreview(slotKey, data.url);
                 updatePhotoBadgeCount();
-                showToast('Foto berhasil diunggah', 'success');
+                showToast(S.photo_uploaded || 'Foto berhasil diunggah', 'success');
             } else {
-                showToast(data.message || 'Gagal mengunggah foto', 'error');
+                showToast(data.message || S.photo_upload_failed || 'Gagal mengunggah foto', 'error');
             }
         })
         .catch(err => {
             if (card) card.style.opacity = '1';
             console.error('Upload photo error:', err);
-            showToast('Foto tersimpan di sesi lokal', 'success');
+            const S = window.qcI18n?.studio || {};
+            showToast(S.photo_saved_local || 'Foto tersimpan di sesi lokal', 'success');
             updatePhotoBadgeCount();
         });
 };
 
 window.removeSlotPhoto = function (slotKey) {
     reportPhotos[slotKey] = null;
+    const S = window.qcI18n?.studio || {};
 
     // Reset file input and camera input
     const input = document.getElementById(`input_slot_${slotKey}`);
@@ -683,13 +686,13 @@ window.removeSlotPhoto = function (slotKey) {
     const viewContainer = document.getElementById(`view_slot_${slotKey}`);
     if (viewContainer) {
         if (slotKey === 'drawing_dimension') {
-            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser file gambar cetak biru (blueprint dimensi poros)</span></div>`;
+            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>${S.photo_empty_blueprint || 'Klik atau geser file gambar cetak biru'}</span></div>`;
         } else if (slotKey === 'finding_component') {
-            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="camera"></i><span>Klik untuk ambil foto utuh fisik komponen</span></div>`;
+            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="camera"></i><span>${S.photo_empty_finding || 'Klik untuk ambil foto utuh fisik komponen'}</span></div>`;
         } else if (slotKey === 'tir_diagram') {
-            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser file gambar diagram titik pengukuran runout</span></div>`;
+            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>${S.photo_empty_tir || 'Klik atau geser file gambar diagram titik pengukuran runout'}</span></div>`;
         } else {
-            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="camera"></i><span>Kamera</span></div>`;
+            viewContainer.innerHTML = `<div class="slot-empty-icon"><i data-lucide="camera"></i><span>${S.photo_camera || 'Kamera'}</span></div>`;
         }
         if (window.lucide) lucide.createIcons();
     }
@@ -717,7 +720,7 @@ window.removeSlotPhoto = function (slotKey) {
     }
 
     updatePhotoBadgeCount();
-    showToast('Foto dihapus', 'success');
+    showToast(S.photo_removed || 'Foto dihapus', 'success');
 };
 
 window.useDefaultBlueprint = function (slotKey) {
@@ -732,7 +735,8 @@ window.useDefaultBlueprint = function (slotKey) {
     reportPhotos[slotKey] = url;
     renderSlotPreview(slotKey, url);
     updatePhotoBadgeCount();
-    showToast('Standar gambar diterapkan', 'success');
+    const S = window.qcI18n?.studio || {};
+    showToast(S.blueprint_applied || 'Standar gambar diterapkan', 'success');
 };
 
 function renderSlotPreview(slotKey, imageUrl) {
@@ -1261,10 +1265,11 @@ let isSavingReport = false;
 
 function saveReportData(andDownloadExcel = false, submitAction = null) {
     if (isSavingReport) return;
+    const S = window.qcI18n?.studio || {};
 
     let sscEl = document.getElementById('g_sscId');
     if (!sscEl || !sscEl.value.trim()) {
-        showToast('Mohon isi SSC ID terlebih dahulu!', 'error');
+        showToast(S.ssc_required || 'Mohon isi SSC ID terlebih dahulu!', 'error');
         if (sscEl) sscEl.focus();
         return;
     }
@@ -1299,8 +1304,10 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
     setButtonsBusy(true);
 
     const progressMsg = resolvedAction === 'draft'
-        ? 'Menyimpan draft laporan...'
-        : (isUpdate && window.qcReportStatus !== 'draft' ? 'Menyimpan perubahan laporan...' : 'Mengirim pengajuan laporan...');
+        ? (S.saving_draft || 'Menyimpan draft laporan...')
+        : (isUpdate && window.qcReportStatus !== 'draft'
+            ? (S.updating_report || 'Menyimpan perubahan laporan...')
+            : (S.submitting_report || 'Mengirim pengajuan laporan...'));
     showToast(progressMsg, 'loading');
 
     fetch(url, {
@@ -1332,7 +1339,7 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
                     window.history.replaceState({}, '', `/reports/${savedId}/edit`);
                 }
 
-                showToast(data.message || 'Laporan berhasil disimpan!', 'success');
+                showToast(data.message || S.save_success || 'Laporan berhasil disimpan!', 'success');
 
                 if (andDownloadExcel) {
                     setButtonsBusy(false);
@@ -1344,13 +1351,13 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
                 }
             } else {
                 setButtonsBusy(false);
-                showToast('Gagal menyimpan laporan: ' + (data.message || 'Unknown error'), 'error');
+                showToast((S.save_failed || 'Gagal menyimpan laporan') + ': ' + (data.message || 'Unknown error'), 'error');
             }
         })
         .catch(err => {
             console.error('Save error:', err);
             setButtonsBusy(false);
-            showToast('Gagal menyimpan: ' + (err.message || 'Terjadi kesalahan koneksi.'), 'error');
+            showToast((S.save_failed || 'Gagal menyimpan') + ': ' + (err.message || 'Connection error'), 'error');
         })
         .finally(() => {
             isSavingReport = false;
@@ -1453,15 +1460,17 @@ function setupButtonActions() {
 
     // Reset blank button (Studio footer & Top action bar)
     const handleResetBlank = async () => {
+        const S = window.qcI18n?.studio || {};
+        const C = window.qcI18n?.common || {};
         const ok = window.qcConfirm
             ? await window.qcConfirm({
-                title: 'Kosongkan Form Inspeksi',
-                message: 'Kosongkan semua nilai input dan mulai form baru dari awal?',
-                confirmText: 'Ya, Kosongkan',
-                cancelText: 'Batal',
+                title: S.confirm_reset_title || 'Kosongkan Form Inspeksi',
+                message: S.confirm_reset_msg || 'Kosongkan semua nilai input dan mulai form baru dari awal?',
+                confirmText: S.confirm_reset_btn || 'Ya, Kosongkan',
+                cancelText: C.cancel || 'Batal',
                 variant: 'warning'
             })
-            : confirm('Kosongkan semua nilai input dan mulai form baru?');
+            : confirm(S.confirm_reset_msg || 'Kosongkan semua nilai input dan mulai form baru?');
         if (ok) {
             loadDefaultBlankForm();
         }
@@ -1497,14 +1506,15 @@ function setupButtonActions() {
     document.getElementById('componentSelect')?.addEventListener('change', (e) => {
         const val = e.target.value;
         if (val !== 'output_shaft') {
+            const S = window.qcI18n?.studio || {};
             if (window.qcAlert) {
                 window.qcAlert({
-                    title: 'Template Belum Tersedia',
-                    message: 'Template Excel untuk komponen ini belum tersedia. Menunggu dari divisi terkait.',
+                    title: S.tpl_unavailable_title || 'Template Belum Tersedia',
+                    message: S.tpl_unavailable_msg || 'Template Excel untuk komponen ini belum tersedia. Menunggu dari divisi terkait.',
                     variant: 'info'
                 });
             } else {
-                showToast('Template Excel untuk komponen ini belum tersedia.', 'info');
+                showToast(S.tpl_unavailable_msg || 'Template Excel untuk komponen ini belum tersedia.', 'info');
             }
             e.target.value = 'output_shaft';
         }
@@ -1562,22 +1572,24 @@ function loadDefaultBlankForm() {
     }
 
     updateLivePreview();
-    showToast('Form baru telah disiapkan dengan data kosong', 'success');
+    const S = window.qcI18n?.studio || {};
+    showToast(S.reset_done || 'Form baru telah disiapkan dengan data kosong', 'success');
 }
 
 function loadReportForEdit(id) {
-    showToast('Memuat data laporan...', 'success');
+    const S = window.qcI18n?.studio || {};
+    showToast(S.loading_report || 'Memuat data laporan...', 'success');
     fetch(`/reports/${id}`, {
         headers: { 'Accept': 'application/json' }
     })
         .then(r => r.json())
         .then(data => {
             populateFormWithData(data);
-            showToast(`Laporan ${data.ssc_id} berhasil dimuat`, 'success');
+            showToast((S.report_loaded || 'Laporan :ssc berhasil dimuat').replace(':ssc', data.ssc_id), 'success');
         })
         .catch(err => {
             console.error('Load report error:', err);
-            showToast('Gagal memuat data laporan', 'error');
+            showToast(S.load_failed || 'Gagal memuat data laporan', 'error');
         });
 }
 
@@ -1782,13 +1794,13 @@ window.switchPreviewPage = function (page) {
 
     if (page === 'all') {
         sheets.forEach(s => s.classList.add('sheet-visible'));
-        const allBtn = Array.from(btns).find(b => b.innerText.includes('Semua'));
+        const allBtn = Array.from(btns).find(b => b.dataset.page === 'all' || b.innerText.includes('Semua') || b.innerText.includes('All'));
         if (allBtn) allBtn.classList.add('active');
     } else {
         sheets.forEach(s => s.classList.remove('sheet-visible'));
         const target = document.getElementById(`prev_sheet_${page}`);
         if (target) target.classList.add('sheet-visible');
-        const activeBtn = Array.from(btns).find(b => b.innerText.includes(`Lembar ${page}`));
+        const activeBtn = Array.from(btns).find(b => b.dataset.page === String(page) || b.innerText.includes(`Lembar ${page}`) || b.innerText.includes(`Sheet ${page}`));
         if (activeBtn) activeBtn.classList.add('active');
     }
 };
@@ -1805,9 +1817,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // Official PDF Export (Opens pure 6-page A4 document)
 // -------------------------------------------------------------
 window.exportOfficialPdf = function () {
+    const S = window.qcI18n?.studio || {};
     let sscEl = document.getElementById('g_sscId');
     if (!sscEl || !sscEl.value.trim()) {
-        showToast('Mohon isi SSC ID terlebih dahulu!', 'error');
+        showToast(S.ssc_required || 'Mohon isi SSC ID terlebih dahulu!', 'error');
         if (sscEl) sscEl.focus();
         return;
     }
@@ -1824,7 +1837,7 @@ window.exportOfficialPdf = function () {
     // Preserve draft status when exporting/printing before submitting
     payload.submit_action = (!isUpdate || window.qcReportStatus === 'draft') ? 'draft' : 'save';
 
-    showToast('Menyiapkan dokumen resmi 6 lembar (PDF)...', 'loading');
+    showToast(S.preparing_pdf || 'Menyiapkan dokumen resmi 6 lembar (PDF)...', 'loading');
 
     fetch(url, {
         method: method,
@@ -1855,13 +1868,13 @@ window.exportOfficialPdf = function () {
                     window.history.replaceState({}, '', `/reports/${savedId}/edit`);
                 }
 
-                showToast('Membuka PDF Dokumen Resmi 6 Lembar...', 'success');
+                showToast(S.opening_pdf || 'Membuka PDF Dokumen Resmi 6 Lembar...', 'success');
                 // Open dedicated 6-page A4 print view in new window/tab
                 window.open(`/reports/${savedId}/pdf?autoprint=1`, '_blank');
             } else if (existingId) {
                 window.open(`/reports/${existingId}/pdf?autoprint=1`, '_blank');
             } else {
-                showToast('Gagal memproses dokumen PDF: ' + (data.message || 'Error'), 'error');
+                showToast((S.pdf_failed || 'Gagal memproses dokumen PDF') + ': ' + (data.message || 'Error'), 'error');
             }
         })
         .catch(err => {
@@ -1869,7 +1882,7 @@ window.exportOfficialPdf = function () {
             if (existingId) {
                 window.open(`/reports/${existingId}/pdf?autoprint=1`, '_blank');
             } else {
-                showToast('Terjadi kesalahan saat menyimpan data.', 'error');
+                showToast(S.save_failed || 'Terjadi kesalahan saat menyimpan data.', 'error');
             }
         });
 };

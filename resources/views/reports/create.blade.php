@@ -6,70 +6,70 @@
   $isDraftReport = !$isExistingReport || $reportStatus === \App\Models\Report::STATUS_DRAFT;
 @endphp
 
-@section('title', isset($isEdit) && $isEdit ? 'Edit Laporan QC' : 'Input Inspeksi Baru')
-@section('page_title', isset($isEdit) && $isEdit ? 'Edit Laporan QC' : 'Input Inspeksi Baru')
+@section('title', isset($isEdit) && $isEdit ? __('qc.studio.title_edit') : __('qc.studio.title_create'))
+@section('page_title', isset($isEdit) && $isEdit ? __('qc.studio.title_edit') : __('qc.studio.title_create'))
 @section('top_back_link', route('reports.index'))
-@section('top_back_title', 'Kembali ke Riwayat Laporan')
+@section('top_back_title', __('qc.studio.back_to_history'))
 
 @section('top_actions')
   <div class="top-action-bar">
-    <!-- Desktop Toolbar (Hanya Tampil di Layar PC/Tablet Lebar) -->
+    <!-- Desktop Toolbar -->
     <div class="desktop-actions">
-      <!-- 1. Kosongkan Form -->
-      <button type="button" id="btnTopResetBlank" class="btn btn-secondary btn-sm" title="Kosongkan Semua Data Form" onclick="document.getElementById('btnResetBlank')?.click()">
-        <i data-lucide="rotate-ccw"></i> <span>Kosongkan</span>
+      <!-- 1. Clear Form -->
+      <button type="button" id="btnTopResetBlank" class="btn btn-secondary btn-sm" title="{{ __('qc.studio.clear_form') }}" onclick="document.getElementById('btnResetBlank')?.click()">
+        <i data-lucide="rotate-ccw"></i> <span>{{ __('qc.studio.clear') }}</span>
       </button>
 
-      <!-- 2. Simpan Draft (Ikon Saja) -->
+      <!-- 2. Save Draft -->
       @if($isDraftReport)
-        <button type="button" id="btnTopDraft" class="btn btn-secondary btn-sm btn-icon" title="Simpan sebagai Draft (Belum dikirim ke Review)">
+        <button type="button" id="btnTopDraft" class="btn btn-secondary btn-sm btn-icon" title="{{ __('qc.studio.save_draft') }}">
           <i data-lucide="file-clock"></i>
         </button>
       @endif
 
-      <!-- 3. Ekspor Dokumen (Ikon Saja Dropdown: PDF & Excel) -->
+      <!-- 3. Export Document -->
       <div class="export-dropdown" id="topExportDropdown">
-        <button type="button" class="btn btn-secondary btn-sm btn-icon export-dropdown-trigger" id="btnExportDropdownTrigger" aria-haspopup="true" aria-expanded="false" title="Ekspor Laporan (PDF / Excel)">
+        <button type="button" class="btn btn-secondary btn-sm btn-icon export-dropdown-trigger" id="btnExportDropdownTrigger" aria-haspopup="true" aria-expanded="false" title="{{ __('qc.studio.export_pdf') }} / {{ __('qc.studio.download_excel') }}">
           <i data-lucide="download"></i>
         </button>
         <div class="export-dropdown-menu" id="topExportDropdownMenu" role="menu">
           <button type="button" class="export-menu-item" id="btnTopExportPdf" role="menuitem" onclick="window.exportOfficialPdf()">
-            <i data-lucide="file-text"></i> <span>Ekspor PDF</span>
+            <i data-lucide="file-text"></i> <span>{{ __('qc.studio.export_pdf') }}</span>
           </button>
           <button type="button" class="export-menu-item" id="btnTopExportExcel" role="menuitem">
-            <i data-lucide="file-spreadsheet"></i> <span>Unduh Excel</span>
+            <i data-lucide="file-spreadsheet"></i> <span>{{ __('qc.studio.download_excel') }}</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Mobile Action Dropdown [ ••• ] (Hanya Tampil di Layar HP/Mobile) -->
+    <!-- Mobile Action Dropdown -->
     <div class="mobile-action-dropdown" id="mobileActionDropdown">
-      <button type="button" class="btn btn-secondary btn-sm btn-icon mobile-menu-trigger" id="btnMobileMenuTrigger" aria-haspopup="true" aria-expanded="false" title="Menu Opsi Form">
+      <button type="button" class="btn btn-secondary btn-sm btn-icon mobile-menu-trigger" id="btnMobileMenuTrigger" aria-haspopup="true" aria-expanded="false" title="{{ __('qc.common.actions') }}">
         <i data-lucide="more-horizontal"></i>
       </button>
       <div class="mobile-menu-popup" id="mobileMenuPopup" role="menu">
         <button type="button" class="mobile-menu-item text-danger" id="btnMobileResetBlank" role="menuitem">
-          <i data-lucide="rotate-ccw"></i> <span>Kosongkan Form</span>
+          <i data-lucide="rotate-ccw"></i> <span>{{ __('qc.studio.clear_form') }}</span>
         </button>
         @if($isDraftReport)
           <button type="button" class="mobile-menu-item" id="btnMobileDraft" role="menuitem">
-            <i data-lucide="file-clock"></i> <span>Simpan Draft</span>
+            <i data-lucide="file-clock"></i> <span>{{ __('qc.studio.save_draft') }}</span>
           </button>
         @endif
         <div class="mobile-menu-divider"></div>
         <button type="button" class="mobile-menu-item" id="btnMobileExportPdf" role="menuitem">
-          <i data-lucide="file-text"></i> <span>Ekspor PDF</span>
+          <i data-lucide="file-text"></i> <span>{{ __('qc.studio.export_pdf') }}</span>
         </button>
         <button type="button" class="mobile-menu-item" id="btnMobileExportExcel" role="menuitem">
-          <i data-lucide="file-spreadsheet"></i> <span>Unduh Excel</span>
+          <i data-lucide="file-spreadsheet"></i> <span>{{ __('qc.studio.download_excel') }}</span>
         </button>
       </div>
     </div>
 
-    <!-- 4. Submit / Simpan Final (Tampil di Desktop & Mobile) -->
-    <button type="button" id="btnTopSave" class="btn btn-primary btn-sm" title="{{ $isDraftReport ? 'Submit Pengajuan Laporan (Waiting Review)' : 'Simpan Perubahan Laporan' }}">
-      <i data-lucide="{{ $isDraftReport ? 'send' : 'save' }}"></i> <span>{{ $isDraftReport ? 'Submit' : 'Simpan' }}</span>
+    <!-- 4. Submit / Save Changes -->
+    <button type="button" id="btnTopSave" class="btn btn-primary btn-sm" title="{{ $isDraftReport ? __('qc.studio.submit_report') : __('qc.common.save_changes') }}">
+      <i data-lucide="{{ $isDraftReport ? 'send' : 'save' }}"></i> <span>{{ $isDraftReport ? __('qc.studio.submit') : __('qc.common.save') }}</span>
     </button>
   </div>
 @endsection
@@ -111,17 +111,20 @@
     $imgSrc = $hasPhoto ? asset($photos[$key]) : '';
     $hasPhotoClass = $hasPhoto ? 'has-image' : '';
     $remStyle = $hasPhoto ? '' : 'display:none;';
-    
+    $camLabel = __('qc.studio.photo_camera');
+    $galLabel = __('qc.studio.photo_gallery');
+    $remTitle = __('qc.studio.photo_remove');
+
     $html = '<div class="slot-item-card ' . $hasPhotoClass . '" id="card_slot_' . $key . '">';
     $html .= '<input type="file" id="input_slot_' . $key . '" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, \'' . $key . '\')">';
     $html .= '<input type="file" id="camera_slot_' . $key . '" accept="image/*" capture="environment" style="display:none;" onchange="handleSlotUpload(this, \'' . $key . '\')">';
     
-    $html .= '<div class="slot-item-dropzone" onclick="triggerCameraInput(\'camera_slot_' . $key . '\')" id="dropzone_slot_' . $key . '" title="Ketuk untuk Ambil Foto Kamera Langsung">';
+    $html .= '<div class="slot-item-dropzone" onclick="triggerCameraInput(\'camera_slot_' . $key . '\')" id="dropzone_slot_' . $key . '" title="' . e(__('qc.studio.photo_open_camera')) . '">';
     $html .= '<div id="view_slot_' . $key . '">';
     if ($hasPhoto) {
       $html .= '<img src="' . $imgSrc . '" alt="' . e($label) . '">';
     } else {
-      $html .= '<div class="slot-empty-icon"><i data-lucide="camera"></i><span>Kamera</span></div>';
+      $html .= '<div class="slot-empty-icon"><i data-lucide="camera"></i><span>' . e($camLabel) . '</span></div>';
     }
     $html .= '</div>';
     $html .= '</div>';
@@ -129,13 +132,13 @@
     $html .= '<div class="slot-item-label">' . e($label) . '</div>';
     
     $html .= '<div class="slot-item-actions">';
-    $html .= '<button type="button" class="btn-slot-action btn-cam" onclick="triggerCameraInput(\'camera_slot_' . $key . '\')" title="Ambil Foto Kamera Langsung">';
-    $html .= '<i data-lucide="camera"></i> <span>Kamera</span>';
+    $html .= '<button type="button" class="btn-slot-action btn-cam" onclick="triggerCameraInput(\'camera_slot_' . $key . '\')" title="' . e(__('qc.studio.photo_open_camera')) . '">';
+    $html .= '<i data-lucide="camera"></i> <span>' . e($camLabel) . '</span>';
     $html .= '</button>';
-    $html .= '<button type="button" class="btn-slot-action btn-file" onclick="triggerFileInput(\'input_slot_' . $key . '\')" title="Pilih dari Galeri / Penyimpanan">';
-    $html .= '<i data-lucide="folder-image"></i> <span>Galeri</span>';
+    $html .= '<button type="button" class="btn-slot-action btn-file" onclick="triggerFileInput(\'input_slot_' . $key . '\')" title="' . e(__('qc.studio.photo_pick_gallery')) . '">';
+    $html .= '<i data-lucide="folder-image"></i> <span>' . e($galLabel) . '</span>';
     $html .= '</button>';
-    $html .= '<button type="button" class="btn-slot-action btn-del" id="btn_rem_slot_' . $key . '" onclick="removeSlotPhoto(\'' . $key . '\')" style="' . $remStyle . '" title="Hapus Foto">';
+    $html .= '<button type="button" class="btn-slot-action btn-del" id="btn_rem_slot_' . $key . '" onclick="removeSlotPhoto(\'' . $key . '\')" style="' . $remStyle . '" title="' . e($remTitle) . '">';
     $html .= '<i data-lucide="trash-2"></i>';
     $html .= '</button>';
     $html .= '</div>';
@@ -150,40 +153,40 @@
   <!-- Component Selector Bar -->
   <div class="component-selector-bar">
     <div class="selector-info">
-      <label for="componentSelect"><i data-lucide="layers"></i> Pilih Komponen Inspeksi QC:</label>
+      <label for="componentSelect"><i data-lucide="layers"></i> {{ __('qc.studio.select_component') }}</label>
       <div class="selector-wrapper">
         <select id="componentSelect" class="form-select-lg">
           <option value="output_shaft" selected>
-            Output Shaft (Poros Output &mdash; Aktif & Siap Digunakan)
+            {{ __('qc.studio.comp_output_shaft') }}
           </option>
           <option value="hydraulic_cylinder" disabled>
-            Hydraulic Cylinder Rod (Menunggu Template Divisi Terkait)
+            {{ __('qc.studio.comp_waiting_template', ['name' => 'Hydraulic Cylinder Rod']) }}
           </option>
           <option value="drive_pinion" disabled>
-            Drive Pinion Gear (Menunggu Template Divisi Terkait)
+            {{ __('qc.studio.comp_waiting_template', ['name' => 'Drive Pinion Gear']) }}
           </option>
           <option value="bearing_journal" disabled>
-            Bearing Journal Sleeve (Menunggu Template Divisi Terkait)
+            {{ __('qc.studio.comp_waiting_template', ['name' => 'Bearing Journal Sleeve']) }}
           </option>
           <option value="connecting_rod" disabled>
-            Connecting Rod (Menunggu Template Divisi Terkait)
+            {{ __('qc.studio.comp_waiting_template', ['name' => 'Connecting Rod']) }}
           </option>
         </select>
-        <span class="badge badge-green" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;">Aktif</span>
+        <span class="badge badge-green" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;">{{ __('qc.studio.status_active') }}</span>
       </div>
     </div>
     <div class="selector-meta">
-      <span class="meta-item" title="Standar Template Formulir Mutu PT SSC Works"><i data-lucide="file-check"></i> Form: <strong>{{ $report?->doc_no ?? 'FORM-QC-002' }} (Rev {{ $report?->rev ?? '04' }})</strong></span>
-      <span class="meta-item" title="Nomor Identitas Unik Unit Workshop"><i data-lucide="hash"></i> SSC ID: <strong id="top_badge_sscId" style="color: var(--primary);">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</strong></span>
-      <span class="meta-item" title="Nomor Lembar Laporan Inspeksi"><i data-lucide="file-text"></i> No. Laporan: <strong id="top_badge_reportNo">{{ $report?->report_no ?? ($nextReportNo ?? '0743') }}</strong></span>
-      <span class="meta-item"><i data-lucide="eye"></i> Live Preview: <strong style="color: var(--success);">Aktif</strong></span>
+      <span class="meta-item"><i data-lucide="file-check"></i> Form: <strong>{{ $report?->doc_no ?? 'FORM-QC-002' }} (Rev {{ $report?->rev ?? '04' }})</strong></span>
+      <span class="meta-item"><i data-lucide="hash"></i> SSC ID: <strong id="top_badge_sscId" style="color: var(--primary-text);">{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}</strong></span>
+      <span class="meta-item"><i data-lucide="file-text"></i> {{ __('qc.studio.report_no') }}: <strong id="top_badge_reportNo">{{ $report?->report_no ?? ($nextReportNo ?? '0743') }}</strong></span>
+      <span class="meta-item"><i data-lucide="eye"></i> {{ __('qc.studio.live_preview') }}: <strong style="color: var(--success);">{{ __('qc.studio.status_active') }}</strong></span>
     </div>
   </div>
 
   <div class="notice-box">
-    <i data-lucide="info" style="color: var(--primary); flex-shrink: 0;"></i>
+    <i data-lucide="info" style="color: var(--primary-text); flex-shrink: 0;"></i>
     <span>
-      Formulir telah dikosongkan untuk input data aktual teknisi. Hasil ketikan dan unggahan foto pada panel kiri akan langsung ditampilkan secara <strong>real-time</strong> pada lembar preview dokumen di sebelah kanan sebelum diekspor ke Excel maupun PDF.
+      {{ __('qc.studio.notice_text') }}
     </span>
   </div>
 
@@ -197,23 +200,23 @@
         <!-- Navigation Tabs -->
         <div class="studio-tabs">
           <button type="button" class="s-tab-btn active" data-target="stab-identitas">
-            1. Identitas & Job
+            {{ __('qc.studio.tab_1') }}
           </button>
           <button type="button" class="s-tab-btn" data-target="stab-dimensi">
-            2. Nilai Dimensi
+            {{ __('qc.studio.tab_2') }}
           </button>
           <button type="button" class="s-tab-btn" data-target="stab-foto">
-            3. Upload Foto Bagian
+            {{ __('qc.studio.tab_3') }}
             <span class="tab-photo-counter" id="photoCountBadge">0</span>
           </button>
           <button type="button" class="s-tab-btn" data-target="stab-tir">
-            4. Runout (TIR)
+            {{ __('qc.studio.tab_4') }}
           </button>
           <button type="button" class="s-tab-btn" data-target="stab-rekomendasi">
-            5. Rekomendasi
+            {{ __('qc.studio.tab_5') }}
           </button>
           <button type="button" class="s-tab-btn" data-target="stab-ttd">
-            6. Pengesahan
+            {{ __('qc.studio.tab_6') }}
           </button>
         </div>
 
@@ -226,34 +229,33 @@
             <!-- Kontrol Dokumen Form Header (Input Manual) -->
             <div class="form-section-title">
               <i data-lucide="file-check"></i>
-              <h4>1. Kontrol Dokumen Standar (Document Control)</h4>
+              <h4>{{ __('qc.studio.sec_doc_control') }}</h4>
             </div>
             <p style="font-size: 0.8rem; color: var(--text-subtle); margin-bottom: 0.75rem;">
-              Parameter nomor formulir, revisi, dan penanggung jawab dapat disesuaikan manual sesuai ketentuan dokumen mutu perusahaan.
+              {{ __('qc.studio.sec_doc_control_desc') }}
             </p>
 
-            <div class="form-grid-2" style="background: #f8fafc; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
+            <div class="form-grid-2 doc-control-box">
               <div class="form-group">
-                <label>Document No (Nomor Dokumen)</label>
+                <label>{{ __('qc.studio.lbl_doc_no') }}</label>
                 <input type="text" id="g_docNo" class="mono-input" placeholder="FORM-QC-002" value="{{ $report?->doc_no ?? 'FORM-QC-002' }}">
-                <small class="helper-text">Contoh: FORM-QC-002, FORM-QC-005, dll.</small>
               </div>
               <div class="form-group">
-                <label>Responsibility (Tanggung Jawab)</label>
+                <label>{{ __('qc.studio.lbl_responsibility') }}</label>
                 <input type="text" id="g_responsibility" placeholder="QC Inspector" value="{{ $report?->responsibility ?? 'QC Inspector' }}">
               </div>
               <div class="form-group">
-                <label>Effective Date. (Tanggal Berlaku Dokumen)</label>
+                <label>{{ __('qc.studio.lbl_effective_date') }}</label>
                 <input type="date" id="g_effectiveDate" value="{{ $report && $report->effective_date ? \Carbon\Carbon::parse($report->effective_date)->format('Y-m-d') : date('Y-m-d') }}">
               </div>
               <div class="form-group">
                 <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.5rem;">
                   <div>
-                    <label>Rev. (Revisi)</label>
+                    <label>{{ __('qc.studio.lbl_rev') }}</label>
                     <input type="text" id="g_rev" class="mono-input" placeholder="04" value="{{ $report?->rev ?? '04' }}">
                   </div>
                   <div>
-                    <label>Page (Halaman)</label>
+                    <label>{{ __('qc.studio.lbl_page') }}</label>
                     <input type="text" id="g_page" class="mono-input" placeholder="1" value="{{ $report->page ?? '1' }}">
                   </div>
                 </div>
@@ -262,52 +264,51 @@
 
             <div class="form-section-title">
               <i data-lucide="clipboard-list"></i>
-              <h4>2. Identitas Komponen & Order Kerja</h4>
+              <h4>{{ __('qc.studio.sec_identity') }}</h4>
             </div>
 
             <div class="form-grid-2">
               <div class="form-group">
-                <label>SSC ID <span class="required">*</span></label>
-                <input type="text" id="g_sscId" required placeholder="Contoh: SSC SBY-5779" class="mono-input" value="{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}">
-                <small class="helper-text">Nomor identitas unik unit workshop (otomatis bertambah / dapat disesuaikan)</small>
+                <label>{{ __('qc.studio.lbl_ssc_id') }} <span class="required">*</span></label>
+                <input type="text" id="g_sscId" required placeholder="SSC SBY-5779" class="mono-input" value="{{ $report?->ssc_id ?? ($nextSscId ?? 'SSC SBY-5779') }}">
               </div>
               <div class="form-group">
-                <label>No. Laporan</label>
-                <input type="text" id="g_reportNo" placeholder="Contoh: 0743" class="mono-input" value="{{ $report?->report_no ?? ($nextReportNo ?? '0743') }}">
+                <label>{{ __('qc.studio.lbl_report_no') }}</label>
+                <input type="text" id="g_reportNo" placeholder="0743" class="mono-input" value="{{ $report?->report_no ?? ($nextReportNo ?? '0743') }}">
               </div>
               <div class="form-group">
-                <label>Tanggal Inspeksi</label>
+                <label>{{ __('qc.studio.lbl_inspection_date') }}</label>
                 <input type="date" id="g_date" value="{{ $report && $report->date ? \Carbon\Carbon::parse($report->date)->format('Y-m-d') : date('Y-m-d') }}">
               </div>
               <div class="form-group">
-                <label>Tipe Inspeksi</label>
+                <label>{{ __('qc.studio.lbl_inspection_type') }}</label>
                 <select id="g_inspectionType">
-                  <option value="Pre" {{ ($report?->inspection_type ?? 'Pre') === 'Pre' ? 'selected' : '' }}>Pre-Inspection (Awal)</option>
-                  <option value="Post" {{ ($report?->inspection_type ?? '') === 'Post' ? 'selected' : '' }}>Post-Inspection (Akhir)</option>
+                  <option value="Pre" {{ ($report?->inspection_type ?? 'Pre') === 'Pre' ? 'selected' : '' }}>{{ __('qc.studio.opt_pre') }}</option>
+                  <option value="Post" {{ ($report?->inspection_type ?? '') === 'Post' ? 'selected' : '' }}>{{ __('qc.studio.opt_post') }}</option>
                 </select>
               </div>
               <div class="form-group full-width">
-                <label>Customer / Perusahaan</label>
-                <input type="text" id="g_customer" placeholder="Nama Perusahaan Pelanggan" value="{{ $report?->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}">
+                <label>{{ __('qc.studio.lbl_customer') }}</label>
+                <input type="text" id="g_customer" value="{{ $report?->customer ?? 'AMMAN MINERAL NUSA TENGGARA, PT' }}">
               </div>
               <div class="form-group">
-                <label>Nama Komponen (Part Name)</label>
+                <label>{{ __('qc.studio.lbl_part_name') }}</label>
                 <input type="text" id="g_partName" value="{{ $report?->part_name ?? 'OUTPUT SHAFT' }}" placeholder="OUTPUT SHAFT">
               </div>
               <div class="form-group">
-                <label>Model Unit</label>
-                <input type="text" id="g_modelUnit" placeholder="Contoh: HT051" value="{{ $report?->model_unit ?? 'HT051' }}">
+                <label>{{ __('qc.studio.lbl_model_unit') }}</label>
+                <input type="text" id="g_modelUnit" placeholder="HT051" value="{{ $report?->model_unit ?? 'HT051' }}">
               </div>
               <div class="form-group">
-                <label>Job No.</label>
-                <input type="text" id="g_jobNo" placeholder="Contoh: WO-2026-001" value="{{ $report?->job_no ?? '-' }}">
+                <label>{{ __('qc.studio.lbl_job_no') }}</label>
+                <input type="text" id="g_jobNo" placeholder="WO-2026-001" value="{{ $report?->job_no ?? '-' }}">
               </div>
               <div class="form-group">
-                <label>Quote No.</label>
+                <label>{{ __('qc.studio.lbl_quote_no') }}</label>
                 <input type="text" id="g_quoteNo" placeholder="-" value="{{ $report?->quote_no ?? '-' }}">
               </div>
               <div class="form-group">
-                <label>Part No.</label>
+                <label>{{ __('qc.studio.lbl_part_no') }}</label>
                 <input type="text" id="g_partNo" placeholder="-" value="{{ $report?->part_no ?? '-' }}">
               </div>
             </div>
@@ -317,7 +318,7 @@
           <div class="s-tab-content" id="stab-dimensi">
             <div class="form-section-title">
               <i data-lucide="ruler"></i>
-              <h4>Pengukuran Dimensi Poros (Berdasarkan Titik Ukur Standar)</h4>
+              <h4>{{ __('qc.studio.dim_title') }}</h4>
             </div>
 
             <!-- Item 01 -->
@@ -328,7 +329,7 @@
                   <span class="spec-tag">Spec: Ø79 ± 0.25</span>
                 </div>
                 <div class="status-selector">
-                  <label>Status:</label>
+                  <label>{{ __('qc.common.status') }}:</label>
                   <select id="i1_ar" class="status-select">
                     <option value="A">A (Accept)</option>
                     <option value="R">R (Reject)</option>
@@ -337,25 +338,25 @@
               </div>
               <div class="input-triple-row">
                 <div class="input-col">
-                  <label>Nilai X (mm)</label>
-                  <input type="text" id="i1_x" class="dim-input" placeholder="Isi mm...">
+                  <label>{{ __('qc.studio.val_x') }}</label>
+                  <input type="text" id="i1_x" class="dim-input" placeholder="mm...">
                 </div>
                 <div class="input-col">
-                  <label>Nilai Y (mm)</label>
-                  <input type="text" id="i1_y" class="dim-input" placeholder="Isi mm...">
+                  <label>{{ __('qc.studio.val_y') }}</label>
+                  <input type="text" id="i1_y" class="dim-input" placeholder="mm...">
                 </div>
                 <div class="input-col">
-                  <label>Nilai Z (mm)</label>
-                  <input type="text" id="i1_z" class="dim-input" placeholder="Isi mm...">
+                  <label>{{ __('qc.studio.val_z') }}</label>
+                  <input type="text" id="i1_z" class="dim-input" placeholder="mm...">
                 </div>
               </div>
               <div class="input-sub-row">
                 <div class="input-col-6">
-                  <label>Panjang Total L (Spec: N/A)</label>
-                  <input type="text" id="i1_length" class="dim-input" placeholder="Contoh: 724.0">
+                  <label>{{ __('qc.studio.total_length_l') }}</label>
+                  <input type="text" id="i1_length" class="dim-input" placeholder="724.0">
                 </div>
                 <div class="input-col-6">
-                  <label>Catatan Visual Area A</label>
+                  <label>{{ __('qc.studio.remark_area_a') }}</label>
                   <input type="text" id="i1_remark1" placeholder="Actual measurement OD area 'A' in good condition">
                 </div>
               </div>
@@ -372,35 +373,35 @@
 
               <!-- Sub B -->
               <div class="sub-dimension-section">
-                <div class="sub-dim-title">Area B (Titik 1, 2, 3) &mdash; Spec: Ø82 ± 0.25</div>
+                <div class="sub-dim-title">{{ __('qc.studio.area_b_title') }}</div>
                 <div class="table-compact-wrapper">
                   <table class="table-compact">
                     <thead>
                       <tr>
-                        <th>Posisi</th>
+                        <th>{{ __('qc.studio.col_position') }}</th>
                         <th>X (mm)</th>
                         <th>Y (mm)</th>
                         <th>Z (mm)</th>
-                        <th>Status</th>
+                        <th>{{ __('qc.common.status') }}</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td><strong>Baris 1</strong></td>
+                        <td><strong>{{ __('qc.studio.row_n', ['n' => 1]) }}</strong></td>
                         <td><input type="text" id="i2_b1_x" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_b1_y" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_b1_z" class="dim-input" placeholder="mm..."></td>
                         <td><select id="i2_b1_ar" class="status-select"><option value="A">A</option><option value="R">R</option></select></td>
                       </tr>
                       <tr>
-                        <td><strong>Baris 2</strong></td>
+                        <td><strong>{{ __('qc.studio.row_n', ['n' => 2]) }}</strong></td>
                         <td><input type="text" id="i2_b2_x" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_b2_y" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_b2_z" class="dim-input" placeholder="mm..."></td>
                         <td><select id="i2_b2_ar" class="status-select"><option value="A">A</option><option value="R">R</option></select></td>
                       </tr>
                       <tr>
-                        <td><strong>Baris 3</strong></td>
+                        <td><strong>{{ __('qc.studio.row_n', ['n' => 3]) }}</strong></td>
                         <td><input type="text" id="i2_b3_x" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_b3_y" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_b3_z" class="dim-input" placeholder="mm..."></td>
@@ -413,35 +414,35 @@
 
               <!-- Sub C -->
               <div class="sub-dimension-section" style="margin-top: 0.5rem;">
-                <div class="sub-dim-title">Area C (Titik 1, 2, 3) &mdash; Spec: Ø77 ± 0.25</div>
+                <div class="sub-dim-title">{{ __('qc.studio.area_c_title') }}</div>
                 <div class="table-compact-wrapper">
                   <table class="table-compact">
                     <thead>
                       <tr>
-                        <th>Posisi</th>
+                        <th>{{ __('qc.studio.col_position') }}</th>
                         <th>X (mm)</th>
                         <th>Y (mm)</th>
                         <th>Z (mm)</th>
-                        <th>Status</th>
+                        <th>{{ __('qc.common.status') }}</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td><strong>Baris 1</strong></td>
+                        <td><strong>{{ __('qc.studio.row_n', ['n' => 1]) }}</strong></td>
                         <td><input type="text" id="i2_c1_x" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_c1_y" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_c1_z" class="dim-input" placeholder="mm..."></td>
                         <td><select id="i2_c1_ar" class="status-select"><option value="A">A</option><option value="R">R</option></select></td>
                       </tr>
                       <tr>
-                        <td><strong>Baris 2</strong></td>
+                        <td><strong>{{ __('qc.studio.row_n', ['n' => 2]) }}</strong></td>
                         <td><input type="text" id="i2_c2_x" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_c2_y" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_c2_z" class="dim-input" placeholder="mm..."></td>
                         <td><select id="i2_c2_ar" class="status-select"><option value="A">A</option><option value="R">R</option></select></td>
                       </tr>
                       <tr>
-                        <td><strong>Baris 3</strong></td>
+                        <td><strong>{{ __('qc.studio.row_n', ['n' => 3]) }}</strong></td>
                         <td><input type="text" id="i2_c3_x" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_c3_y" class="dim-input" placeholder="mm..."></td>
                         <td><input type="text" id="i2_c3_z" class="dim-input" placeholder="mm..."></td>
@@ -457,13 +458,13 @@
             <div class="inspection-block">
               <div class="block-header">
                 <div>
-                  <strong>03. OD Area "D" & Distance "E"</strong>
+                  <strong>03. OD Area "D" &amp; Distance "E"</strong>
                   <span class="spec-tag">D: Ø118 ± 0.5 | E: 13 ± 0.5</span>
                 </div>
               </div>
               <div class="form-grid-2">
                 <div>
-                  <label><strong>Area D (OD Ø118)</strong></label>
+                  <label><strong>{{ __('qc.studio.area_d_label') }}</strong></label>
                   <div class="input-triple-row" style="margin-top: 0.35rem;">
                     <input type="text" id="i3_d_x" class="dim-input" placeholder="X mm">
                     <input type="text" id="i3_d_y" class="dim-input" placeholder="Y mm">
@@ -472,7 +473,7 @@
                   </div>
                 </div>
                 <div>
-                  <label><strong>Jarak E (Distance 13)</strong></label>
+                  <label><strong>{{ __('qc.studio.dist_e_label') }}</strong></label>
                   <div class="input-triple-row" style="margin-top: 0.35rem;">
                     <input type="text" id="i3_e_x" class="dim-input" placeholder="X mm">
                     <input type="text" id="i3_e_y" class="dim-input" placeholder="Y mm">
@@ -487,37 +488,37 @@
             <div class="inspection-block">
               <div class="block-header">
                 <div>
-                  <strong>04. OD Area "F" & Jarak "K"</strong>
+                  <strong>04. OD Area "F" &amp; Distance "K"</strong>
                   <span class="spec-tag">F: Ø100,01 ± 0,008 | K: 188.55</span>
                 </div>
               </div>
               <table class="table-compact">
                 <thead>
                   <tr>
-                    <th>Posisi Area F</th>
+                    <th>{{ __('qc.studio.pos_area_f') }}</th>
                     <th>X (mm)</th>
                     <th>Y (mm)</th>
                     <th>Z (mm)</th>
-                    <th>Status</th>
+                    <th>{{ __('qc.common.status') }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Baris 1</td>
+                    <td>{{ __('qc.studio.row_n', ['n' => 1]) }}</td>
                     <td><input type="text" id="i4_f1_x" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i4_f1_y" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i4_f1_z" class="dim-input" placeholder="mm..."></td>
                     <td><select id="i4_f1_ar" class="status-select"><option value="A">A</option><option value="R">R</option></select></td>
                   </tr>
                   <tr>
-                    <td>Baris 2</td>
+                    <td>{{ __('qc.studio.row_n', ['n' => 2]) }}</td>
                     <td><input type="text" id="i4_f2_x" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i4_f2_y" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i4_f2_z" class="dim-input" placeholder="mm..."></td>
                     <td><select id="i4_f2_ar" class="status-select"><option value="A">A</option><option value="R">R</option></select></td>
                   </tr>
                   <tr>
-                    <td>Baris 3</td>
+                    <td>{{ __('qc.studio.row_n', ['n' => 3]) }}</td>
                     <td><input type="text" id="i4_f3_x" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i4_f3_y" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i4_f3_z" class="dim-input" placeholder="mm..."></td>
@@ -526,8 +527,8 @@
                 </tbody>
               </table>
               <div class="form-group" style="margin-top: 0.5rem;">
-                <label>Jarak K (Hasil Ukur mm):</label>
-                <input type="text" id="i4_k_res" class="dim-input" placeholder="Contoh: 188.55">
+                <label>{{ __('qc.studio.dist_k_label') }}</label>
+                <input type="text" id="i4_k_res" class="dim-input" placeholder="188.55">
               </div>
             </div>
 
@@ -535,37 +536,37 @@
             <div class="inspection-block">
               <div class="block-header">
                 <div>
-                  <strong>05. OD Area "H" & Jarak "J"</strong>
+                  <strong>05. OD Area "H" &amp; Distance "J"</strong>
                   <span class="spec-tag">H: Ø94 ± 0,013 | J: 142.80</span>
                 </div>
               </div>
               <table class="table-compact">
                 <thead>
                   <tr>
-                    <th>Posisi Area H</th>
+                    <th>{{ __('qc.studio.pos_area_h') }}</th>
                     <th>X (mm)</th>
                     <th>Y (mm)</th>
                     <th>Z (mm)</th>
-                    <th>Status</th>
+                    <th>{{ __('qc.common.status') }}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Baris 1</td>
+                    <td>{{ __('qc.studio.row_n', ['n' => 1]) }}</td>
                     <td><input type="text" id="i5_h1_x" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i5_h1_y" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i5_h1_z" class="dim-input" placeholder="mm..."></td>
                     <td><select id="i5_h1_ar" class="status-select"><option value="A">A</option><option value="R">R</option></select></td>
                   </tr>
                   <tr>
-                    <td>Baris 2</td>
+                    <td>{{ __('qc.studio.row_n', ['n' => 2]) }}</td>
                     <td><input type="text" id="i5_h2_x" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i5_h2_y" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i5_h2_z" class="dim-input" placeholder="mm..."></td>
                     <td><select id="i5_h2_ar" class="status-select"><option value="A">A</option><option value="R">R</option></select></td>
                   </tr>
                   <tr>
-                    <td>Baris 3</td>
+                    <td>{{ __('qc.studio.row_n', ['n' => 3]) }}</td>
                     <td><input type="text" id="i5_h3_x" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i5_h3_y" class="dim-input" placeholder="mm..."></td>
                     <td><input type="text" id="i5_h3_z" class="dim-input" placeholder="mm..."></td>
@@ -574,8 +575,8 @@
                 </tbody>
               </table>
               <div class="form-group" style="margin-top: 0.5rem;">
-                <label>Jarak J (Hasil Ukur mm):</label>
-                <input type="text" id="i5_j_res" class="dim-input" placeholder="Contoh: 142.80">
+                <label>{{ __('qc.studio.dist_j_label') }}</label>
+                <input type="text" id="i5_j_res" class="dim-input" placeholder="142.80">
               </div>
             </div>
 
@@ -583,11 +584,11 @@
             <div class="inspection-block">
               <div class="block-header">
                 <div>
-                  <strong>06. OD Area "G" & Spline</strong>
-                  <span class="spec-tag">Spec: Ø84,2 ± 0,13 | Jarak I: 98.78</span>
+                  <strong>06. OD Area "G" &amp; Spline</strong>
+                  <span class="spec-tag">Spec: Ø84,2 ± 0,13 | I: 98.78</span>
                 </div>
                 <div class="status-selector">
-                  <label>Status:</label>
+                  <label>{{ __('qc.common.status') }}:</label>
                   <select id="i6_ar" class="status-select">
                     <option value="A">A (Accept)</option>
                     <option value="R">R (Reject)</option>
@@ -596,47 +597,47 @@
               </div>
               <div class="input-triple-row">
                 <div class="input-col">
-                  <label>Nilai X (mm)</label>
-                  <input type="text" id="i6_x" class="dim-input" placeholder="Isi mm...">
+                  <label>{{ __('qc.studio.val_x') }}</label>
+                  <input type="text" id="i6_x" class="dim-input" placeholder="mm...">
                 </div>
                 <div class="input-col">
-                  <label>Nilai Y (mm)</label>
-                  <input type="text" id="i6_y" class="dim-input" placeholder="Isi mm...">
+                  <label>{{ __('qc.studio.val_y') }}</label>
+                  <input type="text" id="i6_y" class="dim-input" placeholder="mm...">
                 </div>
                 <div class="input-col">
-                  <label>Nilai Z (mm)</label>
-                  <input type="text" id="i6_z" class="dim-input" placeholder="Isi mm...">
+                  <label>{{ __('qc.studio.val_z') }}</label>
+                  <input type="text" id="i6_z" class="dim-input" placeholder="mm...">
                 </div>
               </div>
               <div class="form-group" style="margin-top: 0.5rem;">
-                <label>Jarak I (Hasil Ukur mm):</label>
-                <input type="text" id="i6_i_res" class="dim-input" placeholder="Contoh: 98.78">
+                <label>{{ __('qc.studio.dist_i_label') }}</label>
+                <input type="text" id="i6_i_res" class="dim-input" placeholder="98.78">
               </div>
             </div>
 
           </div>
 
-                    <!-- TAB 3: UPLOAD FOTO PER BAGIAN (51 SLOT DOKUMENTASI LENGKAP) -->
+          <!-- TAB 3: UPLOAD FOTO PER BAGIAN -->
           <div class="s-tab-content" id="stab-foto">
             <div class="form-section-title">
               <i data-lucide="camera"></i>
-              <h4>Unggah Foto Dokumentasi Pemeriksaan Tiap Bagian</h4>
+              <h4>{{ __('qc.studio.photo_tab_title') }}</h4>
             </div>
             <p style="font-size: 0.82rem; color: var(--text-subtle); margin-bottom: 1rem;">
-              Setiap slot foto di bawah ini terhubung langsung ke kotak visual pada lembar laporan resmi (6 lembar). Semua slot foto secara baku kosong dan dapat diisi sesuai hasil dokumentasi bengkel.
+              {{ __('qc.studio.photo_tab_desc') }}
             </p>
 
             <!-- LEMBAR 1 -->
             <div class="area-photo-section">
               <div class="area-photo-section-header">
-                <span><i data-lucide="file-text"></i> Lembar 1 &mdash; Identifikasi, Drawing, Finding & OD Area "A"</span>
-                <span class="photo-tag">Lembar 1 (6 Slot)</span>
+                <span><i data-lucide="file-text"></i> {{ __('qc.studio.photo_sheet_1') }}</span>
+                <span class="photo-tag">{{ __('qc.studio.sheet', ['n' => 1]) }} (6 Slot)</span>
               </div>
               <div class="area-photo-section-body">
                 <!-- Drawing -->
                 <div class="area-subgroup">
                   <div class="area-subgroup-title">
-                    <span>1. Drawing / Pictures / Dimension (Cetak Biru Teknis Dimensi)</span>
+                    <span>{{ __('qc.studio.photo_blueprint_tag') }}</span>
                     <span class="subgroup-tag">1 Slot</span>
                   </div>
                   <div class="slot-large-card {{ !empty($photos['drawing_dimension']) ? 'has-image' : '' }}" id="card_slot_drawing_dimension">
@@ -647,22 +648,22 @@
                         @if(!empty($photos['drawing_dimension']))
                           <img src="{{ asset($photos['drawing_dimension']) }}" alt="Drawing Dimensi">
                         @else
-                          <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser file gambar cetak biru (blueprint dimensi poros)</span></div>
+                          <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>{{ __('qc.studio.photo_empty_blueprint') }}</span></div>
                         @endif
                       </div>
                     </div>
                     <div class="slot-quick-action">
                       <button type="button" class="btn btn-primary btn-xs" onclick="triggerCameraInput('camera_slot_drawing_dimension')">
-                        <i data-lucide="camera"></i> Kamera
+                        <i data-lucide="camera"></i> {{ __('qc.studio.photo_camera') }}
                       </button>
                       <button type="button" class="btn btn-secondary btn-xs" onclick="triggerFileInput('input_slot_drawing_dimension')">
-                        <i data-lucide="folder-image"></i> Galeri
+                        <i data-lucide="folder-image"></i> {{ __('qc.studio.photo_gallery') }}
                       </button>
                       <button type="button" class="btn btn-secondary btn-xs" onclick="useDefaultBlueprint('drawing_dimension')">
-                        <i data-lucide="copy"></i> Gunakan Standar Cetak Biru Poros
+                        <i data-lucide="copy"></i> {{ __('qc.studio.photo_use_blueprint') }}
                       </button>
                       <button type="button" class="btn btn-secondary btn-xs" id="btn_rem_slot_drawing_dimension" onclick="removeSlotPhoto('drawing_dimension')" style="{{ !empty($photos['drawing_dimension']) ? '' : 'display:none;' }}">
-                        <i data-lucide="trash-2"></i> Hapus
+                        <i data-lucide="trash-2"></i> {{ __('qc.studio.photo_remove') }}
                       </button>
                     </div>
                   </div>
@@ -671,31 +672,30 @@
                 <!-- Finding -->
                 <div class="area-subgroup">
                   <div class="area-subgroup-title">
-                    <span>2. FINDING: Foto Keseluruhan Fisik Komponen Saat Diterima (Item 00)</span>
+                    <span>{{ __('qc.studio.photo_finding_tag') }}</span>
                     <span class="subgroup-tag">1 Slot</span>
                   </div>
                   <div class="slot-large-card {{ !empty($photos['finding_component']) ? 'has-image' : '' }}" id="card_slot_finding_component">
                     <input type="file" id="input_slot_finding_component" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, 'finding_component')">
                     <input type="file" id="camera_slot_finding_component" accept="image/*" capture="environment" style="display:none;" onchange="handleSlotUpload(this, 'finding_component')">
-                    <div class="slot-large-dropzone" onclick="triggerCameraInput('camera_slot_finding_component')" id="dropzone_slot_finding_component" title="Ketuk untuk Buka Kamera Langsung">
+                    <div class="slot-large-dropzone" onclick="triggerCameraInput('camera_slot_finding_component')" id="dropzone_slot_finding_component" title="{{ __('qc.studio.photo_open_camera') }}">
                       <div id="view_slot_finding_component">
                         @if(!empty($photos['finding_component']))
                           <img src="{{ asset($photos['finding_component']) }}" alt="Foto Komponen Utuh">
                         @else
-                          <div class="slot-empty-icon"><i data-lucide="camera"></i><span>Ketuk untuk buka kamera atau ambil foto fisik komponen</span></div>
+                          <div class="slot-empty-icon"><i data-lucide="camera"></i><span>{{ __('qc.studio.photo_empty_finding') }}</span></div>
                         @endif
                       </div>
                     </div>
                     <div class="slot-quick-action">
                       <button type="button" class="btn btn-primary btn-xs" onclick="triggerCameraInput('camera_slot_finding_component')">
-                        <i data-lucide="camera"></i> Buka Kamera Langsung
+                        <i data-lucide="camera"></i> {{ __('qc.studio.photo_open_camera') }}
                       </button>
                       <button type="button" class="btn btn-secondary btn-xs" onclick="triggerFileInput('input_slot_finding_component')">
-                        <i data-lucide="folder-image"></i> Pilih dari Galeri
+                        <i data-lucide="folder-image"></i> {{ __('qc.studio.photo_pick_gallery') }}
                       </button>
-                      <span style="font-size:0.7rem; color:var(--text-subtle);">Item 00: Tampilan utuh poros</span>
                       <button type="button" class="btn btn-secondary btn-xs" id="btn_rem_slot_finding_component" onclick="removeSlotPhoto('finding_component')" style="{{ !empty($photos['finding_component']) ? '' : 'display:none;' }}">
-                        <i data-lucide="trash-2"></i> Hapus
+                        <i data-lucide="trash-2"></i> {{ __('qc.studio.photo_remove') }}
                       </button>
                     </div>
                   </div>
@@ -703,14 +703,14 @@
 
                 <div class="area-subgroup">
                   <div class="area-subgroup-title">
-                    <span>3. OD Area "A" and OD Spline — Foto Visual</span>
+                    <span>3. OD Area "A" and OD Spline — Visual</span>
                     <span class="subgroup-tag">4 Slot</span>
                   </div>
                   <div class="slot-grid-4">
-                    {!! $renderUploadSlot('area_a_visual_1', 'Foto 1') !!}
-                    {!! $renderUploadSlot('area_a_visual_2', 'Foto 2') !!}
-                    {!! $renderUploadSlot('area_a_visual_3', 'Foto 3') !!}
-                    {!! $renderUploadSlot('area_a_visual_4', 'Foto 4') !!}
+                    {!! $renderUploadSlot('area_a_visual_1', 'Photo 1') !!}
+                    {!! $renderUploadSlot('area_a_visual_2', 'Photo 2') !!}
+                    {!! $renderUploadSlot('area_a_visual_3', 'Photo 3') !!}
+                    {!! $renderUploadSlot('area_a_visual_4', 'Photo 4') !!}
                   </div>
                 </div>
               </div>
@@ -719,8 +719,8 @@
             <!-- LEMBAR 2 -->
             <div class="area-photo-section">
               <div class="area-photo-section-header">
-                <span><i data-lucide="file-text"></i> Lembar 2 &mdash; Penetrant Area "A", OD Area "B & C" & Penetrant "B & C"</span>
-                <span class="photo-tag">Lembar 2 (12 Slot)</span>
+                <span><i data-lucide="file-text"></i> {{ __('qc.studio.photo_sheet_2') }}</span>
+                <span class="photo-tag">{{ __('qc.studio.sheet', ['n' => 2]) }} (12 Slot)</span>
               </div>
               <div class="area-photo-section-body">
                 <div class="area-subgroup">
@@ -737,14 +737,14 @@
                 </div>
                 <div class="area-subgroup">
                   <div class="area-subgroup-title">
-                    <span>2. OD Area "B and C" — Foto Visual</span>
+                    <span>2. OD Area "B and C" — Visual</span>
                     <span class="subgroup-tag">4 Slot</span>
                   </div>
                   <div class="slot-grid-4">
-                    {!! $renderUploadSlot('area_bc_visual_1', 'Foto 1') !!}
-                    {!! $renderUploadSlot('area_bc_visual_2', 'Foto 2') !!}
-                    {!! $renderUploadSlot('area_bc_visual_3', 'Foto 3') !!}
-                    {!! $renderUploadSlot('area_bc_visual_4', 'Foto 4') !!}
+                    {!! $renderUploadSlot('area_bc_visual_1', 'Photo 1') !!}
+                    {!! $renderUploadSlot('area_bc_visual_2', 'Photo 2') !!}
+                    {!! $renderUploadSlot('area_bc_visual_3', 'Photo 3') !!}
+                    {!! $renderUploadSlot('area_bc_visual_4', 'Photo 4') !!}
                   </div>
                 </div>
                 <div class="area-subgroup">
@@ -765,20 +765,20 @@
             <!-- LEMBAR 3 -->
             <div class="area-photo-section">
               <div class="area-photo-section-header">
-                <span><i data-lucide="file-text"></i> Lembar 3 &mdash; OD Area "D", Penetrant "D" & OD Area "F"</span>
-                <span class="photo-tag">Lembar 3 (12 Slot)</span>
+                <span><i data-lucide="file-text"></i> {{ __('qc.studio.photo_sheet_3') }}</span>
+                <span class="photo-tag">{{ __('qc.studio.sheet', ['n' => 3]) }} (12 Slot)</span>
               </div>
               <div class="area-photo-section-body">
                 <div class="area-subgroup">
                   <div class="area-subgroup-title">
-                    <span>1. OD Area "D" — Foto Visual</span>
+                    <span>1. OD Area "D" — Visual</span>
                     <span class="subgroup-tag">4 Slot</span>
                   </div>
                   <div class="slot-grid-4">
-                    {!! $renderUploadSlot('area_d_visual_1', 'Foto 1') !!}
-                    {!! $renderUploadSlot('area_d_visual_2', 'Foto 2') !!}
-                    {!! $renderUploadSlot('area_d_visual_3', 'Foto 3') !!}
-                    {!! $renderUploadSlot('area_d_visual_4', 'Foto 4') !!}
+                    {!! $renderUploadSlot('area_d_visual_1', 'Photo 1') !!}
+                    {!! $renderUploadSlot('area_d_visual_2', 'Photo 2') !!}
+                    {!! $renderUploadSlot('area_d_visual_3', 'Photo 3') !!}
+                    {!! $renderUploadSlot('area_d_visual_4', 'Photo 4') !!}
                   </div>
                 </div>
                 <div class="area-subgroup">
@@ -795,14 +795,14 @@
                 </div>
                 <div class="area-subgroup">
                   <div class="area-subgroup-title">
-                    <span>3. OD Area "F" — Foto Visual</span>
+                    <span>3. OD Area "F" — Visual</span>
                     <span class="subgroup-tag">4 Slot</span>
                   </div>
                   <div class="slot-grid-4">
-                    {!! $renderUploadSlot('area_f_visual_1', 'Foto 1') !!}
-                    {!! $renderUploadSlot('area_f_visual_2', 'Foto 2') !!}
-                    {!! $renderUploadSlot('area_f_visual_3', 'Foto 3') !!}
-                    {!! $renderUploadSlot('area_f_visual_4', 'Foto 4') !!}
+                    {!! $renderUploadSlot('area_f_visual_1', 'Photo 1') !!}
+                    {!! $renderUploadSlot('area_f_visual_2', 'Photo 2') !!}
+                    {!! $renderUploadSlot('area_f_visual_3', 'Photo 3') !!}
+                    {!! $renderUploadSlot('area_f_visual_4', 'Photo 4') !!}
                   </div>
                 </div>
               </div>
@@ -811,8 +811,8 @@
             <!-- LEMBAR 4 -->
             <div class="area-photo-section">
               <div class="area-photo-section-header">
-                <span><i data-lucide="file-text"></i> Lembar 4 &mdash; Penetrant Area "F", OD Area "H" & Penetrant "H"</span>
-                <span class="photo-tag">Lembar 4 (12 Slot)</span>
+                <span><i data-lucide="file-text"></i> {{ __('qc.studio.photo_sheet_4') }}</span>
+                <span class="photo-tag">{{ __('qc.studio.sheet', ['n' => 4]) }} (12 Slot)</span>
               </div>
               <div class="area-photo-section-body">
                 <div class="area-subgroup">
@@ -829,14 +829,14 @@
                 </div>
                 <div class="area-subgroup">
                   <div class="area-subgroup-title">
-                    <span>2. OD Area "H" — Foto Visual</span>
+                    <span>2. OD Area "H" — Visual</span>
                     <span class="subgroup-tag">4 Slot</span>
                   </div>
                   <div class="slot-grid-4">
-                    {!! $renderUploadSlot('area_h_visual_1', 'Foto 1') !!}
-                    {!! $renderUploadSlot('area_h_visual_2', 'Foto 2') !!}
-                    {!! $renderUploadSlot('area_h_visual_3', 'Foto 3') !!}
-                    {!! $renderUploadSlot('area_h_visual_4', 'Foto 4') !!}
+                    {!! $renderUploadSlot('area_h_visual_1', 'Photo 1') !!}
+                    {!! $renderUploadSlot('area_h_visual_2', 'Photo 2') !!}
+                    {!! $renderUploadSlot('area_h_visual_3', 'Photo 3') !!}
+                    {!! $renderUploadSlot('area_h_visual_4', 'Photo 4') !!}
                   </div>
                 </div>
                 <div class="area-subgroup">
@@ -857,20 +857,20 @@
             <!-- LEMBAR 5 -->
             <div class="area-photo-section">
               <div class="area-photo-section-header">
-                <span><i data-lucide="file-text"></i> Lembar 5 &mdash; OD Area "G" & Spline, Penetrant Spline & Diagram TIR</span>
-                <span class="photo-tag">Lembar 5 (9 Slot)</span>
+                <span><i data-lucide="file-text"></i> {{ __('qc.studio.photo_sheet_5') }}</span>
+                <span class="photo-tag">{{ __('qc.studio.sheet', ['n' => 5]) }} (9 Slot)</span>
               </div>
               <div class="area-photo-section-body">
                 <div class="area-subgroup">
                   <div class="area-subgroup-title">
-                    <span>1. OD Area "G" and OD Spline — Foto Visual</span>
+                    <span>1. OD Area "G" and OD Spline — Visual</span>
                     <span class="subgroup-tag">4 Slot</span>
                   </div>
                   <div class="slot-grid-4">
-                    {!! $renderUploadSlot('area_g_visual_1', 'Foto 1') !!}
-                    {!! $renderUploadSlot('area_g_visual_2', 'Foto 2') !!}
-                    {!! $renderUploadSlot('area_g_visual_3', 'Foto 3') !!}
-                    {!! $renderUploadSlot('area_g_visual_4', 'Foto 4') !!}
+                    {!! $renderUploadSlot('area_g_visual_1', 'Photo 1') !!}
+                    {!! $renderUploadSlot('area_g_visual_2', 'Photo 2') !!}
+                    {!! $renderUploadSlot('area_g_visual_3', 'Photo 3') !!}
+                    {!! $renderUploadSlot('area_g_visual_4', 'Photo 4') !!}
                   </div>
                 </div>
                 <div class="area-subgroup">
@@ -888,7 +888,7 @@
                 <!-- TIR Diagram -->
                 <div class="area-subgroup">
                   <div class="area-subgroup-title">
-                    <span>3. Diagram Titik Pengukuran TIR (Runout Acuan)</span>
+                    <span>{{ __('qc.studio.photo_tir_tag') }}</span>
                     <span class="subgroup-tag">1 Slot</span>
                   </div>
                   <div class="slot-large-card {{ !empty($photos['tir_diagram']) ? 'has-image' : '' }}" id="card_slot_tir_diagram">
@@ -899,22 +899,22 @@
                         @if(!empty($photos['tir_diagram']))
                           <img src="{{ asset($photos['tir_diagram']) }}" alt="TIR Diagram">
                         @else
-                          <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>Klik atau geser file gambar diagram titik pengukuran runout</span></div>
+                          <div class="slot-empty-icon"><i data-lucide="image-plus"></i><span>{{ __('qc.studio.photo_empty_tir') }}</span></div>
                         @endif
                       </div>
                     </div>
                     <div class="slot-quick-action">
                       <button type="button" class="btn btn-primary btn-xs" onclick="triggerCameraInput('camera_slot_tir_diagram')">
-                        <i data-lucide="camera"></i> Kamera
+                        <i data-lucide="camera"></i> {{ __('qc.studio.photo_camera') }}
                       </button>
                       <button type="button" class="btn btn-secondary btn-xs" onclick="triggerFileInput('input_slot_tir_diagram')">
-                        <i data-lucide="folder-image"></i> Galeri
+                        <i data-lucide="folder-image"></i> {{ __('qc.studio.photo_gallery') }}
                       </button>
                       <button type="button" class="btn btn-secondary btn-xs" onclick="useDefaultBlueprint('tir_diagram')">
-                        <i data-lucide="copy"></i> Gunakan Standar Diagram TIR
+                        <i data-lucide="copy"></i> {{ __('qc.studio.photo_use_tir') }}
                       </button>
                       <button type="button" class="btn btn-secondary btn-xs" id="btn_rem_slot_tir_diagram" onclick="removeSlotPhoto('tir_diagram')" style="{{ !empty($photos['tir_diagram']) ? '' : 'display:none;' }}">
-                        <i data-lucide="trash-2"></i> Hapus
+                        <i data-lucide="trash-2"></i> {{ __('qc.studio.photo_remove') }}
                       </button>
                     </div>
                   </div>
@@ -928,25 +928,25 @@
           <div class="s-tab-content" id="stab-tir">
             <div class="form-section-title">
               <i data-lucide="activity"></i>
-              <h4>Total Indicator Reading (TIR / Runout Pengukuran Poros)</h4>
+              <h4>{{ __('qc.studio.tir_title') }}</h4>
             </div>
             
             <div class="datum-banner">
-              <span><strong>Datum Acuan:</strong> Datum at item "B and E"</span>
-              <span class="spec-tag">Batas Maksimal: Max 0,2 mm</span>
+              <span><strong>{{ __('qc.studio.tir_datum') }}</strong> Datum at item "B and E"</span>
+              <span class="spec-tag">{{ __('qc.studio.tir_max') }}</span>
             </div>
 
             <div class="table-compact-wrapper">
               <table class="table-compact">
               <thead>
                 <tr>
-                  <th style="width: 50px;">Titik</th>
-                  <th>Batas Spec</th>
+                  <th style="width: 50px;">{{ __('qc.studio.tir_point') }}</th>
+                  <th>{{ __('qc.studio.tir_limit') }}</th>
                   <th>0° (mm)</th>
                   <th>90° (mm)</th>
                   <th>180° (mm)</th>
                   <th>270° (mm)</th>
-                  <th style="width: 70px;">Status</th>
+                  <th style="width: 70px;">{{ __('qc.common.status') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1014,24 +1014,21 @@
             <div class="form-section-title" style="display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <i data-lucide="check-square"></i>
-                <h4 style="display: inline; margin-left: 0.5rem;">Temuan & Rekomendasi Tindakan</h4>
+                <h4 style="display: inline; margin-left: 0.5rem;">{{ __('qc.studio.sec_rec_title') }}</h4>
               </div>
               <button type="button" class="btn btn-secondary btn-sm" id="btnAddRecRow">
-                <i data-lucide="plus"></i> Tambah Item Baru
+                <i data-lucide="plus"></i> {{ __('qc.studio.add_rec_item') }}
               </button>
             </div>
-            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0.35rem 0 0.6rem 0;">
-              Satu item dapat memiliki beberapa baris temuan & rekomendasi. Klik tombol <strong style="color:var(--primary); font-weight:700;">+ Baris</strong> pada item untuk menambah baris di item yang sama.
-            </p>
 
             <div class="table-compact-wrapper">
               <table class="table-compact" style="margin-top: 0.5rem;">
               <thead>
                 <tr>
-                  <th style="width: 115px; text-align: center;">Item</th>
-                  <th>Remarks (Temuan Visual / Kondisi Bagian)</th>
-                  <th>Rekomendasi Tindakan QC</th>
-                  <th style="width: 45px; text-align: center;">Aksi</th>
+                  <th style="width: 115px; text-align: center;">{{ __('qc.studio.rec_col_item') }}</th>
+                  <th>{{ __('qc.studio.rec_col_remarks') }}</th>
+                  <th>{{ __('qc.studio.rec_col_action') }}</th>
+                  <th style="width: 45px; text-align: center;">{{ __('qc.studio.rec_col_act') }}</th>
                 </tr>
               </thead>
               <tbody id="recTableBody">
@@ -1045,16 +1042,16 @@
           <div class="s-tab-content" id="stab-ttd">
             <div class="form-section-title">
               <i data-lucide="user-check"></i>
-              <h4>Pengesahan & Personel Inspeksi</h4>
+              <h4>{{ __('qc.studio.sec_sign_title') }}</h4>
             </div>
 
             <div class="form-grid-3">
               <div class="sig-box">
                 <h5>Checked by:</h5>
                 <div class="form-group">
-                  <label for="sig_checkedName">Nama Pemeriksa</label>
+                  <label for="sig_checkedName">{{ __('qc.studio.sig_checker_name') }}</label>
                   <select id="sig_checkedName">
-                    <option value="">Pilih pemeriksa...</option>
+                    <option value="">{{ __('qc.studio.sig_pick_checker') }}</option>
                     @foreach($userList as $u)
                       <option value="{{ $u->name }}" data-user-id="{{ $u->id }}" data-user-role="{{ $u->role }}" {{ $checkedName !== '' && strcasecmp($checkedName, $u->name) === 0 ? 'selected' : '' }}>
                         {{ $u->name }}
@@ -1066,9 +1063,9 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label for="sig_checkedTitle">Jabatan</label>
+                  <label for="sig_checkedTitle">{{ __('qc.studio.sig_title') }}</label>
                   <select id="sig_checkedTitle">
-                    <option value="">Pilih jabatan...</option>
+                    <option value="">{{ __('qc.studio.sig_pick_title') }}</option>
                     <option value="QC Inspector" {{ $checkedTitle === 'QC Inspector' ? 'selected' : '' }}>QC Inspector</option>
                     <option value="Leader QC" {{ $checkedTitle === 'Leader QC' ? 'selected' : '' }}>Leader QC</option>
                     <option value="Workshop Supervisor" {{ $checkedTitle === 'Workshop Supervisor' ? 'selected' : '' }}>Workshop Supervisor</option>
@@ -1076,7 +1073,7 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label for="sig_checkedDate">Tanggal</label>
+                  <label for="sig_checkedDate">{{ __('qc.studio.sig_date') }}</label>
                   <input type="date" id="sig_checkedDate" value="{{ $checkedDate }}">
                 </div>
               </div>
@@ -1084,9 +1081,9 @@
               <div class="sig-box">
                 <h5>Created by:</h5>
                 <div class="form-group">
-                  <label for="sig_createdName">Nama Pembuat</label>
+                  <label for="sig_createdName">{{ __('qc.studio.sig_creator_name') }}</label>
                   <select id="sig_createdName">
-                    <option value="">Pilih pembuat...</option>
+                    <option value="">{{ __('qc.studio.sig_pick_creator') }}</option>
                     @foreach($userList as $u)
                       <option value="{{ $u->name }}" data-user-id="{{ $u->id }}" data-user-role="{{ $u->role }}" {{ $createdName !== '' && strcasecmp($createdName, $u->name) === 0 ? 'selected' : '' }}>
                         {{ $u->name }}
@@ -1098,9 +1095,9 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label for="sig_createdTitle">Jabatan</label>
+                  <label for="sig_createdTitle">{{ __('qc.studio.sig_title') }}</label>
                   <select id="sig_createdTitle">
-                    <option value="">Pilih jabatan...</option>
+                    <option value="">{{ __('qc.studio.sig_pick_title') }}</option>
                     <option value="QC Inspector" {{ $createdTitle === 'QC Inspector' ? 'selected' : '' }}>QC Inspector</option>
                     <option value="Leader QC" {{ $createdTitle === 'Leader QC' ? 'selected' : '' }}>Leader QC</option>
                     <option value="Workshop Supervisor" {{ $createdTitle === 'Workshop Supervisor' ? 'selected' : '' }}>Workshop Supervisor</option>
@@ -1108,7 +1105,7 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label for="sig_createdDate">Tanggal</label>
+                  <label for="sig_createdDate">{{ __('qc.studio.sig_date') }}</label>
                   <input type="date" id="sig_createdDate" value="{{ $createdDate }}">
                 </div>
               </div>
@@ -1116,9 +1113,9 @@
               <div class="sig-box">
                 <h5>Reviewed by:</h5>
                 <div class="form-group">
-                  <label for="sig_reviewedName">Nama Peninjau </label>
+                  <label for="sig_reviewedName">{{ __('qc.studio.sig_reviewer_name') }}</label>
                   <select id="sig_reviewedName">
-                    <option value="">Pilih akun peninjau...</option>
+                    <option value="">{{ __('qc.studio.sig_pick_reviewer') }}</option>
                     @foreach($userList as $u)
                       @php
                         $isReviewedSelected = (isset($report) && $report && $report->reviewer_id)
@@ -1135,9 +1132,9 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label for="sig_reviewedTitle">Jabatan</label>
+                  <label for="sig_reviewedTitle">{{ __('qc.studio.sig_title') }}</label>
                   <select id="sig_reviewedTitle">
-                    <option value="">Pilih jabatan...</option>
+                    <option value="">{{ __('qc.studio.sig_pick_title') }}</option>
                     <option value="Leader QC" {{ $reviewedTitle === 'Leader QC' ? 'selected' : '' }}>Leader QC</option>
                     <option value="Workshop Supervisor" {{ $reviewedTitle === 'Workshop Supervisor' ? 'selected' : '' }}>Workshop Supervisor</option>
                     <option value="QC Inspector" {{ $reviewedTitle === 'QC Inspector' ? 'selected' : '' }}>QC Inspector</option>
@@ -1145,7 +1142,7 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label for="sig_reviewedDate">Tanggal</label>
+                  <label for="sig_reviewedDate">{{ __('qc.studio.sig_date') }}</label>
                   <input type="date" id="sig_reviewedDate" value="{{ $reviewedDate }}">
                 </div>
               </div>
@@ -1158,17 +1155,17 @@
         <div class="studio-footer">
           <div class="footer-left">
             <button type="button" class="btn btn-secondary btn-sm" id="btnResetBlank">
-              <i data-lucide="rotate-ccw"></i> Kosongkan Form
+              <i data-lucide="rotate-ccw"></i> {{ __('qc.studio.clear_form') }}
             </button>
           </div>
           <div class="footer-right">
             @if($isDraftReport)
               <button type="button" class="btn btn-secondary btn-sm" id="btnFooterDraft">
-                <i data-lucide="file-clock"></i> Simpan Draft
+                <i data-lucide="file-clock"></i> {{ __('qc.studio.save_draft') }}
               </button>
             @endif
             <button type="button" class="btn btn-primary btn-sm" id="btnFooterSubmit">
-              <i data-lucide="{{ $isDraftReport ? 'send' : 'save' }}"></i> {{ $isDraftReport ? 'Submit Laporan' : 'Simpan Perubahan' }}
+              <i data-lucide="{{ $isDraftReport ? 'send' : 'save' }}"></i> {{ $isDraftReport ? __('qc.studio.submit_report') : __('qc.common.save_changes') }}
             </button>
           </div>
         </div>
@@ -1181,27 +1178,27 @@
       <div class="preview-toolbar">
         <div class="preview-title">
           <i data-lucide="eye"></i>
-          <span><span class="hide-mobile">Live Document Preview &mdash; </span><strong>FORM-QC-002</strong></span>
+          <span><span class="hide-mobile">{{ __('qc.studio.live_preview') }} &mdash; </span><strong>FORM-QC-002</strong></span>
         </div>
         <div class="preview-actions">
-          <button type="button" class="btn btn-secondary btn-xs" id="btnPrintPreview" title="Cetak / Unduh PDF" onclick="window.exportOfficialPdf()">
-            <i data-lucide="printer"></i> <span class="hide-mobile">Cetak / </span>PDF
+          <button type="button" class="btn btn-secondary btn-xs" id="btnPrintPreview" title="{{ __('qc.studio.print_pdf') }}" onclick="window.exportOfficialPdf()">
+            <i data-lucide="printer"></i> <span class="hide-mobile">{{ __('qc.studio.print_pdf') }}</span>
           </button>
-          <button type="button" class="btn btn-danger btn-xs btn-close-preview" id="btnCloseMobilePreview" onclick="window.closeMobilePreview()" title="Tutup Preview &amp; Kembali ke Form">
-            <i data-lucide="x"></i> Tutup
+          <button type="button" class="btn btn-danger btn-xs btn-close-preview" id="btnCloseMobilePreview" onclick="window.closeMobilePreview()" title="{{ __('qc.common.close') }}">
+            <i data-lucide="x"></i> {{ __('qc.common.close') }}
           </button>
         </div>
       </div>
 
       <!-- Slide / Page Navigation Switcher -->
       <div class="preview-page-tabs">
-        <button type="button" class="p-page-btn active" onclick="switchPreviewPage(1)">Lembar 1</button>
-        <button type="button" class="p-page-btn" onclick="switchPreviewPage(2)">Lembar 2</button>
-        <button type="button" class="p-page-btn" onclick="switchPreviewPage(3)">Lembar 3</button>
-        <button type="button" class="p-page-btn" onclick="switchPreviewPage(4)">Lembar 4</button>
-        <button type="button" class="p-page-btn" onclick="switchPreviewPage(5)">Lembar 5</button>
-        <button type="button" class="p-page-btn" onclick="switchPreviewPage(6)">Lembar 6</button>
-        <button type="button" class="p-page-btn" onclick="switchPreviewPage('all')">Lihat Semua (1-6)</button>
+        <button type="button" class="p-page-btn active" data-page="1" onclick="switchPreviewPage(1)">{{ __('qc.studio.sheet', ['n' => 1]) }}</button>
+        <button type="button" class="p-page-btn" data-page="2" onclick="switchPreviewPage(2)">{{ __('qc.studio.sheet', ['n' => 2]) }}</button>
+        <button type="button" class="p-page-btn" data-page="3" onclick="switchPreviewPage(3)">{{ __('qc.studio.sheet', ['n' => 3]) }}</button>
+        <button type="button" class="p-page-btn" data-page="4" onclick="switchPreviewPage(4)">{{ __('qc.studio.sheet', ['n' => 4]) }}</button>
+        <button type="button" class="p-page-btn" data-page="5" onclick="switchPreviewPage(5)">{{ __('qc.studio.sheet', ['n' => 5]) }}</button>
+        <button type="button" class="p-page-btn" data-page="6" onclick="switchPreviewPage(6)">{{ __('qc.studio.sheet', ['n' => 6]) }}</button>
+        <button type="button" class="p-page-btn" data-page="all" onclick="switchPreviewPage('all')">{{ __('qc.studio.view_all_sheets') }}</button>
       </div>
 
       <!-- The Official 6-Sheet Replica Container -->
@@ -1952,10 +1949,10 @@
   </div>
 </div>
 
-<!-- Floating Action Button for Mobile Preview (Sisi Kanan Layar) -->
-<button type="button" class="mobile-preview-fab" id="btnFabMobilePreview" onclick="window.openMobilePreview()" title="Buka Dokumen Preview Full Layar">
+<!-- Floating Action Button for Mobile Preview -->
+<button type="button" class="mobile-preview-fab" id="btnFabMobilePreview" onclick="window.openMobilePreview()" title="{{ __('qc.studio.preview_fab') }}">
   <i data-lucide="file-text"></i>
-  <span>Preview Dokumen</span>
+  <span>{{ __('qc.studio.preview_fab') }}</span>
 </button>
 @endsection
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ app()->getLocale() }}" data-theme="{{ $currentTheme ?? (auth()->user()?->theme ?? 'light') }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,7 +25,7 @@
       })();
     </script>
     <!-- Floating Sidebar Edge Tab (Linear/Notion Style) -->
-    <button type="button" class="sidebar-edge-tab" id="btnSidebarEdgeTab" title="Buka Sidebar" aria-label="Buka Sidebar">
+    <button type="button" class="sidebar-edge-tab" id="btnSidebarEdgeTab" title="{{ __('qc.nav.open_sidebar') }}" aria-label="{{ __('qc.nav.open_sidebar') }}">
       <i data-lucide="panel-left-open"></i>
     </button>
 
@@ -38,43 +38,74 @@
           <h2>QCMS</h2>
           <p>PT SSC Works</p>
         </div>
-        <button type="button" class="sidebar-collapse-desktop" id="btnSidebarCollapse" aria-label="Ciutkan Menu" title="Ciutkan Menu">
+        <button type="button" class="sidebar-collapse-desktop" id="btnSidebarCollapse" aria-label="{{ __('qc.nav.collapse_menu') }}" title="{{ __('qc.nav.collapse_menu') }}">
           <i data-lucide="panel-left-close"></i>
         </button>
-        <button type="button" class="sidebar-close-mobile" id="btnCloseSidebarMobile" aria-label="Tutup Menu" title="Tutup Menu">
+        <button type="button" class="sidebar-close-mobile" id="btnCloseSidebarMobile" aria-label="{{ __('qc.nav.close_menu') }}" title="{{ __('qc.nav.close_menu') }}">
           <i data-lucide="x"></i>
         </button>
       </div>
 
       <!-- Navigation Links -->
       <nav class="sidebar-nav">
-        <div class="nav-section-title">Menu Utama</div>
+        <div class="nav-section-title">{{ __('qc.nav.main_menu') }}</div>
 
         <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
           <i data-lucide="layout-dashboard"></i>
-          <span>Dashboard Ringkas</span>
+          <span>{{ __('qc.nav.dashboard') }}</span>
         </a>
 
         <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') || request()->routeIs('inspection.create') ? 'active' : '' }}">
           <i data-lucide="archive"></i>
-          <span>Riwayat Laporan</span>
+          <span>{{ __('qc.nav.reports') }}</span>
           @if(($pendingApprovalCount ?? 0) > 0)
-            <span class="nav-badge-alert" title="{{ $pendingApprovalCount }} laporan menunggu review Anda">{{ $pendingApprovalCount }}</span>
+            <span class="nav-badge-alert" title="{{ __('qc.nav.pending_tooltip', ['count' => $pendingApprovalCount]) }}">{{ $pendingApprovalCount }}</span>
           @endif
         </a>
 
         <a href="{{ route('templates.index') }}" class="nav-item {{ request()->routeIs('templates.*') || request()->routeIs('parts.*') ? 'active' : '' }}">
           <i data-lucide="file-spreadsheet"></i>
-          <span>Template Komponen</span>
+          <span>{{ __('qc.nav.templates') }}</span>
         </a>
 
-        @if(auth()->check() && auth()->user()->isAdmin())
-          <div class="nav-section-title" style="margin-top: 1.25rem;">Pengaturan Sistem</div>
+        <!-- Pengaturan Sistem Nested Submenu -->
+        <div class="nav-group open" id="navSettingsGroup" style="margin-top: 0.35rem;">
+          <button type="button"
+                  class="nav-item nav-group-toggle {{ request()->routeIs('settings.*') ? 'active' : '' }}"
+                  id="btnNavSettingsToggle"
+                  aria-expanded="true">
+            <i data-lucide="settings"></i>
+            <span>{{ __('qc.nav.system_settings') }}</span>
+            <i data-lucide="chevron-down" class="nav-chevron"></i>
+          </button>
 
-          <a href="{{ route('settings.users.index') }}" class="nav-item {{ request()->routeIs('settings.users.*') ? 'active' : '' }}">
-            <i data-lucide="shield-check"></i>
-            <span>Kelola Akun Web</span>
-          </a>
+          <div class="nav-submenu" id="navSettingsSubmenu">
+            <a href="{{ route('settings.preferences') }}" class="nav-subitem {{ request()->routeIs('settings.index') || request()->routeIs('settings.preferences') ? 'active' : '' }}">
+              <i data-lucide="sliders-horizontal"></i>
+              <span>{{ __('qc.nav.appearance_language') }}</span>
+            </a>
+
+            @if(auth()->check() && auth()->user()->isAdmin())
+              <a href="{{ route('settings.users.index') }}" class="nav-subitem {{ request()->routeIs('settings.users.*') ? 'active' : '' }}">
+                <i data-lucide="shield-check"></i>
+                <span>{{ __('qc.nav.manage_accounts') }}</span>
+              </a>
+            @endif
+          </div>
+        </div>
+        @if(!request()->routeIs('settings.*'))
+          <script>
+            (function () {
+              try {
+                if (localStorage.getItem('qc_settings_group_closed') === '1') {
+                  var g = document.getElementById('navSettingsGroup');
+                  var b = document.getElementById('btnNavSettingsToggle');
+                  if (g) g.classList.remove('open');
+                  if (b) b.setAttribute('aria-expanded', 'false');
+                }
+              } catch (e) {}
+            })();
+          </script>
         @endif
       </nav>
 
@@ -83,11 +114,11 @@
         <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
         <div class="user-info">
           <h4>{{ auth()->user()->name }}</h4>
-          <p>{{ auth()->user()->email }} · <span style="color: {{ auth()->user()->isAdmin() ? 'var(--primary)' : 'var(--text-subtle)' }}; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">{{ auth()->user()->roleLabel() }}</span></p>
+          <p>{{ auth()->user()->email }} · <span style="color: {{ auth()->user()->isAdmin() ? 'var(--primary-text)' : 'var(--text-subtle)' }}; font-weight: 700; text-transform: uppercase; font-size: 0.65rem;">{{ auth()->user()->roleLabel() }}</span></p>
         </div>
         <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form">
           @csrf
-          <button type="submit" class="sidebar-logout" title="Keluar" aria-label="Keluar">
+          <button type="submit" class="sidebar-logout" title="{{ __('qc.nav.logout') }}" aria-label="{{ __('qc.nav.logout') }}">
             <i data-lucide="log-out"></i>
           </button>
         </form>
@@ -103,7 +134,7 @@
       <header class="top-navbar">
         <div class="top-nav-left">
           @hasSection('top_back_link')
-            <a href="@yield('top_back_link')" class="btn-nav-back-icon" title="@yield('top_back_title', 'Kembali ke Riwayat')">
+            <a href="@yield('top_back_link')" class="btn-nav-back-icon" title="@yield('top_back_title', __('qc.common.back'))">
               <i data-lucide="arrow-left"></i>
             </a>
           @endif
@@ -111,7 +142,7 @@
           <div class="breadcrumbs">
             <span>QCMS</span>
             <span>/</span>
-            <span class="current">@yield('page_title', 'Dashboard')</span>
+            <span class="current">@yield('page_title', __('qc.dashboard.title'))</span>
           </div>
         </div>
 
@@ -126,20 +157,20 @@
           <div class="qc-flash-alert success" role="status">
             <div class="qc-flash-icon"><i data-lucide="check-circle-2"></i></div>
             <div class="qc-flash-body">
-              <strong>Berhasil</strong>
+              <strong>{{ __('qc.common.success') }}</strong>
               <span>{{ session('success') }}</span>
             </div>
-            <button type="button" class="qc-flash-close" onclick="this.closest('.qc-flash-alert').remove()" aria-label="Tutup">&times;</button>
+            <button type="button" class="qc-flash-close" onclick="this.closest('.qc-flash-alert').remove()" aria-label="{{ __('qc.common.close') }}">&times;</button>
           </div>
         @endif
         @if(session('error'))
           <div class="qc-flash-alert error" role="alert">
             <div class="qc-flash-icon"><i data-lucide="alert-circle"></i></div>
             <div class="qc-flash-body">
-              <strong>Perhatian</strong>
+              <strong>{{ __('qc.common.warning') }}</strong>
               <span>{{ session('error') }}</span>
             </div>
-            <button type="button" class="qc-flash-close" onclick="this.closest('.qc-flash-alert').remove()" aria-label="Tutup">&times;</button>
+            <button type="button" class="qc-flash-close" onclick="this.closest('.qc-flash-alert').remove()" aria-label="{{ __('qc.common.close') }}">&times;</button>
           </div>
         @endif
 
@@ -157,16 +188,18 @@
       <div class="qc-dialog-icon-wrap" id="qcDialogIconWrap">
         <i data-lucide="help-circle" id="qcDialogIcon"></i>
       </div>
-      <h3 class="qc-dialog-title" id="qcDialogTitle">Konfirmasi</h3>
+      <h3 class="qc-dialog-title" id="qcDialogTitle">{{ __('qc.common.confirm') }}</h3>
       <p class="qc-dialog-message" id="qcDialogMessage"></p>
       <div class="qc-dialog-actions">
-        <button type="button" class="btn btn-secondary btn-sm" id="qcDialogCancel">Batal</button>
-        <button type="button" class="btn btn-primary btn-sm" id="qcDialogConfirm">Lanjutkan</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="qcDialogCancel">{{ __('qc.common.cancel') }}</button>
+        <button type="button" class="btn btn-primary btn-sm" id="qcDialogConfirm">{{ __('qc.common.continue') }}</button>
       </div>
     </div>
   </div>
 
   <script>
+    window.qcI18n = @json(__('qc'));
+
     (function () {
       function escapeHtml(str) {
         return String(str ?? '')
@@ -176,12 +209,13 @@
           .replace(/"/g, '&quot;');
       }
 
+      const commonI18n = (window.qcI18n && window.qcI18n.common) ? window.qcI18n.common : {};
       const toastMeta = {
-        success: { title: 'Berhasil', icon: 'check-circle-2' },
-        error: { title: 'Gagal', icon: 'alert-circle' },
-        warning: { title: 'Perhatian', icon: 'alert-triangle' },
-        info: { title: 'Informasi', icon: 'info' },
-        loading: { title: 'Memproses', icon: 'loader-2' },
+        success: { title: commonI18n.success || 'Berhasil', icon: 'check-circle-2' },
+        error: { title: commonI18n.error || 'Gagal', icon: 'alert-circle' },
+        warning: { title: commonI18n.warning || 'Perhatian', icon: 'alert-triangle' },
+        info: { title: commonI18n.info || 'Informasi', icon: 'info' },
+        loading: { title: commonI18n.processing || 'Memproses', icon: 'loader-2' },
       };
 
       window.qcNotify = function (message, type = 'success', customTitle = null) {
@@ -206,7 +240,7 @@
             <div class="toast-title">${escapeHtml(title)}</div>
             <div class="toast-msg">${escapeHtml(message)}</div>
           </div>
-          <button type="button" class="toast-close" aria-label="Tutup">&times;</button>
+          <button type="button" class="toast-close" aria-label="${escapeHtml(commonI18n.close || 'Tutup')}">&times;</button>
           ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms;"></div>` : ''}
         `;
 
@@ -242,7 +276,7 @@
         }
       }
 
-      function openQcDialog({ title, message, confirmText = 'Lanjutkan', cancelText = 'Batal', variant = 'primary', showCancel = true }) {
+      function openQcDialog({ title, message, confirmText = commonI18n.continue || 'Lanjutkan', cancelText = commonI18n.cancel || 'Batal', variant = 'primary', showCancel = true }) {
         const overlay = document.getElementById('qcDialogOverlay');
         const titleEl = document.getElementById('qcDialogTitle');
         const msgEl = document.getElementById('qcDialogMessage');
@@ -269,7 +303,7 @@
           primary: 'btn-primary',
         };
 
-        titleEl.textContent = title || 'Konfirmasi';
+        titleEl.textContent = title || (commonI18n.confirm || 'Konfirmasi');
         msgEl.textContent = message || '';
         confirmBtn.textContent = confirmText;
         cancelBtn.textContent = cancelText;
@@ -291,10 +325,10 @@
 
       window.qcConfirm = function (options) {
         return openQcDialog({
-          title: options?.title || 'Konfirmasi Tindakan',
+          title: options?.title || commonI18n.confirm_action || 'Konfirmasi Tindakan',
           message: options?.message || '',
-          confirmText: options?.confirmText || 'Ya, Lanjutkan',
-          cancelText: options?.cancelText || 'Batal',
+          confirmText: options?.confirmText || commonI18n.continue || 'Ya, Lanjutkan',
+          cancelText: options?.cancelText || commonI18n.cancel || 'Batal',
           variant: options?.variant || 'primary',
           showCancel: true,
         });
@@ -303,9 +337,9 @@
       window.qcAlert = function (options) {
         const opts = typeof options === 'string' ? { message: options } : (options || {});
         return openQcDialog({
-          title: opts.title || 'Informasi',
+          title: opts.title || commonI18n.info || 'Informasi',
           message: opts.message || '',
-          confirmText: opts.buttonText || 'Mengerti',
+          confirmText: opts.buttonText || commonI18n.got_it || 'Mengerti',
           variant: opts.variant || 'info',
           showCancel: false,
         });
@@ -328,6 +362,19 @@
 
       document.addEventListener('DOMContentLoaded', () => {
         if (window.lucide) lucide.createIcons();
+
+        // Sidebar Pengaturan Sistem submenu accordion
+        const navSettingsGroup = document.getElementById('navSettingsGroup');
+        const btnNavSettingsToggle = document.getElementById('btnNavSettingsToggle');
+        if (btnNavSettingsToggle && navSettingsGroup) {
+          btnNavSettingsToggle.addEventListener('click', () => {
+            const isOpen = navSettingsGroup.classList.toggle('open');
+            btnNavSettingsToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            try {
+              localStorage.setItem('qc_settings_group_closed', isOpen ? '0' : '1');
+            } catch (e) {}
+          });
+        }
 
         const appShell = document.getElementById('appShell');
         const btnCollapse = document.getElementById('btnSidebarCollapse');
@@ -400,7 +447,7 @@
           syncToggleButtonState();
         });
 
-        document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+        document.querySelectorAll('.sidebar-nav a.nav-item, .sidebar-nav a.nav-subitem').forEach(item => {
           item.addEventListener('click', () => {
             if (window.innerWidth <= 900) closeMobileSidebar();
           });

@@ -1,28 +1,28 @@
 @extends('layouts.app')
 
-@section('title', 'Template Dokumen QC & Komponen')
-@section('page_title', 'Template Komponen QC')
+@section('title', __('qc.templates.title'))
+@section('page_title', __('qc.templates.page_title'))
 
 @section('top_actions')
   <a href="{{ route('inspection.create') }}" class="btn btn-primary btn-sm">
-    <i data-lucide="file-plus"></i> Buka Form Inspeksi
+    <i data-lucide="file-plus"></i> {{ __('qc.templates.open_form') }}
   </a>
 @endsection
 
 @section('content')
   <div class="page-header">
     <div class="page-title">
-      <h1>Manajemen Template Dokumen QC Komponen</h1>
-      <p>Daftar format form inspeksi dimensi dan status integrasi template Excel antar divisi PT SSC Works.</p>
+      <h1>{{ __('qc.templates.heading') }}</h1>
+      <p>{{ __('qc.templates.subtitle') }}</p>
     </div>
   </div>
 
   <div class="notice-box" style="margin-bottom: 1.5rem;">
-    <i data-lucide="info" style="color: var(--primary); flex-shrink: 0;"></i>
+    <i data-lucide="info" style="color: var(--primary-text); flex-shrink: 0;"></i>
     <div>
-      <strong>Status Integrasi Multi-Komponen:</strong>
-      <p style="margin: 0.25rem 0 0 0; color: var(--text-default); font-size: 0.88rem;">
-        Saat ini sistem telah mengintegrasikan penuh template Excel untuk <strong>Output Shaft (FORM-QC-002 REV 04)</strong>. Untuk komponen lainnya (Hydraulic Cylinder, Pinion Gear, Bearing Journal, dsb.), input inspeksi akan otomatis diaktifkan setelah file template Excel resmi dari divisi terkait diintegrasikan.
+      <strong>{{ __('qc.templates.notice_title') }}</strong>
+      <p style="margin: 0.25rem 0 0 0; color: var(--text-muted); font-size: 0.88rem;">
+        {{ __('qc.templates.notice_body') }}
       </p>
     </div>
   </div>
@@ -32,25 +32,25 @@
       <table class="qc-table">
         <thead>
           <tr>
-            <th>No. Dokumen QC</th>
-            <th>Nama Komponen</th>
-            <th>Divisi / Kategori</th>
-            <th>Drawing Standar</th>
-            <th>Kunci Toleransi</th>
-            <th>Status Integrasi</th>
-            <th style="text-align: right;">Aksi</th>
+            <th>{{ __('qc.templates.col_doc') }}</th>
+            <th>{{ __('qc.templates.col_name') }}</th>
+            <th>{{ __('qc.templates.col_division') }}</th>
+            <th>{{ __('qc.templates.col_drawing') }}</th>
+            <th>{{ __('qc.templates.col_specs') }}</th>
+            <th>{{ __('qc.templates.col_status') }}</th>
+            <th style="text-align: right;">{{ __('qc.templates.col_action') }}</th>
           </tr>
         </thead>
         <tbody>
           @foreach($templates as $tpl)
             <tr>
               <td>
-                <span class="mono" style="font-weight: 700; color: var(--primary);">
+                <span class="mono" style="font-weight: 700; color: var(--primary-text);">
                   {{ $tpl['form_doc'] }}
                 </span>
               </td>
               <td>
-                <strong style="color: var(--text-heading); font-size: 0.95rem;">{{ $tpl['name'] }}</strong>
+                <strong style="color: var(--text-main); font-size: 0.95rem;">{{ $tpl['name'] }}</strong>
                 <span style="font-size: 0.75rem; color: var(--text-subtle); display: block;">Unit: {{ $tpl['model_unit'] }}</span>
               </td>
               <td>
@@ -66,22 +66,22 @@
               <td>
                 @if($tpl['is_active'])
                   <span class="badge badge-green">
-                    <i data-lucide="check-circle" style="width: 12px; height: 12px; display: inline;"></i> Aktif Digunakan
+                    <i data-lucide="check-circle" style="width: 12px; height: 12px; display: inline;"></i> {{ __('qc.templates.active_badge') }}
                   </span>
                 @else
-                  <span class="badge badge-blue" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">
-                    <i data-lucide="clock" style="width: 12px; height: 12px; display: inline;"></i> Menunggu Template Divisi
+                  <span class="badge badge-slate">
+                    <i data-lucide="clock" style="width: 12px; height: 12px; display: inline;"></i> {{ __('qc.templates.pending_badge') }}
                   </span>
                 @endif
               </td>
               <td style="text-align: right; white-space: nowrap;">
                 @if($tpl['is_active'])
                   <a href="{{ route('inspection.create') }}" class="btn btn-primary btn-sm">
-                    <i data-lucide="edit"></i> Gunakan
+                    <i data-lucide="edit"></i> {{ __('qc.templates.use_btn') }}
                   </a>
                 @else
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="window.qcAlert({ title: 'Template Belum Tersedia', message: 'Template Excel untuk komponen ini sedang dipersiapkan oleh divisi terkait. Silakan hubungi koordinator QC jika template sudah siap diintegrasikan.', variant: 'info' })">
-                    <i data-lucide="upload"></i> Upload Excel
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="window.qcAlert({ title: @json(__('qc.templates.alert_title')), message: @json(__('qc.templates.alert_msg')), variant: 'info' })">
+                    <i data-lucide="upload"></i> {{ __('qc.templates.upload_excel') }}
                   </button>
                 @endif
               </td>

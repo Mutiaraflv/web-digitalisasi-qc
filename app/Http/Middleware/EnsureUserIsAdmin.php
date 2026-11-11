@@ -16,7 +16,9 @@ class EnsureUserIsAdmin
     public function handle(Request $request, Closure $next): Response
     {
         if (! $request->user() || ! $request->user()->isAdmin()) {
-            abort(403, 'Akses ditolak. Menu Pengaturan Akun hanya dapat diakses oleh Administrator.');
+            abort(403, app()->getLocale() === 'en'
+                ? 'Access denied. Manage Accounts can only be accessed by Administrators.'
+                : 'Akses ditolak. Menu Kelola Akun hanya dapat diakses oleh Administrator.');
         }
 
         return $next($request);

@@ -156,13 +156,13 @@ class DashboardController extends Controller
             ->get();
 
         return $reports->map(function (Report $report) use ($user): array {
-            $roleInReport = 'Terkait';
+            $roleInReport = __('qc.dashboard.role_related');
             if ((int) $report->created_by === (int) $user->id) {
-                $roleInReport = 'Pengaju (Created)';
+                $roleInReport = __('qc.dashboard.role_creator');
             } elseif ((int) $report->checker_id === (int) $user->id) {
-                $roleInReport = 'Pemeriksa (Checked)';
+                $roleInReport = __('qc.dashboard.role_checker');
             } elseif ($report->canBeReviewedBy($user)) {
-                $roleInReport = 'Reviewer';
+                $roleInReport = __('qc.dashboard.role_reviewer');
             }
 
             $submittedAt = $report->submitted_at
@@ -245,6 +245,9 @@ class DashboardController extends Controller
         $roleKey = $log->user->role ?? 'system';
 
         $dt = $log->created_at ? Carbon::parse($log->created_at)->timezone(self::DISPLAY_TZ) : null;
+        if ($dt) {
+            $dt->locale(app()->getLocale());
+        }
 
         return [
             'id' => $log->id,
@@ -256,7 +259,7 @@ class DashboardController extends Controller
             'action' => $log->action,
             'badge' => $log->actionBadge(),
             'subject_label' => $log->subject_label,
-            'description' => $log->description,
+            'description' => $log->localizedDescription(),
             'part_name' => $log->meta['part_name'] ?? ($log->report->part_name ?? null),
             'time_formatted' => $dt ? $dt->format('d M Y, H:i:s') . ' WIB' : '-',
             'time_short' => $dt ? $dt->format('d M, H:i') : '-',

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ app()->getLocale() }}" data-theme="{{ $currentTheme ?? request()->cookie('qc_theme', 'light') }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Masuk — QCMS PT SSC Works</title>
+  <title>{{ __('qc.auth.page_title') }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
@@ -38,6 +38,21 @@
     .submit:hover { background: #0e0d9b; }
     .submit:active { transform: scale(0.99); }
     .form-notice { margin: 18px 0 0; color: #94a3b8; text-align: center; font-size: 11px; line-height: 1.5; }
+    [data-theme="dark"]:root { color-scheme: dark; color: #f1f5f9; }
+    [data-theme="dark"] body { background: #0b1120; }
+    [data-theme="dark"] .login-shell { background: #111827; border-color: #1e293b; box-shadow: 0 20px 50px rgba(0, 0, 0, .5); }
+    [data-theme="dark"] .login-panel { background: #111827; }
+    [data-theme="dark"] .eyebrow { color: #a5b4fc; }
+    [data-theme="dark"] h2 { color: #f8fafc; }
+    [data-theme="dark"] .intro { color: #94a3b8; }
+    [data-theme="dark"] label { color: #cbd5e1; }
+    [data-theme="dark"] input[type=email], [data-theme="dark"] input[type=password] { background: #0f172a; border-color: #334155; color: #f8fafc; }
+    [data-theme="dark"] input:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129, 140, 248, .25); }
+    [data-theme="dark"] .remember { color: #cbd5e1; }
+    [data-theme="dark"] .submit { background: #6366f1; }
+    [data-theme="dark"] .submit:hover { background: #4f46e5; }
+    [data-theme="dark"] .form-notice { color: #94a3b8; }
+    [data-theme="dark"] .field-error { color: #fda4af; }
     @media (max-width: 720px) {
       body { padding: 14px; }
       .login-shell { max-width: 460px; min-height: 0; grid-template-columns: 1fr; border-radius: 12px; }
@@ -57,38 +72,38 @@
         <div><div class="brand-name">QCMS</div><div class="brand-subtitle">PT SSC Works</div></div>
       </div>
       <div class="brand-copy">
-        <h1>Quality Control<br>Management System</h1>
-        <p>Sistem pencatatan inspeksi, laporan kondisi komponen, dan dokumentasi kualitas workshop.</p>
+        <h1>{{ __('qc.auth.system_title') }}</h1>
+        <p>{{ __('qc.auth.brand_desc') }}</p>
       </div>
-      <div class="brand-foot">Akses internal · Quality Control</div>
+      <div class="brand-foot">{{ __('qc.auth.brand_foot') }}</div>
     </section>
 
     <section class="login-panel">
       <form class="login-form" method="POST" action="{{ route('login.store') }}">
         @csrf
-        <p class="eyebrow">Selamat datang kembali</p>
-        <h2>Masuk ke akun</h2>
-        <p class="intro">Gunakan email dan kata sandi akun QCMS Anda untuk melanjutkan.</p>
+        <p class="eyebrow">{{ __('qc.auth.welcome_back') }}</p>
+        <h2>{{ __('qc.auth.sign_in_title') }}</h2>
+        <p class="intro">{{ __('qc.auth.sign_in_desc') }}</p>
 
         <div class="field">
-          <label for="email">Email</label>
+          <label for="email">{{ __('qc.auth.email') }}</label>
           <input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="username" required autofocus>
           @error('email') <span class="field-error">{{ $message }}</span> @enderror
         </div>
 
         <div class="field">
-          <label for="password">Kata sandi</label>
+          <label for="password">{{ __('qc.auth.password') }}</label>
           <input id="password" type="password" name="password" autocomplete="current-password" required>
           @error('password') <span class="field-error">{{ $message }}</span> @enderror
         </div>
 
         <label class="remember" for="remember">
           <input id="remember" type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
-          Ingat saya di perangkat ini
+          {{ __('qc.auth.remember') }}
         </label>
 
-        <button class="submit" type="submit">Masuk</button>
-        <p class="form-notice">Jika belum memiliki akun, hubungi administrator sistem.</p>
+        <button class="submit" type="submit">{{ __('qc.auth.sign_in_btn') }}</button>
+        <p class="form-notice">{{ __('qc.auth.no_account') }}</p>
       </form>
     </section>
   </main>

@@ -25,9 +25,9 @@ class User extends Authenticatable
     public static function roleLabels(): array
     {
         return [
-            self::ROLE_USER => 'Inspector QC',
-            self::ROLE_QC_LEADER => 'QC Leader',
-            self::ROLE_ADMIN => 'Administrator',
+            self::ROLE_USER => __('qc.roles.user'),
+            self::ROLE_QC_LEADER => __('qc.roles.qc_leader'),
+            self::ROLE_ADMIN => __('qc.roles.admin'),
         ];
     }
 
@@ -40,6 +40,8 @@ class User extends Authenticatable
         'name',
         'email',
         'role',
+        'theme',
+        'locale',
         'password',
     ];
 
