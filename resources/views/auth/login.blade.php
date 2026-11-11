@@ -117,120 +117,61 @@
       justify-content: space-between;
     }
 
-    /* Brand Header */
-    .brand-mark {
+    .brand-top-dummy {
+      height: 24px;
+    }
+
+    /* Minimalist Center Showcase */
+    .brand-center-showcase {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 14px;
+      text-align: center;
+      margin: auto 0;
+      padding: 2rem 1.5rem;
     }
 
-    .brand-logo-img {
-      width: 52px;
-      height: 52px;
+    .brand-big-logo {
+      width: 92px;
+      height: 92px;
       object-fit: contain;
-      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
+      filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.4));
+      margin-bottom: 1.5rem;
+      transition: transform 0.3s ease;
     }
 
-    .brand-title-group h3 {
+    .brand-big-logo:hover {
+      transform: scale(1.05);
+    }
+
+    .brand-headline {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.25rem;
+      font-size: 2.35rem;
       font-weight: 800;
       letter-spacing: 0.08em;
       color: #ffffff;
       line-height: 1.1;
+      margin-bottom: 0.35rem;
     }
 
-    .brand-title-group p {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      color: #a5b4fc;
-      text-transform: uppercase;
-      margin-top: 3px;
-    }
-
-    /* Brand Center Showcase */
-    .brand-hero-main {
-      margin: 40px 0;
-      max-width: 520px;
-    }
-
-    .brand-tag-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      backdrop-filter: blur(8px);
-      color: #c7d2fe;
-      font-size: 0.76rem;
-      font-weight: 600;
-      padding: 0.35rem 0.75rem;
-      border-radius: 9999px;
-      margin-bottom: 1.25rem;
-      letter-spacing: 0.02em;
-    }
-
-    .brand-tag-pill svg {
-      width: 14px;
-      height: 14px;
-      color: #818cf8;
-    }
-
-    .brand-hero-main h1 {
-      font-size: clamp(1.85rem, 3.2vw, 2.6rem);
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -0.03em;
-      color: #ffffff;
-      margin-bottom: 1rem;
-    }
-
-    .brand-hero-main h1 span {
-      background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .brand-hero-main p {
+    .brand-company-sub {
       font-size: 0.95rem;
-      line-height: 1.65;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #a5b4fc;
+      margin-bottom: 1.25rem;
+    }
+
+    .brand-slogan-line {
+      font-size: 0.96rem;
       color: #cbd5e1;
-      margin-bottom: 1.75rem;
-    }
-
-    /* Feature Highlights */
-    .brand-features-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-    }
-
-    .brand-feature-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 0.86rem;
-      color: #e2e8f0;
-      font-weight: 500;
-    }
-
-    .brand-feature-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      color: #818cf8;
-    }
-
-    .brand-feature-icon svg {
-      width: 15px;
-      height: 15px;
+      font-weight: 400;
+      max-width: 380px;
+      line-height: 1.6;
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+      padding-top: 1.1rem;
+      letter-spacing: 0.01em;
     }
 
     /* Brand Footer */
@@ -516,48 +457,18 @@
 </head>
 <body>
   <main class="login-shell">
-    <!-- Left Column: Full-Height Brand Showcase -->
+    <!-- Left Column: Full-Height Brand Showcase (Minimalist Center) -->
     <section class="login-brand" aria-label="QCMS PT SSC Works">
       <div class="brand-content">
-        <!-- Top: Logo & Company Name -->
-        <div class="brand-mark">
-          <img src="{{ asset('images/logo.png') }}" alt="Logo PT SSC Works" class="brand-logo-img">
-          <div class="brand-title-group">
-            <h3>QCMS</h3>
-            <p>PT SSC Works</p>
-          </div>
-        </div>
+        <!-- Top Spacer for balanced vertical centering -->
+        <div class="brand-top-dummy"></div>
 
-        <!-- Center: Headline & Features -->
-        <div class="brand-hero-main">
-          <div class="brand-tag-pill">
-            <i data-lucide="shield-check"></i>
-            <span>Quality Control Management System</span>
-          </div>
-
-          <h1>Digitalisasi Sistem <span>Quality Control</span></h1>
-          <p>{{ __('qc.auth.brand_desc') }}</p>
-
-          <div class="brand-features-list">
-            <div class="brand-feature-item">
-              <div class="brand-feature-icon">
-                <i data-lucide="ruler"></i>
-              </div>
-              <span>Verifikasi dimensi & toleransi presisi standar industri</span>
-            </div>
-            <div class="brand-feature-item">
-              <div class="brand-feature-icon">
-                <i data-lucide="check-circle-2"></i>
-              </div>
-              <span>Persetujuan terstruktur multi-peran (Inspector & QC Leader)</span>
-            </div>
-            <div class="brand-feature-item">
-              <div class="brand-feature-icon">
-                <i data-lucide="file-spreadsheet"></i>
-              </div>
-              <span>Dokumentasi otomatis FORM-QC-002 berformat PDF & Excel</span>
-            </div>
-          </div>
+        <!-- Center: Big Logo, QCMS Title, and Single-line Slogan -->
+        <div class="brand-center-showcase">
+          <img src="{{ asset('images/logo.png') }}" alt="Logo PT SSC Works" class="brand-big-logo">
+          <h1 class="brand-headline">QCMS</h1>
+          <div class="brand-company-sub">PT SSC Works</div>
+          <p class="brand-slogan-line">Quality Control Management System</p>
         </div>
 
         <!-- Bottom: Version & Security Notice -->
