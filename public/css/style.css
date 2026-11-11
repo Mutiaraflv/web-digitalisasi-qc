@@ -321,9 +321,9 @@ body {
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   background: var(--primary-light);
   color: var(--primary);
   display: flex;
@@ -335,6 +335,7 @@ body {
   font-family: var(--font-mono);
   transition: transform 0.15s ease;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .user-avatar-img {
@@ -5821,7 +5822,7 @@ body {
   position: relative;
   width: 86px;
   height: 86px;
-  border-radius: 50%;
+  border-radius: 22px;
   background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
   color: var(--primary);
   display: flex;
@@ -5846,17 +5847,17 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 50%;
+  border-radius: inherit;
   display: block;
 }
 
 .avatar-camera-badge {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  right: -4px;
+  bottom: -4px;
   width: 30px;
   height: 30px;
-  border-radius: 50%;
+  border-radius: 10px;
   background: var(--primary);
   color: #ffffff;
   border: 2.5px solid #ffffff;

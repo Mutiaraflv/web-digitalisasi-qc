@@ -17,7 +17,7 @@
             @endif
           </div>
 
-          <!-- Circular Camera Badge Button -->
+          <!-- Squircle Camera Badge Button -->
           <button type="button"
                   class="avatar-camera-badge"
                   id="btnAvatarBadge"
