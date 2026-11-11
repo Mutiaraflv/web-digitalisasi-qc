@@ -3,12 +3,6 @@
 @section('title', 'Riwayat Laporan QC')
 @section('page_title', 'Riwayat Laporan QC')
 
-@section('top_actions')
-  <a href="{{ route('inspection.create') }}" class="btn btn-primary btn-sm">
-    <i data-lucide="plus"></i> Input Inspeksi Baru
-  </a>
-@endsection
-
 @section('content')
   <div class="page-header">
     <div class="page-title">
@@ -183,12 +177,19 @@
 
 @section('scripts')
 <script>
-  function deleteReport(id, sscId) {
-    if (!confirm(`Apakah Anda yakin ingin menghapus laporan ${sscId}? Data yang dihapus tidak dapat dipulihkan.`)) {
-      return;
-    }
+  async function deleteReport(id, sscId) {
+    const confirmed = await window.qcConfirm({
+      title: 'Hapus Laporan QC',
+      message: `Apakah Anda yakin ingin menghapus laporan ${sscId}? Data yang dihapus tidak dapat dipulihkan.`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      variant: 'danger'
+    });
+    if (!confirmed) return;
 
     const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    window.qcNotify(`Menghapus laporan ${sscId}...`, 'loading');
+
     fetch(`/reports/${id}`, {
       method: 'DELETE',
       headers: {
@@ -199,13 +200,14 @@
     .then(async r => {
       const data = await r.json().catch(() => ({}));
       if (!r.ok || data.success === false) {
-        alert(data.message || 'Gagal menghapus laporan.');
+        window.qcNotify(data.message || 'Gagal menghapus laporan.', 'error');
         return;
       }
-      window.location.reload();
+      window.qcNotify(data.message || `Laporan ${sscId} berhasil dihapus.`, 'success');
+      setTimeout(() => window.location.reload(), 650);
     })
     .catch(err => {
-      alert('Gagal menghapus laporan: ' + err.message);
+      window.qcNotify('Gagal menghapus laporan: ' + err.message, 'error');
     });
   }
 

@@ -80,7 +80,7 @@
                     <i data-lucide="edit"></i> Gunakan
                   </a>
                 @else
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="alert('Template Excel untuk komponen ini sedang dipersiapkan oleh divisi terkait. Silakan hubungi koordinator QC jika template sudah siap diintegrasikan.')">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="window.qcAlert({ title: 'Template Belum Tersedia', message: 'Template Excel untuk komponen ini sedang dipersiapkan oleh divisi terkait. Silakan hubungi koordinator QC jika template sudah siap diintegrasikan.', variant: 'info' })">
                     <i data-lucide="upload"></i> Upload Excel
                   </button>
                 @endif

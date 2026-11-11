@@ -4,7 +4,7 @@
 @section('page_title', 'Master Pelanggan')
 
 @section('top_actions')
-  <button class="btn btn-primary btn-sm" onclick="alert('Fitur tambah mitra pelanggan akan aktif pada rilis berikutnya.')">
+  <button class="btn btn-primary btn-sm" onclick="window.qcAlert({ title: 'Informasi Fitur', message: 'Fitur tambah mitra pelanggan akan aktif pada rilis berikutnya.', variant: 'info' })">
     <i data-lucide="plus-circle"></i> Tambah Pelanggan Baru
   </button>
 @endsection

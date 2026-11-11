@@ -29,13 +29,8 @@
       <!-- Navigation Links -->
       <nav class="sidebar-nav">
         <div class="nav-section-title">Menu Utama</div>
-        
-        <a href="{{ route('inspection.create') }}" class="nav-item {{ request()->routeIs('inspection.create') || request()->routeIs('reports.create') || request()->routeIs('reports.edit') ? 'active' : '' }}">
-          <i data-lucide="file-plus-2"></i>
-          <span>Input Inspeksi Baru</span>
-        </a>
 
-        <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.index') && !request()->has('create') ? 'active' : '' }}">
+        <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') || request()->routeIs('inspection.create') ? 'active' : '' }}">
           <i data-lucide="archive"></i>
           <span>Riwayat Laporan</span>
           @if(($pendingApprovalCount ?? 0) > 0)
@@ -122,13 +117,23 @@
       <!-- Page Content -->
       <main class="page-container">
         @if(session('success'))
-          <div class="toast success" style="margin-bottom: 1rem; position: static;">
-            <span>{{ session('success') }}</span>
+          <div class="qc-flash-alert success" role="status">
+            <div class="qc-flash-icon"><i data-lucide="check-circle-2"></i></div>
+            <div class="qc-flash-body">
+              <strong>Berhasil</strong>
+              <span>{{ session('success') }}</span>
+            </div>
+            <button type="button" class="qc-flash-close" onclick="this.closest('.qc-flash-alert').remove()" aria-label="Tutup">&times;</button>
           </div>
         @endif
         @if(session('error'))
-          <div class="toast error" style="margin-bottom: 1rem; position: static;">
-            <span>{{ session('error') }}</span>
+          <div class="qc-flash-alert error" role="alert">
+            <div class="qc-flash-icon"><i data-lucide="alert-circle"></i></div>
+            <div class="qc-flash-body">
+              <strong>Perhatian</strong>
+              <span>{{ session('error') }}</span>
+            </div>
+            <button type="button" class="qc-flash-close" onclick="this.closest('.qc-flash-alert').remove()" aria-label="Tutup">&times;</button>
           </div>
         @endif
 
@@ -137,44 +142,236 @@
     </div>
   </div>
 
-  <div class="toast-container" id="toastContainer"></div>
+  <!-- Global Floating Toast Notifications -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Global Professional Confirmation & Info Modal -->
+  <div class="qc-dialog-overlay" id="qcDialogOverlay" aria-hidden="true">
+    <div class="qc-dialog-box" role="dialog" aria-modal="true" aria-labelledby="qcDialogTitle">
+      <div class="qc-dialog-icon-wrap" id="qcDialogIconWrap">
+        <i data-lucide="help-circle" id="qcDialogIcon"></i>
+      </div>
+      <h3 class="qc-dialog-title" id="qcDialogTitle">Konfirmasi</h3>
+      <p class="qc-dialog-message" id="qcDialogMessage"></p>
+      <div class="qc-dialog-actions">
+        <button type="button" class="btn btn-secondary btn-sm" id="qcDialogCancel">Batal</button>
+        <button type="button" class="btn btn-primary btn-sm" id="qcDialogConfirm">Lanjutkan</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      if (window.lucide) lucide.createIcons();
-      
-      const btnToggle = document.getElementById('btnToggleSidebar');
-      const sidebar = document.getElementById('appSidebar');
-      const backdrop = document.getElementById('sidebarBackdrop');
+    (function () {
+      function escapeHtml(str) {
+        return String(str ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
 
-      function toggleSidebar() {
-        if (!sidebar) return;
-        const isOpen = sidebar.classList.toggle('show');
-        if (backdrop) {
-          if (isOpen) backdrop.classList.add('show');
-          else backdrop.classList.remove('show');
+      const toastMeta = {
+        success: { title: 'Berhasil', icon: 'check-circle-2' },
+        error: { title: 'Gagal', icon: 'alert-circle' },
+        warning: { title: 'Perhatian', icon: 'alert-triangle' },
+        info: { title: 'Informasi', icon: 'info' },
+        loading: { title: 'Memproses', icon: 'loader-2' },
+      };
+
+      window.qcNotify = function (message, type = 'success', customTitle = null) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return null;
+
+        const kind = toastMeta[type] ? type : 'info';
+        const meta = toastMeta[kind];
+        const title = customTitle || meta.title;
+        const duration = kind === 'error' ? 5000 : (kind === 'loading' ? 0 : 3800);
+
+        // Replace existing loading toast smoothly
+        if (kind !== 'loading') {
+          container.querySelectorAll('.toast.loading').forEach(el => el.remove());
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${kind}`;
+        toast.innerHTML = `
+          <div class="toast-icon"><i data-lucide="${meta.icon}"></i></div>
+          <div class="toast-body">
+            <div class="toast-title">${escapeHtml(title)}</div>
+            <div class="toast-msg">${escapeHtml(message)}</div>
+          </div>
+          <button type="button" class="toast-close" aria-label="Tutup">&times;</button>
+          ${duration > 0 ? `<div class="toast-progress" style="animation-duration: ${duration}ms;"></div>` : ''}
+        `;
+
+        const dismiss = () => {
+          toast.classList.add('toast-leaving');
+          setTimeout(() => toast.remove(), 220);
+        };
+
+        toast.querySelector('.toast-close')?.addEventListener('click', dismiss);
+        container.appendChild(toast);
+        if (window.lucide) lucide.createIcons({ root: toast });
+
+        if (duration > 0) {
+          setTimeout(dismiss, duration);
+        }
+        return toast;
+      };
+
+      window.showToast = function (message, type = 'success', customTitle = null) {
+        return window.qcNotify(message, type, customTitle);
+      };
+
+      let dialogResolver = null;
+      function closeQcDialog(result) {
+        const overlay = document.getElementById('qcDialogOverlay');
+        if (!overlay) return;
+        overlay.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+        if (dialogResolver) {
+          const resolve = dialogResolver;
+          dialogResolver = null;
+          resolve(result);
         }
       }
 
-      function closeSidebar() {
-        if (sidebar) sidebar.classList.remove('show');
-        if (backdrop) backdrop.classList.remove('show');
+      function openQcDialog({ title, message, confirmText = 'Lanjutkan', cancelText = 'Batal', variant = 'primary', showCancel = true }) {
+        const overlay = document.getElementById('qcDialogOverlay');
+        const titleEl = document.getElementById('qcDialogTitle');
+        const msgEl = document.getElementById('qcDialogMessage');
+        const confirmBtn = document.getElementById('qcDialogConfirm');
+        const cancelBtn = document.getElementById('qcDialogCancel');
+        const iconWrap = document.getElementById('qcDialogIconWrap');
+
+        if (!overlay || !confirmBtn || !cancelBtn) {
+          return Promise.resolve(showCancel ? window.confirm(message) : true);
+        }
+
+        const iconMap = {
+          danger: 'trash-2',
+          warning: 'alert-triangle',
+          success: 'check-circle-2',
+          info: 'info',
+          primary: 'help-circle',
+        };
+        const btnClassMap = {
+          danger: 'btn-danger-solid',
+          warning: 'btn-primary',
+          success: 'btn-success-solid',
+          info: 'btn-primary',
+          primary: 'btn-primary',
+        };
+
+        titleEl.textContent = title || 'Konfirmasi';
+        msgEl.textContent = message || '';
+        confirmBtn.textContent = confirmText;
+        cancelBtn.textContent = cancelText;
+        cancelBtn.style.display = showCancel ? '' : 'none';
+
+        confirmBtn.className = `btn btn-sm ${btnClassMap[variant] || 'btn-primary'}`;
+        iconWrap.className = `qc-dialog-icon-wrap variant-${variant}`;
+        iconWrap.innerHTML = `<i data-lucide="${iconMap[variant] || 'help-circle'}"></i>`;
+        if (window.lucide) lucide.createIcons({ root: iconWrap });
+
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden', 'false');
+        setTimeout(() => confirmBtn.focus(), 50);
+
+        return new Promise((resolve) => {
+          dialogResolver = resolve;
+        });
       }
 
-      if (btnToggle) {
-        btnToggle.addEventListener('click', toggleSidebar);
-      }
-      if (backdrop) {
-        backdrop.addEventListener('click', closeSidebar);
-      }
+      window.qcConfirm = function (options) {
+        return openQcDialog({
+          title: options?.title || 'Konfirmasi Tindakan',
+          message: options?.message || '',
+          confirmText: options?.confirmText || 'Ya, Lanjutkan',
+          cancelText: options?.cancelText || 'Batal',
+          variant: options?.variant || 'primary',
+          showCancel: true,
+        });
+      };
 
-      // Close mobile sidebar when clicking a nav link
-      document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-          if (window.innerWidth <= 900) closeSidebar();
+      window.qcAlert = function (options) {
+        const opts = typeof options === 'string' ? { message: options } : (options || {});
+        return openQcDialog({
+          title: opts.title || 'Informasi',
+          message: opts.message || '',
+          confirmText: opts.buttonText || 'Mengerti',
+          variant: opts.variant || 'info',
+          showCancel: false,
+        });
+      };
+
+      window.qcConfirmForm = function (event, formEl, options) {
+        if (formEl.dataset.confirmed === '1') {
+          formEl.dataset.confirmed = '';
+          return true;
+        }
+        event.preventDefault();
+        window.qcConfirm(options).then((ok) => {
+          if (ok) {
+            formEl.dataset.confirmed = '1';
+            formEl.submit();
+          }
+        });
+        return false;
+      };
+
+      document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) lucide.createIcons();
+
+        const btnToggle = document.getElementById('btnToggleSidebar');
+        const sidebar = document.getElementById('appSidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+
+        function toggleSidebar() {
+          if (!sidebar) return;
+          const isOpen = sidebar.classList.toggle('show');
+          if (backdrop) {
+            backdrop.classList.toggle('show', isOpen);
+          }
+        }
+
+        function closeSidebar() {
+          if (sidebar) sidebar.classList.remove('show');
+          if (backdrop) backdrop.classList.remove('show');
+        }
+
+        btnToggle?.addEventListener('click', toggleSidebar);
+        backdrop?.addEventListener('click', closeSidebar);
+
+        document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+          item.addEventListener('click', () => {
+            if (window.innerWidth <= 900) closeSidebar();
+          });
+        });
+
+        // Dialog button handlers
+        document.getElementById('qcDialogConfirm')?.addEventListener('click', () => closeQcDialog(true));
+        document.getElementById('qcDialogCancel')?.addEventListener('click', () => closeQcDialog(false));
+        document.getElementById('qcDialogOverlay')?.addEventListener('click', (e) => {
+          if (e.target.id === 'qcDialogOverlay') closeQcDialog(false);
+        });
+        document.addEventListener('keydown', (e) => {
+          const overlay = document.getElementById('qcDialogOverlay');
+          if (e.key === 'Escape' && overlay?.classList.contains('active')) {
+            closeQcDialog(false);
+          }
+        });
+
+        // Auto-hide flash alert after 6 seconds smoothly
+        document.querySelectorAll('.qc-flash-alert').forEach(banner => {
+          setTimeout(() => {
+            banner.style.opacity = '0';
+            banner.style.transform = 'translateY(-6px)';
+            setTimeout(() => banner.remove(), 260);
+          }, 6000);
         });
       });
-    });
+    })();
   </script>
 
   @yield('scripts')

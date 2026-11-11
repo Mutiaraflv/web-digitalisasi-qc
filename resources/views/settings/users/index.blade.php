@@ -158,7 +158,7 @@
                       <i data-lucide="trash-2"></i>
                     </button>
                   @else
-                    <form method="POST" action="{{ route('settings.users.destroy', $u) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun \'{{ $u->name }}\'? Tindakan ini tidak dapat dibatalkan.');" style="display: inline;">
+                    <form method="POST" action="{{ route('settings.users.destroy', $u) }}" onsubmit="return window.qcConfirmForm(event, this, { title: 'Hapus Akun Pengguna', message: 'Apakah Anda yakin ingin menghapus akun \'{{ addslashes($u->name) }}\'? Tindakan ini tidak dapat dibatalkan.', confirmText: 'Ya, Hapus', variant: 'danger' });" style="display: inline;">
                       @csrf
                       @method('DELETE')
                       <button type="submit" 

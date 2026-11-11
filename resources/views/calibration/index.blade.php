@@ -4,7 +4,7 @@
 @section('page_title', 'Alat Ukur & Kalibrasi (ISO 9001)')
 
 @section('top_actions')
-  <button class="btn btn-primary btn-sm" onclick="alert('Fitur registrasi alat ukur baru akan aktif pada rilis berikutnya.')">
+  <button class="btn btn-primary btn-sm" onclick="window.qcAlert({ title: 'Informasi Fitur', message: 'Fitur registrasi alat ukur baru akan aktif pada rilis berikutnya.', variant: 'info' })">
     <i data-lucide="plus-circle"></i> Registrasi Alat Ukur
   </button>
 @endsection

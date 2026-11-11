@@ -4,7 +4,7 @@
 @section('page_title', 'Non-Conformance Reports (NCR)')
 
 @section('top_actions')
-  <button class="btn btn-danger btn-sm" onclick="alert('Form penerbitan NCR baru dapat dibuka langsung dari hasil temuan inspeksi.')">
+  <button class="btn btn-danger btn-sm" onclick="window.qcAlert({ title: 'Penerbitan NCR', message: 'Form penerbitan NCR baru dapat dibuka langsung dari hasil temuan inspeksi.', variant: 'info' })">
     <i data-lucide="alert-octagon"></i> Buat Laporan NCR
   </button>
 @endsection

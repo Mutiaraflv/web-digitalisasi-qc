@@ -619,6 +619,85 @@
       justify-content: center;
     }
 
+    /* Professional Review Confirm Modal (Hidden on Print) */
+    .review-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 9999;
+      font-family: 'Inter', Arial, sans-serif;
+    }
+    .review-modal-overlay.active {
+      display: flex;
+    }
+    .review-modal-card {
+      background: #ffffff;
+      border-radius: 16px;
+      max-width: 400px;
+      width: 100%;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.28);
+      animation: reviewModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes reviewModalPop {
+      from { opacity: 0; transform: translateY(10px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .review-modal-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 9999px;
+      background: #ecfdf5;
+      color: #059669;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .review-modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+    .review-modal-desc {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .review-modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .review-modal-actions .btn {
+      padding: 8px 18px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #334155;
+    }
+    .review-modal-actions .btn-confirm {
+      background: #10b981;
+      border-color: #10b981;
+      color: #fff;
+    }
+    @media print {
+      .review-modal-overlay { display: none !important; }
+    }
+
   </style>
 </head>
 <body>
@@ -646,9 +725,9 @@
         <a href="{{ route('reports.index', ['tab' => 'approval']) }}" class="btn" style="text-decoration: none;">← Kembali</a>
         <button class="btn" onclick="window.print()">🖨 Cetak / PDF</button>
         @if(!$report->isReviewed() && $report->canBeReviewedBy(auth()->user()))
-          <form method="POST" action="{{ route('reports.finishReview', $report->id) }}" style="display: inline; margin: 0;" onsubmit="return confirm('Selesaikan review untuk laporan {{ $report->ssc_id }}? Status akan berubah menjadi Reviewed.');">
+          <form id="finishReviewForm" method="POST" action="{{ route('reports.finishReview', $report->id) }}" style="display: inline; margin: 0;">
             @csrf
-            <button type="submit" class="btn" style="background: #10b981; color: #fff; border-color: #10b981; font-weight: 700;">✓ Finish Review</button>
+            <button type="button" id="btnTriggerFinishReview" class="btn" style="background: #10b981; color: #fff; border-color: #10b981; font-weight: 700;">✓ Finish Review</button>
           </form>
         @elseif($report->isReviewed())
           <span style="color: #86efac; font-weight: 700; font-size: 12px; padding: 0 6px;">✓ Sudah Direview</span>
@@ -1627,12 +1706,62 @@
 
   </div><!-- /page 6 -->
 
+  @if(!empty($isReviewMode) && !$report->isReviewed() && $report->canBeReviewedBy(auth()->user()))
+    <div class="review-modal-overlay" id="reviewConfirmModal" aria-hidden="true">
+      <div class="review-modal-card" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
+        <div class="review-modal-badge">✓</div>
+        <div class="review-modal-title" id="reviewModalTitle">Selesaikan Review Laporan?</div>
+        <div class="review-modal-desc">
+          Laporan <strong>{{ $report->ssc_id }}</strong> akan ditandai sebagai <strong>Reviewed</strong> dan dipindahkan dari daftar <em>Waiting My Approval</em>.
+        </div>
+        <div class="review-modal-actions">
+          <button type="button" class="btn" id="btnCancelFinishReview">Batal</button>
+          <button type="button" class="btn btn-confirm" id="btnConfirmFinishReview">Ya, Finish Review</button>
+        </div>
+      </div>
+    </div>
+  @endif
+
   <script>
     if (new URLSearchParams(window.location.search).get('autoprint') === '1') {
       window.addEventListener('load', () => {
         setTimeout(() => window.print(), 500);
       });
     }
+
+    (function () {
+      const trigger = document.getElementById('btnTriggerFinishReview');
+      const modal = document.getElementById('reviewConfirmModal');
+      const cancelBtn = document.getElementById('btnCancelFinishReview');
+      const confirmBtn = document.getElementById('btnConfirmFinishReview');
+      const form = document.getElementById('finishReviewForm');
+
+      if (!trigger || !modal || !form) return;
+
+      const openModal = () => {
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        setTimeout(() => confirmBtn?.focus(), 40);
+      };
+      const closeModal = () => {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+      };
+
+      trigger.addEventListener('click', openModal);
+      cancelBtn?.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+      });
+      confirmBtn?.addEventListener('click', () => {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Menyimpan...';
+        form.submit();
+      });
+    })();
   </script>
 </body>
 </html>

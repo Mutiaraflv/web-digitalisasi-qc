@@ -1283,10 +1283,21 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
     payload.submit_action = resolvedAction;
 
     isSavingReport = true;
+    const actionBtnIds = ['btnTopDraft', 'btnFooterDraft', 'btnTopSave', 'btnFooterSubmit', 'btnTopExportExcel'];
+    const setButtonsBusy = (busy) => {
+        actionBtnIds.forEach(id => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.disabled = busy;
+            btn.classList.toggle('is-loading', busy);
+        });
+    };
+    setButtonsBusy(true);
+
     const progressMsg = resolvedAction === 'draft'
         ? 'Menyimpan draft laporan...'
         : (isUpdate && window.qcReportStatus !== 'draft' ? 'Menyimpan perubahan laporan...' : 'Mengirim pengajuan laporan...');
-    showToast(progressMsg, 'success');
+    showToast(progressMsg, 'loading');
 
     fetch(url, {
         method: method,
@@ -1320,18 +1331,21 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
                 showToast(data.message || 'Laporan berhasil disimpan!', 'success');
 
                 if (andDownloadExcel) {
+                    setButtonsBusy(false);
                     window.location.href = `/reports/${savedId}/export`;
                 } else {
                     setTimeout(() => {
                         window.location.href = '/reports?tab=mine';
-                    }, 750);
+                    }, 700);
                 }
             } else {
+                setButtonsBusy(false);
                 showToast('Gagal menyimpan laporan: ' + (data.message || 'Unknown error'), 'error');
             }
         })
         .catch(err => {
             console.error('Save error:', err);
+            setButtonsBusy(false);
             showToast('Gagal menyimpan: ' + (err.message || 'Terjadi kesalahan koneksi.'), 'error');
         })
         .finally(() => {
@@ -1350,8 +1364,17 @@ function setupButtonActions() {
     document.getElementById('btnTopExportExcel')?.addEventListener('click', () => saveReportData(true));
 
     // Reset blank button
-    document.getElementById('btnResetBlank')?.addEventListener('click', () => {
-        if (confirm('Kosongkan semua nilai input dan mulai form baru?')) {
+    document.getElementById('btnResetBlank')?.addEventListener('click', async () => {
+        const ok = window.qcConfirm
+            ? await window.qcConfirm({
+                title: 'Kosongkan Form Inspeksi',
+                message: 'Kosongkan semua nilai input dan mulai form baru dari awal?',
+                confirmText: 'Ya, Kosongkan',
+                cancelText: 'Batal',
+                variant: 'warning'
+            })
+            : confirm('Kosongkan semua nilai input dan mulai form baru?');
+        if (ok) {
             loadDefaultBlankForm();
         }
     });
@@ -1375,7 +1398,15 @@ function setupButtonActions() {
     document.getElementById('componentSelect')?.addEventListener('change', (e) => {
         const val = e.target.value;
         if (val !== 'output_shaft') {
-            alert('Template Excel untuk komponen ini belum tersedia. Menunggu dari divisi terkait.');
+            if (window.qcAlert) {
+                window.qcAlert({
+                    title: 'Template Belum Tersedia',
+                    message: 'Template Excel untuk komponen ini belum tersedia. Menunggu dari divisi terkait.',
+                    variant: 'info'
+                });
+            } else {
+                showToast('Template Excel untuk komponen ini belum tersedia.', 'info');
+            }
             e.target.value = 'output_shaft';
         }
     });
@@ -1620,20 +1651,25 @@ function setValue(id, val) {
 // -------------------------------------------------------------
 // Toast Notifications
 // -------------------------------------------------------------
-function showToast(message, type = 'success') {
+function showToast(message, type = 'success', customTitle = null) {
+    if (typeof window.qcNotify === 'function') {
+        return window.qcNotify(message, type, customTitle);
+    }
+
     const container = document.getElementById('toastContainer');
-    if (!container) return;
+    if (!container) return null;
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerHTML = `<span>${message}</span>`;
+    toast.innerHTML = `<div class="toast-body"><div class="toast-msg"></div></div>`;
+    toast.querySelector('.toast-msg').textContent = message;
     container.appendChild(toast);
 
     setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
+        toast.classList.add('toast-leaving');
+        setTimeout(() => toast.remove(), 220);
     }, 3500);
+    return toast;
 }
 
 // -------------------------------------------------------------
@@ -1689,7 +1725,7 @@ window.exportOfficialPdf = function () {
     // Preserve draft status when exporting/printing before submitting
     payload.submit_action = (!isUpdate || window.qcReportStatus === 'draft') ? 'draft' : 'save';
 
-    showToast('Menyiapkan dokumen resmi 6 lembar (PDF)...', 'info');
+    showToast('Menyiapkan dokumen resmi 6 lembar (PDF)...', 'loading');
 
     fetch(url, {
         method: method,

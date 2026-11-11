@@ -183,6 +183,9 @@ class ReportController extends Controller
             : "Laporan {$report->ssc_id} berhasil disubmit (Waiting Review)!";
 
         if ($request->wantsJson() || $request->is('api/*')) {
+            if ($request->hasSession()) {
+                $request->session()->flash('success', $message);
+            }
             return response()->json([
                 'success' => true,
                 'message' => $message,
@@ -228,6 +231,9 @@ class ReportController extends Controller
         $report->update($data);
 
         if ($request->wantsJson() || $request->is('api/*')) {
+            if ($request->hasSession()) {
+                $request->session()->flash('success', $message);
+            }
             return response()->json([
                 'success' => true,
                 'message' => $message,
