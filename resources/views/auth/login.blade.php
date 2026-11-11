@@ -374,34 +374,73 @@
       .login-shell {
         grid-template-columns: 1fr;
         min-height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
 
+      /* Slim, Elegant Top Header on Mobile (~56px) */
       .login-brand {
-        min-height: auto;
-        padding: 32px 24px;
+        min-height: 56px;
+        height: 56px;
+        padding: 0 1.25rem;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
         border-right: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        flex-shrink: 0;
       }
 
-      .brand-copy {
-        margin: 20px 0;
+      .brand-mark {
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
 
-      .brand-copy h1 {
-        font-size: 24px;
+      .brand-mark img {
+        width: 32px;
+        height: 32px;
       }
 
-      .brand-copy p, .brand-foot {
-        display: none;
+      .brand-name {
+        font-size: 15px;
+        line-height: 1.1;
       }
 
+      .brand-subtitle {
+        font-size: 10px;
+        margin-top: 1px;
+      }
+
+      /* Hide verbose copy & desktop footer on mobile to keep header ultra clean */
+      .brand-copy,
+      .brand-foot {
+        display: none !important;
+      }
+
+      /* Login Form Immediately Below the Header */
       .login-panel {
-        min-height: auto;
-        padding: 36px 24px 44px;
+        flex: 1;
+        min-height: calc(100vh - 56px);
+        padding: 32px 20px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .login-form {
+        max-width: 380px;
+        width: 100%;
+      }
+
+      h2 {
+        font-size: 24px;
       }
 
       .intro {
         margin-bottom: 22px;
+        font-size: 13px;
       }
     }
   </style>
