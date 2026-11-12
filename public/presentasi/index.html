@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Finalisasi Dokumen QCMS — PT SSC Works (Clean Vector)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card-bg: #f8fafc;
+      --border: #e2e8f0;
+      --primary: #1312b6;
+      --primary-hover: #0e0d9b;
+      --primary-light: #eef2ff;
+      --primary-border: #c7d2fe;
+      --cyan: #0284c7;
+      --emerald: #15803d;
+      --amber: #d97706;
+      --rose: #dc2626;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: #0f172a;
+      font-family: var(--font);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    .top-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 52px;
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+      color: #fff;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .brand-badge {
+      background: #1312b6;
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover { background: #334155; color: #fff; }
+
+    .btn-primary {
+      background: #1312b6;
+      border-color: #3b82f6;
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #0e0d9b; }
+
+    .progress-bar-container {
+      position: fixed;
+      top: 52px; left: 0; right: 0;
+      height: 3px;
+      background: #1e293b;
+      z-index: 99;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: #38bdf8;
+      width: 20%;
+      transition: width 0.3s ease;
+    }
+
+    .viewport {
+      position: absolute;
+      top: 55px; left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .slide-stage {
+      width: 100%;
+      max-width: 1280px;
+      aspect-ratio: 16 / 9;
+      max-height: calc(100vh - 90px);
+      position: relative;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 44px 56px 36px;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.98);
+      transition: all 0.3s ease;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    .slide-tag {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .slide-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+
+    .slide-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 24px;
+    }
+
+    /* Grid layouts */
+    .grid-2 {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .grid-3 {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    /* Flowchart Layout */
+    .flowchart-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 36px 1fr 36px 1fr 36px 1fr;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .flow-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 18px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .flow-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .badge {
+      display: inline-block;
+      align-self: flex-start;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .badge-primary { background: var(--primary-light); color: var(--primary); }
+    .badge-cyan { background: #e0f2fe; color: #0284c7; }
+    .badge-emerald { background: #dcfce7; color: #15803d; }
+    .badge-amber { background: #fef3c7; color: #d97706; }
+    .badge-rose { background: #fee2e2; color: #dc2626; }
+
+    .slide-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: auto;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .notes-panel {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 180px;
+      background: rgba(15, 23, 42, 0.98);
+      border-top: 2px solid #38bdf8;
+      padding: 16px 32px;
+      z-index: 101;
+      transform: translateY(100%);
+      transition: transform 0.25s ease;
+      color: #fff;
+    }
+
+    .notes-panel.open { transform: translateY(0); }
+
+    .notes-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .notes-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 0.05em;
+    }
+
+    .notes-content {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #f1f5f9;
+      max-height: 110px;
+      overflow-y: auto;
+    }
+
+    .kbd {
+      background: #334155;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="top-bar">
+    <div class="brand">
+      <span class="brand-badge">QCMS</span>
+      <span>Sistem Finalisasi Dokumen QC — PT SSC Works (Clean Vector)</span>
+    </div>
+    <div class="nav-controls">
+      <button class="btn" id="btnNotes">🎙️ Contekan Bicara <span class="kbd">N</span></button>
+      <button class="btn" id="btnPrev">← Prev</button>
+      <span style="font-family: var(--mono); font-size: 13px; font-weight: 600; min-width: 45px; text-align: center;">
+        <span id="currentNum">1</span> / <span id="totalNum">5</span>
+      </span>
+      <button class="btn" id="btnNext">Next →</button>
+      <button class="btn" id="btnFullscreen">⛶ Fullscreen <span class="kbd">F</span></button>
+      <a href="/Presentasi_QCMS_PT_SSC_Works.pptx" download class="btn btn-primary">
+        📥 Unduh PPTX
+      </a>
+    </div>
+  </header>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <main class="viewport">
+    <div class="slide-stage">
+
+      <!-- SLIDE 1: COVER -->
+      <section class="slide active" data-notes="Selamat pagi/siang Pak/Bu. Hari ini saya mau mendemokan sistem aplikasi web yang kami rancang khusus untuk proses finalisasi dokumen laporan kendali mutu (FORM-QC-002) komponen Output Shaft. Konsep utama web ini adalah mengawal seluruh data mentah hasil pengukuran di bengkel sampai menjadi satu dokumen resmi yang sah, tervalidasi, dan siap diserahkan ke pelanggan.">
+        <div class="badge badge-primary" style="margin-bottom: 12px; font-size: 11px;">
+          SISTEM FINALISASI DOKUMEN • PT SSC WORKS
+        </div>
+        <h1 style="font-size: 38px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">
+          Digitalisasi & Finalisasi Laporan QC
+        </h1>
+        <p style="font-size: 16px; color: #475569; margin-bottom: 32px;">
+          Mengubah data mentah pemeriksaan bengkel menjadi dokumen resmi yang sah, tervalidasi, dan siap cetak.
+        </p>
+
+        <div class="grid-3" style="max-height: 240px;">
+          <div class="card">
+            <span class="badge badge-primary">TAHAP AWAL</span>
+            <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 6px;">Input Terstruktur</h3>
+            <p style="font-size: 13px; color: #475569; line-height: 1.45;">Pengisian data ukuran dimensi, runout TIR, dan foto langsung tersusun otomatis ke format lembar A4.</p>
+          </div>
+          <div class="card">
+            <span class="badge badge-cyan">VERIFIKASI</span>
+            <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 6px;">Live Preview A4</h3>
+            <p style="font-size: 13px; color: #475569; line-height: 1.45;">Tampilan dokumen resmi muncul seketika di panel kanan layar (WYSIWYG), bebas risiko tata letak terpotong.</p>
+          </div>
+          <div class="card">
+            <span class="badge badge-emerald">FINALISASI</span>
+            <h3 style="font-size: 17px; font-weight: 700; margin-bottom: 6px;">Otorisasi & Ekspor</h3>
+            <p style="font-size: 13px; color: #475569; line-height: 1.45;">Approval online via Finish Review, dokumen terkunci sah & siap unduh Excel asli serta PDF siap cetak.</p>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>PT SSC Works — Demo Sistem QCMS</span>
+          <span>Slide 1 / 5</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 2: LATAR BELAKANG -->
+      <section class="slide" data-notes="Sebelumnya proses finalisasi dokumen QC ini memakan waktu sangat lama Pak/Bu. Teknisi mencatat angka mentah di kertas atau Excel lepas, menata puluhan foto makan waktu, rumus rawan salah, dan proses finalisasi tertunda karena harus menunggu cetak fisik untuk tanda tangan. Di sistem web ini, pengumpulan data mentah langsung terkompilasi ke lembar standar dan approval dilakukan secara digital.">
+        <div class="slide-tag">KONSEP & LATAR BELAKANG</div>
+        <h2 class="slide-title">Kenapa Kita Butuh Sistem Finalisasi Ini?</h2>
+        <div class="slide-subtitle">Membandingkan kendala proses manual dengan otomasi finalisasi dokumen digital.</div>
+
+        <div class="grid-2">
+          <div class="card" style="background: #fef2f2; border-color: #fecaca;">
+            <span class="badge badge-rose">❌ DULU (MANUAL & TERCECER)</span>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Kendala Proses Konvensional:</h3>
+            <ul style="padding-left: 18px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 8px;">
+              <li>Data mentah dicatat di kertas formulir atau file Excel lepas masing-masing teknisi.</li>
+              <li>Menata 60+ foto visual dan drawing di Excel memakan waktu lama & posisinya sering bergeser.</li>
+              <li>Rumus perhitungan deviasi toleransi rawan tertimpa atau tidak sengaja terhapus.</li>
+              <li>Finalisasi dokumen sering tertunda berhari-hari karena menunggu tanda tangan fisik.</li>
+            </ul>
+          </div>
+          <div class="card" style="background: #f0fdf4; border-color: #bbf7d0;">
+            <span class="badge badge-emerald">✓ SEKARANG (SISTEM FINALISASI WEB)</span>
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Kemudahan dengan Sistem Baru:</h3>
+            <ul style="padding-left: 18px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 8px;">
+              <li>Data mentah langsung terkompilasi ke lembar standar resmi FORM-QC-002 secara terpusat.</li>
+              <li>Toleransi Accept / Reject divalidasi otomatis oleh sistem untuk setiap titik ukur.</li>
+              <li>Foto dokumentasi langsung dijepret dari HP di bengkel, terkunci rapi pada posisinya.</li>
+              <li>Dokumen disahkan online oleh Leader QC dan langsung terkunci aman, siap diunduh.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>PT SSC Works — Demo Sistem QCMS</span>
+          <span>Slide 2 / 5</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 3: FLOWCHART ALUR FINALISASI DOKUMEN -->
+      <section class="slide" data-notes="Nah Pak/Bu, ini adalah skema alur kerja sistem kami dari awal sampai dokumen disahkan: Tahap 1, teknisi mengumpulkan data mentah ukuran dan foto di workshop (status: Draft). Tahap 2, sistem mengompilasi data ke format lembar A4 secara real-time dan mengecek toleransi. Tahap 3, laporan disubmit dan masuk ke antrean Bapak/Ibu di menu Waiting My Approval untuk diverifikasi 6 halaman dokumennya. Tahap 4, setelah Bapak/Ibu klik Finish Review, dokumen resmi terkunci permanen dan sah untuk diunduh Excel asli atau dicetak PDF.">
+        <div class="slide-tag">SKEMA ALUR KERJA (FLOWCHART)</div>
+        <h2 class="slide-title">Skema Alur Kerja: Dari Data Mentah Menuju Dokumen Sah</h2>
+        <div class="slide-subtitle">Alur 4 tahap finalisasi dokumen: Input ➔ Kompilasi A4 ➔ Review Atasan ➔ Dokumen Sah Terkunci.</div>
+
+        <div class="flowchart-container">
+          <!-- Step 1 -->
+          <div class="flow-card" style="border-color: #bae6fd;">
+            <span class="badge badge-cyan">TAHAP 01</span>
+            <h4 style="font-size: 16px; font-weight: 700;">Input Lapangan</h4>
+            <div style="font-size: 11px; font-weight: 700; color: #0284c7; margin-bottom: 12px;">(Teknisi Workshop)</div>
+            <ul style="padding-left: 16px; font-size: 12px; color: #475569; display: flex; flex-direction: column; gap: 6px; margin-bottom: auto;">
+              <li>Ukur fisik dimensi & TIR.</li>
+              <li>Jepret foto temuan cacat.</li>
+              <li>Bisa Simpan Draft jika dicicil.</li>
+            </ul>
+            <div style="background: #fef3c7; border: 1px solid #fde68a; color: #d97706; padding: 6px; border-radius: 6px; font-size: 11px; font-weight: 800; text-align: center; margin-top: 14px;">
+              STATUS: [ DRAFT ]
+            </div>
+          </div>
+
+          <!-- Arrow 1 -->
+          <div class="flow-arrow" style="color: #0284c7;">➔</div>
+
+          <!-- Step 2 -->
+          <div class="flow-card" style="border-color: #c7d2fe;">
+            <span class="badge badge-primary">TAHAP 02</span>
+            <h4 style="font-size: 16px; font-weight: 700;">Kompilasi A4</h4>
+            <div style="font-size: 11px; font-weight: 700; color: #4f46e5; margin-bottom: 12px;">(Sistem Web QCMS)</div>
+            <ul style="padding-left: 16px; font-size: 12px; color: #475569; display: flex; flex-direction: column; gap: 6px; margin-bottom: auto;">
+              <li>Auto-mapping ke lembar A4.</li>
+              <li>Pengecekan toleransi otomatis.</li>
+              <li>Live preview wujud dokumen.</li>
+            </ul>
+            <div style="background: #eef2ff; border: 1px solid #c7d2fe; color: #4f46e5; padding: 6px; border-radius: 6px; font-size: 11px; font-weight: 800; text-align: center; margin-top: 14px;">
+              STATUS: [ SIAP AJUKAN ]
+            </div>
+          </div>
+
+          <!-- Arrow 2 -->
+          <div class="flow-arrow" style="color: #4f46e5;">➔</div>
+
+          <!-- Step 3 -->
+          <div class="flow-card" style="border-color: #fed7aa;">
+            <span class="badge badge-amber">TAHAP 03</span>
+            <h4 style="font-size: 16px; font-weight: 700;">Review Dokumen</h4>
+            <div style="font-size: 11px; font-weight: 700; color: #d97706; margin-bottom: 12px;">(Leader QC / Atasan)</div>
+            <ul style="padding-left: 16px; font-size: 12px; color: #475569; display: flex; flex-direction: column; gap: 6px; margin-bottom: auto;">
+              <li>Notifikasi Waiting Approval.</li>
+              <li>Periksa 6 halaman cetak A4.</li>
+              <li>Klik tombol Finish Review.</li>
+            </ul>
+            <div style="background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 6px; border-radius: 6px; font-size: 11px; font-weight: 800; text-align: center; margin-top: 14px;">
+              STATUS: [ WAITING REVIEW ]
+            </div>
+          </div>
+
+          <!-- Arrow 3 -->
+          <div class="flow-arrow" style="color: #15803d;">➔</div>
+
+          <!-- Step 4 -->
+          <div class="flow-card" style="border-color: #bbf7d0;">
+            <span class="badge badge-emerald">TAHAP 04</span>
+            <h4 style="font-size: 16px; font-weight: 700;">Dokumen Sah</h4>
+            <div style="font-size: 11px; font-weight: 700; color: #15803d; margin-bottom: 12px;">(Output Terkunci)</div>
+            <ul style="padding-left: 16px; font-size: 12px; color: #475569; display: flex; flex-direction: column; gap: 6px; margin-bottom: auto;">
+              <li>Laporan sah & terkunci aman.</li>
+              <li>Ekspor master Excel (.xlsx).</li>
+              <li>Cetak PDF serah terima klien.</li>
+            </ul>
+            <div style="background: #dcfce7; border: 1px solid #bbf7d0; color: #15803d; padding: 6px; border-radius: 6px; font-size: 11px; font-weight: 800; text-align: center; margin-top: 14px;">
+              STATUS: [ REVIEWED / SAH ]
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>PT SSC Works — Demo Sistem QCMS</span>
+          <span>Slide 3 / 5</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 4: FITUR PENJAMIN PRESI DOKUMEN -->
+      <section class="slide" data-notes="Untuk menjamin keabsahan dan kerapian dokumen final, ada 3 fitur kunci: Pertama, Live Preview A4 di sisi kanan memastikan tata letak dokumen tidak terpotong sebelum diajukan. Kedua, pengecekan toleransi otomatis mencegah salah evaluasi status Accept atau Reject. Ketiga, setelah disahkan oleh pimpinan, dokumen terkunci otomatis sehingga aman dari manipulasi data atau formula yang rusak.">
+        <div class="slide-tag">FITUR PENUNJANG FINALISASI</div>
+        <h2 class="slide-title">Memastikan Dokumen Final 100% Presisi</h2>
+        <div class="slide-subtitle">Teknologi penunjang agar dokumen resmi tidak pernah berantakan atau salah rumus.</div>
+
+        <div class="grid-3">
+          <div class="card" style="border-color: #bae6fd;">
+            <h3 style="font-size: 17px; font-weight: 700; color: #0284c7; margin-bottom: 12px;">📄 Live Assembly Kertas A4</h3>
+            <ul style="padding-left: 18px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 8px;">
+              <li>Ketik di panel kiri, tampilan resmi kertas A4 langsung terbentuk seketika di panel kanan (WYSIWYG).</li>
+              <li>Memastikan foto temuan dan teks tidak pernah terpotong sebelum dokumen disubmit.</li>
+              <li>Tersedia tombol pemilih halaman (Lembar 1 s/d 6) atau mode Lihat Semua Lembar.</li>
+            </ul>
+          </div>
+          <div class="card" style="border-color: #bbf7d0;">
+            <h3 style="font-size: 17px; font-weight: 700; color: #15803d; margin-bottom: 12px;">⚖️ Auto-Validation Toleransi</h3>
+            <ul style="padding-left: 18px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 8px;">
+              <li>Angka hasil ukur aktual langsung diuji terhadap batas toleransi standar komponen Output Shaft.</li>
+              <li>Status kelulusan Accept atau Reject terisi otomatis tanpa risiko salah rumus.</li>
+              <li>TIR runout pada 4 sudut rotasi (0°, 90°, 180°, 270°) otomatis dihitung deviasinya.</li>
+            </ul>
+          </div>
+          <div class="card" style="border-color: #c7d2fe;">
+            <h3 style="font-size: 17px; font-weight: 700; color: #4f46e5; margin-bottom: 12px;">🔒 Penguncian & Ekspor Asli</h3>
+            <ul style="padding-left: 18px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 8px;">
+              <li>Setelah disahkan melalui Finish Review oleh Leader QC, data terkunci permanen untuk integritas audit.</li>
+              <li>Injeksi data ke master template Excel asli tanpa merusak relasi 60+ gambar teknik & formula.</li>
+              <li>Ekspor PDF multi-halaman berstandar ISO A4 siap diserahterimakan ke pelanggan.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>PT SSC Works — Demo Sistem QCMS</span>
+          <span>Slide 4 / 5</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 5: OUTPUT FINAL & LIVE DEMO -->
+      <section class="slide" data-notes="Kesimpulannya Pak/Bu: sistem ini memotong waktu finalisasi dokumen kita sampai 70%—dari 45 menit menjadi kurang dari 12 menit. Dokumen yang dihasilkan 100 persen identik dengan template master Excel pabrik serta PDF resmi siap diserahterimakan ke pelanggan. Sekarang izin saya perlihatkan langsung proses finalisasi dokumennya di layar web ya Pak/Bu.">
+        <div class="slide-tag">OUTPUT & PENUTUP</div>
+        <h2 class="slide-title">Dokumen Siap Pakai & Mari Kita Coba!</h2>
+        <div class="slide-subtitle">Proses finalisasi cepat, dokumen rapi, dan siap didemokan langsung.</div>
+
+        <div class="grid-3" style="max-height: 220px; margin-bottom: 24px;">
+          <div class="card" style="border-color: #bae6fd;">
+            <div style="font-size: 18px; font-weight: 800; color: #0284c7; margin-bottom: 6px;">⚡ Hemat Waktu 70%</div>
+            <div style="font-size: 13px; color: #475569; line-height: 1.45;">Waktu penyusunan dan finalisasi dokumen turun drastis dari 45 menit menjadi kurang dari 12 menit.</div>
+          </div>
+          <div class="card" style="border-color: #bbf7d0;">
+            <div style="font-size: 18px; font-weight: 800; color: #15803d; margin-bottom: 6px;">📥 Ekspor Master 1-Klik</div>
+            <div style="font-size: 13px; color: #475569; line-height: 1.45;">File Excel 100% identik dengan master template SSC SBY-5778, dan PDF siap cetak kapan saja.</div>
+          </div>
+          <div class="card" style="border-color: #c7d2fe;">
+            <div style="font-size: 18px; font-weight: 800; color: #4f46e5; margin-bottom: 6px;">🔒 Dokumen Sah Terkunci</div>
+            <div style="font-size: 13px; color: #475569; line-height: 1.45;">Tersimpan aman di database terpusat, riwayat approval jelas dan bebas risiko berkas hilang.</div>
+          </div>
+        </div>
+
+        <div style="background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 12px; padding: 22px; text-align: center;">
+          <h3 style="font-size: 20px; font-weight: 800; color: #1312b6; margin-bottom: 4px;">🚀 Mari Kita Masuk ke Sesi Live Demo Aplikasi Web</h3>
+          <p style="font-size: 13px; color: #334155;">Izin saya perlihatkan langsung proses pengisian form hingga finalisasi dokumennya di browser ya Pak/Bu.</p>
+        </div>
+
+        <div class="slide-footer">
+          <span>PT SSC Works — Demo Sistem QCMS</span>
+          <span>Slide 5 / 5</span>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <aside class="notes-panel" id="notesPanel">
+    <div class="notes-header">
+      <div class="notes-title">🎙️ CONTEKAN BICARA KE ATASAN (SPEAKER NOTES)</div>
+      <button class="btn" id="btnCloseNotes" style="padding: 2px 8px; font-size: 11px;">✕ Tutup</button>
+    </div>
+    <div class="notes-content" id="notesContent"></div>
+  </aside>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+
+    const currentNumEl = document.getElementById('currentNum');
+    const totalNumEl = document.getElementById('totalNum');
+    const progressBar = document.getElementById('progressBar');
+    const notesPanel = document.getElementById('notesPanel');
+    const notesContent = document.getElementById('notesContent');
+
+    totalNumEl.textContent = totalSlides;
+
+    function showSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+
+      slides.forEach((s, i) => s.classList.toggle('active', i === index));
+      currentSlide = index;
+      currentNumEl.textContent = index + 1;
+      progressBar.style.width = ((index + 1) / totalSlides * 100) + '%';
+      notesContent.textContent = slides[index].getAttribute('data-notes') || '';
+    }
+
+    function nextSlide() { if (currentSlide < totalSlides - 1) showSlide(currentSlide + 1); }
+    function prevSlide() { if (currentSlide > 0) showSlide(currentSlide - 1); }
+    function toggleNotes() { notesPanel.classList.toggle('open'); }
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+      else document.exitFullscreen().catch(() => {});
+    }
+
+    document.getElementById('btnNext').addEventListener('click', nextSlide);
+    document.getElementById('btnPrev').addEventListener('click', prevSlide);
+    document.getElementById('btnNotes').addEventListener('click', toggleNotes);
+    document.getElementById('btnCloseNotes').addEventListener('click', () => notesPanel.classList.remove('open'));
+    document.getElementById('btnFullscreen').addEventListener('click', toggleFullscreen);
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+      else if (e.key.toLowerCase() === 'n') { e.preventDefault(); toggleNotes(); }
+      else if (e.key.toLowerCase() === 'f') { e.preventDefault(); toggleFullscreen(); }
+      else if (e.key === 'Home') { e.preventDefault(); showSlide(0); }
+      else if (e.key === 'End') { e.preventDefault(); showSlide(totalSlides - 1); }
+    });
+
+    showSlide(0);
+  </script>
+</body>
+</html>
