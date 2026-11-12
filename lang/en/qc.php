@@ -490,7 +490,7 @@ return [
         'password_note' => 'Fill only if you want to reset or change this user password.',
         'save_new_user' => 'Save New Account',
         'delete_user_title' => 'Delete User Account',
-        'delete_user_confirm' => "Are you sure you want to delete account ':name'? This action cannot be undone.",
+        'delete_user_confirm' => "Are you sure you want to delete account ':name'?",
         'self_admin_note' => 'Note: You are editing your own active account. Role must remain Administrator.',
         'self_delete_disabled' => 'Cannot delete your own active account',
         'delete_user_tooltip' => 'Delete Account',

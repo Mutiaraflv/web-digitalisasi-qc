@@ -490,7 +490,7 @@ return [
         'password_note' => 'Isi hanya jika Anda ingin mereset atau mengganti kata sandi pengguna ini.',
         'save_new_user' => 'Simpan Akun Baru',
         'delete_user_title' => 'Hapus Akun Pengguna',
-        'delete_user_confirm' => "Apakah Anda yakin ingin menghapus akun ':name'? Tindakan ini tidak dapat dibatalkan.",
+        'delete_user_confirm' => "Apakah Anda yakin ingin menghapus akun ':name'?",
         'self_admin_note' => 'Perhatian: Anda sedang mengedit akun Anda sendiri. Role harus tetap Administrator.',
         'self_delete_disabled' => 'Tidak dapat menghapus akun Anda sendiri',
         'delete_user_tooltip' => 'Hapus Akun',

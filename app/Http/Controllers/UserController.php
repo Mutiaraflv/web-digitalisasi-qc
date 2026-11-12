@@ -145,18 +145,26 @@ class UserController extends Controller
             return back()->with('error', $err);
         }
 
-        $name = $user->name;
-        $user->delete();
+        try {
+            $name = $user->name;
+            $user->delete();
 
-        ActivityLog::record('user_deleted', "Menghapus akun {$name}", null, [
-            'subject' => $name,
-        ]);
+            ActivityLog::record('user_deleted', "Menghapus akun {$name}", null, [
+                'subject' => $name,
+            ]);
 
-        $msg = app()->getLocale() === 'en'
-            ? "Account '{$name}' deleted from the system."
-            : "Akun '{$name}' telah berhasil dihapus dari sistem.";
+            $msg = app()->getLocale() === 'en'
+                ? "Account '{$name}' deleted from the system."
+                : "Akun '{$name}' telah berhasil dihapus dari sistem.";
 
-        return redirect()->route('settings.users.index')->with('success', $msg);
+            return redirect()->route('settings.users.index')->with('success', $msg);
+        } catch (\Throwable $e) {
+            \Log::error("Failed to delete user ID {$user->id}: " . $e->getMessage());
+            $err = app()->getLocale() === 'en'
+                ? "Failed to delete account '{$user->name}'. It may be linked to existing inspection data."
+                : "Gagal menghapus akun '{$user->name}'. Akun kemungkinan terkait dengan data inspeksi.";
+            return back()->with('error', $err);
+        }
     }
 }
 

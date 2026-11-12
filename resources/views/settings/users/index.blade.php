@@ -166,7 +166,10 @@
                             class="btn btn-danger btn-sm" 
                             style="padding: 0.3rem 0.55rem; font-size: 0.75rem;" 
                             title="{{ __('qc.settings.delete_user_tooltip') }}"
-                            onclick="confirmDeleteUser({{ $u->id }}, @json($u->name), @json($u->email))">
+                            data-id="{{ $u->id }}"
+                            data-name="{{ $u->name }}"
+                            data-email="{{ $u->email }}"
+                            onclick="handleDeleteUserClick(this)">
                       <i data-lucide="trash-2"></i>
                     </button>
                   @endif
@@ -322,10 +325,19 @@
 <script>
   let currentEditUserData = null;
 
+  function handleDeleteUserClick(btn) {
+    if (!btn) return;
+    const id = btn.getAttribute('data-id');
+    const name = btn.getAttribute('data-name');
+    const email = btn.getAttribute('data-email');
+    confirmDeleteUser(id, name, email);
+  }
+
   async function confirmDeleteUser(id, name, email) {
     const title = @json(__('qc.settings.delete_user_title')) || 'Hapus Akun Pengguna';
-    const rawConfirm = @json(__('qc.settings.delete_user_confirm', ['name' => ':NAME_PLACEHOLDER:']));
-    const message = rawConfirm.replace(':NAME_PLACEHOLDER:', name) + (email ? ` (${email})` : '');
+    const accountLabel = name ? (email && email !== name ? `${name} (${email})` : name) : (email || '');
+    const template = @json(__('qc.settings.delete_user_confirm', ['name' => ':ACCOUNT:']));
+    const message = template.replace(':ACCOUNT:', accountLabel);
 
     const confirmed = await window.qcConfirm({
       title: title,
@@ -339,7 +351,8 @@
     if (confirmed) {
       const form = document.getElementById('globalDeleteUserForm');
       if (form) {
-        form.action = `/settings/users/${id}`;
+        const baseAction = @json(route('settings.users.destroy', ':ID:'));
+        form.action = baseAction.replace(':ID:', id);
         form.submit();
       }
     }
