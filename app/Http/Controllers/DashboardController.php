@@ -25,13 +25,31 @@ class DashboardController extends Controller
 
     public function liveData(Request $request): JsonResponse
     {
+        User::touchPresence(Auth::user(), $request);
         $payload = $this->buildDashboardData(Auth::user());
 
-        return response()->json([
-            'success' => true,
-            'server_time' => now()->timezone(self::DISPLAY_TZ)->format('H:i:s') . ' WIB',
-            'data' => $payload,
-        ]);
+        return response()
+            ->json([
+                'success' => true,
+                'server_time' => now()->timezone(self::DISPLAY_TZ)->format('H:i:s') . ' WIB',
+                'data' => $payload,
+            ])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
+    /**
+     * Lightweight endpoint for global tab presence heartbeats.
+     */
+    public function heartbeat(Request $request): JsonResponse
+    {
+        User::touchPresence(Auth::user(), $request);
+
+        return response()
+            ->json([
+                'ok' => true,
+                'server_time' => now()->timezone(self::DISPLAY_TZ)->format('H:i:s') . ' WIB',
+            ])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     }
 
     /**
@@ -48,6 +66,7 @@ class DashboardController extends Controller
             $acceptCount = Report::nonDraft()->where('has_rejects', false)->count();
             $waitingCount = Report::where('review_status', Report::STATUS_WAITING_REVIEW)->count();
             $reviewedCount = Report::where('review_status', Report::STATUS_REVIEWED)->count();
+            $draftCount = Report::where('review_status', Report::STATUS_DRAFT)->count();
             $preCount = Report::nonDraft()->where('inspection_type', 'Pre')->count();
             $postCount = Report::nonDraft()->where('inspection_type', 'Post')->count();
             $myDraftCount = $user ? Report::ownedOrCheckedBy($user)->where('review_status', Report::STATUS_DRAFT)->count() : 0;
@@ -57,6 +76,7 @@ class DashboardController extends Controller
             $acceptCount = 0;
             $waitingCount = 0;
             $reviewedCount = 0;
+            $draftCount = 0;
             $preCount = 0;
             $postCount = 0;
             $myDraftCount = 0;
@@ -64,6 +84,7 @@ class DashboardController extends Controller
         }
 
         $yieldRate = $totalReports > 0 ? round(($acceptCount / $totalReports) * 100, 1) : 100;
+        $presence = User::getOnlinePresenceSummary();
 
         $charts = [
             'totalReports' => $totalReports,
@@ -71,9 +92,16 @@ class DashboardController extends Controller
             'yieldRate' => $yieldRate,
             'waitingCount' => $waitingCount,
             'reviewedCount' => $reviewedCount,
+            'draftCount' => $draftCount,
             'preCount' => $preCount,
             'postCount' => $postCount,
             'myDraftCount' => $myDraftCount,
+            'totalUsers' => $presence['totalUsers'],
+            'onlineCount' => $presence['onlineCount'],
+            'offlineCount' => $presence['offlineCount'],
+            'onlineRate' => $presence['onlineRate'],
+            'onlineByRole' => $presence['onlineByRole'],
+            'onlineUsers' => $presence['onlineUsers'],
         ];
 
         $adminLogs = [];
@@ -95,10 +123,17 @@ class DashboardController extends Controller
             'yieldRate' => $yieldRate,
             'waitingCount' => $waitingCount,
             'reviewedCount' => $reviewedCount,
+            'draftCount' => $draftCount,
             'preCount' => $preCount,
             'postCount' => $postCount,
             'myDraftCount' => $myDraftCount,
             'myPendingApprovalCount' => $myPendingApprovalCount,
+            'totalUsers' => $presence['totalUsers'],
+            'onlineCount' => $presence['onlineCount'],
+            'offlineCount' => $presence['offlineCount'],
+            'onlineRate' => $presence['onlineRate'],
+            'onlineByRole' => $presence['onlineByRole'],
+            'onlineUsers' => $presence['onlineUsers'],
             'adminLogs' => $adminLogs,
             'myReportTimeline' => $myReportTimeline,
             'myActivityLogs' => $myActivityLogs,

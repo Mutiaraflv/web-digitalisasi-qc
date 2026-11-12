@@ -103,6 +103,174 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public const ONLINE_WINDOW_SECONDS = 90;
+
+    public const PRESENCE_TOUCH_INTERVAL_SECONDS = 20;
+
+    private static ?bool $cachedHasLastSeenColumn = null;
+
+    public static function hasLastSeenColumn(): bool
+    {
+        if (self::$cachedHasLastSeenColumn !== null) {
+            return self::$cachedHasLastSeenColumn;
+        }
+
+        try {
+            return self::$cachedHasLastSeenColumn = \Illuminate\Support\Facades\Schema::hasColumn('users', 'last_seen_at');
+        } catch (\Throwable) {
+            return self::$cachedHasLastSeenColumn = false;
+        }
+    }
+
+    public static function touchPresence(?self $user, ?\Illuminate\Http\Request $request = null, bool $force = false): void
+    {
+        if (! $user) {
+            return;
+        }
+
+        $nowTs = time();
+        if (! $force && $request && $request->hasSession()) {
+            $lastTouch = (int) $request->session()->get('_qc_presence_ts', 0);
+            if (($nowTs - $lastTouch) < self::PRESENCE_TOUCH_INTERVAL_SECONDS) {
+                return;
+            }
+        }
+
+        if ($request && $request->hasSession()) {
+            $request->session()->put('_qc_presence_ts', $nowTs);
+        }
+
+        if (! self::hasLastSeenColumn()) {
+            return;
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::table('users')
+                ->where('id', $user->getKey())
+                ->update(['last_seen_at' => now()]);
+        } catch (\Throwable) {
+            // Silently ignore transient presence write failures
+        }
+    }
+
+    public static function clearPresenceIfNoOtherSessions(?int $userId, ?string $currentSessionId = null): void
+    {
+        if (! $userId || ! self::hasLastSeenColumn()) {
+            return;
+        }
+
+        try {
+            $cutoffTs = now()->subSeconds(self::ONLINE_WINDOW_SECONDS)->timestamp;
+            $hasOtherActiveSession = false;
+
+            if (config('session.driver') === 'database' && \Illuminate\Support\Facades\Schema::hasTable('sessions')) {
+                $query = \Illuminate\Support\Facades\DB::table('sessions')
+                    ->where('user_id', $userId)
+                    ->where('last_activity', '>=', $cutoffTs);
+
+                if ($currentSessionId) {
+                    $query->where('id', '!=', $currentSessionId);
+                }
+
+                $hasOtherActiveSession = $query->exists();
+            }
+
+            if (! $hasOtherActiveSession) {
+                \Illuminate\Support\Facades\DB::table('users')
+                    ->where('id', $userId)
+                    ->update(['last_seen_at' => null]);
+            }
+        } catch (\Throwable) {
+            // Silently ignore transient presence cleanup failures
+        }
+    }
+
+    public static function getOnlinePresenceSummary(): array
+    {
+        $roleLabels = self::roleLabels();
+        $onlineByRole = [
+            self::ROLE_ADMIN => 0,
+            self::ROLE_QC_LEADER => 0,
+            self::ROLE_USER => 0,
+        ];
+
+        try {
+            $totalUsers = self::count();
+            $cutoff = now()->subSeconds(self::ONLINE_WINDOW_SECONDS);
+            $cutoffTs = $cutoff->timestamp;
+
+            $hasSessionsTable = config('session.driver') === 'database'
+                && \Illuminate\Support\Facades\Schema::hasTable('sessions');
+            $sessionUserIds = $hasSessionsTable
+                ? \Illuminate\Support\Facades\DB::table('sessions')
+                    ->whereNotNull('user_id')
+                    ->where('last_activity', '>=', $cutoffTs)
+                    ->orderByDesc('last_activity')
+                    ->pluck('user_id')
+                    ->unique()
+                    ->values()
+                    ->all()
+                : [];
+
+            if (self::hasLastSeenColumn()) {
+                $onlineCollection = self::query()
+                    ->where(function ($query) use ($cutoff, $sessionUserIds) {
+                        $query->where(function ($q) use ($cutoff) {
+                            $q->whereNotNull('last_seen_at')
+                                ->where('last_seen_at', '>=', $cutoff);
+                        });
+
+                        if (! empty($sessionUserIds)) {
+                            $query->orWhere(function ($q) use ($sessionUserIds) {
+                                $q->whereNull('last_seen_at')
+                                    ->whereIn('id', $sessionUserIds);
+                            });
+                        }
+                    })
+                    ->orderByRaw('CASE WHEN last_seen_at IS NULL THEN 1 ELSE 0 END, last_seen_at DESC')
+                    ->get();
+            } elseif (! empty($sessionUserIds)) {
+                $onlineCollection = self::whereIn('id', $sessionUserIds)->get();
+            } else {
+                $onlineCollection = collect();
+            }
+        } catch (\Throwable) {
+            $totalUsers = 0;
+            $onlineCollection = collect();
+        }
+
+        $onlineUsers = [];
+        foreach ($onlineCollection as $account) {
+            $roleKey = array_key_exists($account->role, $onlineByRole) ? $account->role : self::ROLE_USER;
+            $onlineByRole[$roleKey]++;
+
+            if (count($onlineUsers) < 12) {
+                $onlineUsers[] = [
+                    'id' => $account->id,
+                    'name' => $account->name,
+                    'role' => $account->role,
+                    'role_label' => $roleLabels[$account->role] ?? ucfirst((string) $account->role),
+                    'initials' => $account->initials(),
+                    'avatar_url' => $account->avatar_url,
+                ];
+            }
+        }
+
+        $onlineCount = array_sum($onlineByRole);
+        $totalUsers = max($totalUsers, $onlineCount);
+        $offlineCount = max(0, $totalUsers - $onlineCount);
+        $onlineRate = $totalUsers > 0 ? round(($onlineCount / $totalUsers) * 100, 1) : 0;
+
+        return [
+            'totalUsers' => $totalUsers,
+            'onlineCount' => $onlineCount,
+            'offlineCount' => $offlineCount,
+            'onlineRate' => $onlineRate,
+            'onlineByRole' => $onlineByRole,
+            'onlineUsers' => $onlineUsers,
+        ];
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -112,6 +280,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

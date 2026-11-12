@@ -5296,11 +5296,177 @@ body {
 /* Vertical Bar Chart */
 .bar-chart-wrap {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
   align-items: end;
   height: 128px;
   padding-top: 0.5rem;
+}
+
+/* Real-time Active Accounts Presence Widget */
+.chart-metric-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.chart-metric-sub {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted, #64748b);
+}
+
+.chart-presence-head-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.live-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  white-space: nowrap;
+}
+
+.live-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55);
+  animation: qcLivePulse 2s ease-out infinite;
+}
+
+@keyframes qcLivePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.live-avatar-stack {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+.live-avatar-chip {
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  border: 2px solid var(--bg-card, #ffffff);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.14);
+  overflow: hidden;
+  margin-left: -6px;
+  position: relative;
+  transition: transform 0.15s ease;
+}
+
+.live-avatar-chip:first-child {
+  margin-left: 0;
+}
+
+.live-avatar-chip:hover {
+  transform: translateY(-2px);
+  z-index: 2;
+}
+
+.live-avatar-chip img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.live-avatar-chip.role-admin {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+}
+
+.live-avatar-chip.role-qc_leader {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+}
+
+.live-avatar-chip.role-user {
+  background: linear-gradient(135deg, #059669, #10b981);
+}
+
+.live-avatar-overflow {
+  background: #475569;
+  font-size: 0.6rem;
+}
+
+.presence-legend-list {
+  gap: 0.42rem;
+}
+
+.presence-legend-list .donut-legend-row {
+  padding: 0.36rem 0.65rem;
+}
+
+[data-theme="dark"] .chart-metric-sub {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .live-status-pill {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+[data-theme="dark"] .live-avatar-chip {
+  border-color: #111827;
+}
+
+[data-theme="dark"] .live-avatar-overflow {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+@media (max-width: 640px) {
+  .dashboard-charts-grid > *,
+  .dashboard-grid-2 > *,
+  .chart-card,
+  .activity-panel-card,
+  .donut-legend {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .activity-card-header,
+  .activity-filter-group {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+  .chart-card-head {
+    gap: 0.5rem;
+  }
+  .donut-chart-layout {
+    gap: 0.75rem;
+  }
 }
 
 .bar-col {

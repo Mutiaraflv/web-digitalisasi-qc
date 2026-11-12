@@ -26,10 +26,11 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
 
-    // 1. Dashboard
+    // 1. Dashboard & Presence
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/dashboard/live-data', [DashboardController::class, 'liveData'])->name('dashboard.liveData');
+    Route::post('/presence/heartbeat', [DashboardController::class, 'heartbeat'])->name('presence.heartbeat');
 
     // 2. Input Inspeksi Baru (Workspace Utama)
     Route::get('/inspection', [ReportController::class, 'create'])->name('inspection.create');

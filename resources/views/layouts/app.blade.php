@@ -611,6 +611,51 @@
     })();
   </script>
 
-  @yield('scripts')
+  @auth
+<script>
+(function () {
+  const hbUrl = '{{ route("presence.heartbeat") }}';
+  let lastBeatAt = Date.now();
+  let stopped = false;
+
+  function getCsrf() {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+  }
+
+  async function sendHeartbeat() {
+    if (stopped || document.hidden || window.__qcHasOwnLivePoll) return;
+    const now = Date.now();
+    if ((now - lastBeatAt) < 20000) return;
+    lastBeatAt = now;
+    try {
+      const res = await fetch(hbUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': getCsrf(),
+        },
+      });
+      if (res.status === 401 || res.status === 419) {
+        stopped = true;
+      }
+    } catch (_) {
+      // Transient offline / tunnel hiccup — retry on next interval
+    }
+  }
+
+  setInterval(sendHeartbeat, 25000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      sendHeartbeat();
+    }
+  });
+})();
+</script>
+@endauth
+
+@yield('scripts')
 </body>
 </html>

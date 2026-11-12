@@ -17,12 +17,11 @@
 
       <div class="bar-chart-wrap" id="barChartArea" aria-label="{{ __('qc.dashboard.total_inspections') }}">
         @php
-          $barMax = max(1, $preCount, $postCount, $waitingCount, $reviewedCount);
+          $barMax = max(1, $preCount, $postCount, $draftCount);
           $bars = [
             ['key' => 'pre', 'label' => __('qc.dashboard.bar_pre'), 'value' => $preCount, 'color' => '#4f46e5'],
             ['key' => 'post', 'label' => __('qc.dashboard.bar_post'), 'value' => $postCount, 'color' => '#6366f1'],
-            ['key' => 'waiting', 'label' => __('qc.dashboard.waiting'), 'value' => $waitingCount, 'color' => '#f59e0b'],
-            ['key' => 'reviewed', 'label' => __('qc.dashboard.reviewed'), 'value' => $reviewedCount, 'color' => '#10b981'],
+            ['key' => 'draft', 'label' => __('qc.dashboard.bar_draft'), 'value' => $draftCount, 'color' => '#f59e0b'],
           ];
         @endphp
         @foreach($bars as $bar)
@@ -61,53 +60,108 @@
       </div>
     </div>
 
-    <!-- Chart 3: First Pass Yield (Radial Gauge Chart) -->
+    <!-- Chart 3: Akun Aktif / Online (Real-time Presence Ring) -->
     <div class="chart-card">
       <div class="chart-card-head">
         <div>
-          <span class="chart-kicker">{{ __('qc.dashboard.first_pass_yield') }}</span>
-          <h2 class="chart-metric-val" style="color: var(--primary-text);" id="chartValYield">{{ $yieldRate }}%</h2>
+          <span class="chart-kicker">{{ __('qc.dashboard.active_accounts') }}</span>
+          <div class="chart-metric-row">
+            <h2 class="chart-metric-val" style="color: var(--success);" id="chartValOnline">{{ $onlineCount }}</h2>
+            <span class="chart-metric-sub" id="chartSubTotalUsers">/ {{ $totalUsers }}</span>
+          </div>
+        </div>
+        <div class="chart-presence-head-right">
+          <span class="live-status-pill" id="dashPresenceLivePill" title="{{ __('qc.dashboard.live_badge') }}">
+            <span class="live-pulse-dot" aria-hidden="true"></span>
+            <span>{{ __('qc.dashboard.live_badge') }}</span>
+          </span>
+          <div class="live-avatar-stack" id="onlineAvatarStack" aria-label="{{ __('qc.dashboard.active_accounts') }}">
+            @forelse (array_slice($onlineUsers, 0, 4) as $uChip)
+              @php $chipRoleClass = 'role-' . ($uChip['role'] ?? 'user'); @endphp
+              <span class="live-avatar-chip {{ $chipRoleClass }}" title="{{ $uChip['name'] }} ({{ $uChip['role_label'] }}) • {{ __('qc.dashboard.online_status') }}">
+                @if (! empty($uChip['avatar_url']))
+                  <img src="{{ $uChip['avatar_url'] }}" alt="{{ $uChip['initials'] }}">
+                @else
+                  {{ $uChip['initials'] }}
+                @endif
+              </span>
+            @empty
+              <span class="chart-metric-sub">{{ __('qc.dashboard.no_other_online') }}</span>
+            @endforelse
+            @if ($onlineCount > 4)
+              <span class="live-avatar-chip live-avatar-overflow" title="+{{ $onlineCount - 4 }} {{ __('qc.dashboard.online_status') }}">+{{ $onlineCount - 4 }}</span>
+            @endif
+          </div>
         </div>
       </div>
 
-      <div class="gauge-chart-layout">
-        <div class="gauge-svg-box">
+      <div class="donut-chart-layout">
+        <div class="donut-svg-box">
           @php
-            $r = 46;
-            $circ = 2 * pi() * $r;
-            $offset = $circ - ($circ * min(100, max(0, $yieldRate)) / 100);
+            $prR = 44;
+            $prCirc = 2 * pi() * $prR;
+            $prDenom = max(1, $totalUsers, $onlineCount);
+            $adminOnline = (int) ($onlineByRole[\App\Models\User::ROLE_ADMIN] ?? 0);
+            $leaderOnline = (int) ($onlineByRole[\App\Models\User::ROLE_QC_LEADER] ?? 0);
+            $staffOnline = (int) ($onlineByRole[\App\Models\User::ROLE_USER] ?? 0);
+            $adminLen = ($adminOnline / $prDenom) * $prCirc;
+            $leaderLen = ($leaderOnline / $prDenom) * $prCirc;
+            $staffLen = ($staffOnline / $prDenom) * $prCirc;
           @endphp
-          <svg viewBox="0 0 120 120" class="gauge-svg" id="yieldGaugeSvg" role="img" aria-label="{{ __('qc.dashboard.first_pass_yield') }}">
-            <defs>
-              <linearGradient id="yieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#4f46e5" />
-                <stop offset="100%" stop-color="#10b981" />
-              </linearGradient>
-            </defs>
-            <circle cx="60" cy="60" r="46" fill="none" class="chart-ring-track-indigo" stroke-width="12"></circle>
-            <circle id="yieldGaugeArc"
-                    cx="60" cy="60" r="46"
+          <svg viewBox="0 0 120 120" class="donut-svg" id="presenceDonutSvg" role="img" aria-label="{{ __('qc.dashboard.active_accounts') }}">
+            <circle cx="60" cy="60" r="44" fill="none" class="chart-ring-track" stroke-width="14"></circle>
+            <circle id="presenceSegAdmin"
+                    cx="60" cy="60" r="44"
                     fill="none"
-                    stroke="url(#yieldGrad)"
-                    stroke-width="12"
-                    stroke-linecap="round"
-                    stroke-dasharray="{{ round($circ, 2) }}"
-                    stroke-dashoffset="{{ round($offset, 2) }}"
+                    stroke="#6366f1"
+                    stroke-width="14"
+                    stroke-linecap="butt"
+                    stroke-dasharray="{{ round($adminLen, 2) }} {{ round($prCirc, 2) }}"
+                    stroke-dashoffset="0"
+                    style="opacity: {{ $adminOnline > 0 ? 1 : 0 }};"
+                    transform="rotate(-90 60 60)"></circle>
+            <circle id="presenceSegLeader"
+                    cx="60" cy="60" r="44"
+                    fill="none"
+                    stroke="#f59e0b"
+                    stroke-width="14"
+                    stroke-linecap="butt"
+                    stroke-dasharray="{{ round($leaderLen, 2) }} {{ round($prCirc, 2) }}"
+                    stroke-dashoffset="{{ round(-$adminLen, 2) }}"
+                    style="opacity: {{ $leaderOnline > 0 ? 1 : 0 }};"
+                    transform="rotate(-90 60 60)"></circle>
+            <circle id="presenceSegStaff"
+                    cx="60" cy="60" r="44"
+                    fill="none"
+                    stroke="#10b981"
+                    stroke-width="14"
+                    stroke-linecap="butt"
+                    stroke-dasharray="{{ round($staffLen, 2) }} {{ round($prCirc, 2) }}"
+                    stroke-dashoffset="{{ round(-($adminLen + $leaderLen), 2) }}"
+                    style="opacity: {{ $staffOnline > 0 ? 1 : 0 }};"
                     transform="rotate(-90 60 60)"></circle>
           </svg>
-          <div class="gauge-center">
-            <strong id="yieldGaugeText">{{ $yieldRate }}%</strong>
+          <div class="donut-center" style="display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.05;">
+            <strong id="presenceCenterCount">{{ $onlineCount }}</strong>
+            <span style="font-size:0.56rem; font-weight:700; color:var(--text-muted, #64748b); text-transform:uppercase; letter-spacing:0.04em; margin-top:2px;">{{ __('qc.dashboard.online_status') }}</span>
           </div>
         </div>
 
-        <div class="gauge-meta-list" id="yieldMetaList">
-          <div class="gauge-meta-item">
-            <span>{{ __('qc.dashboard.passed') }}</span>
-            <strong><span id="yieldMetaAccept">{{ $acceptCount }}</span> / <span id="yieldMetaTotal">{{ $totalReports }}</span></strong>
+        <div class="donut-legend presence-legend-list" id="presenceRoleList">
+          <div class="donut-legend-row">
+            <span class="donut-dot" style="background: #6366f1;"></span>
+            <span class="donut-lbl">{{ __('qc.dashboard.role_admin') }}</span>
+            <strong class="donut-num" id="presenceRoleAdmin">{{ $adminOnline }}</strong>
           </div>
-          <div class="gauge-meta-item">
-            <span>{{ __('qc.dashboard.reviewed') }}</span>
-            <strong style="color: var(--success);" id="yieldMetaReviewed">{{ $reviewedCount }}</strong>
+          <div class="donut-legend-row">
+            <span class="donut-dot" style="background: #f59e0b;"></span>
+            <span class="donut-lbl">{{ __('qc.dashboard.role_leader') }}</span>
+            <strong class="donut-num" id="presenceRoleLeader">{{ $leaderOnline }}</strong>
+          </div>
+          <div class="donut-legend-row">
+            <span class="donut-dot" style="background: #10b981;"></span>
+            <span class="donut-lbl">{{ __('qc.dashboard.role_staff') }}</span>
+            <strong class="donut-num" id="presenceRoleStaff">{{ $staffOnline }}</strong>
           </div>
         </div>
       </div>
@@ -304,8 +358,9 @@
 @section('scripts')
 <script>
   (function () {
-    const D = window.qcI18n?.dashboard || {};
-    const R = window.qcI18n?.reports || {};
+    window.__qcHasOwnLivePoll = true;
+    const D = @json(__('qc.dashboard'));
+    const R = @json(__('qc.reports'));
     const isAdmin = @json($isAdmin);
     let currentCharts = @json($charts);
     let activeAdminFilter = 'all';
@@ -334,8 +389,7 @@
       const items = [
         { key: 'pre', label: D.bar_pre || 'Pre', value: Number(c.preCount || 0), color: '#4f46e5' },
         { key: 'post', label: D.bar_post || 'Post', value: Number(c.postCount || 0), color: '#6366f1' },
-        { key: 'waiting', label: D.waiting || 'Waiting', value: Number(c.waitingCount || 0), color: '#f59e0b' },
-        { key: 'reviewed', label: D.reviewed || 'Reviewed', value: Number(c.reviewedCount || 0), color: '#10b981' },
+        { key: 'draft', label: D.bar_draft || 'Draft', value: Number(c.draftCount || 0), color: '#f59e0b' },
       ];
       const maxVal = Math.max(1, ...items.map(i => i.value));
 
@@ -406,31 +460,91 @@
       `).join('');
     }
 
-    function renderYieldGauge(c) {
-      const rate = Math.min(100, Math.max(0, Number(c.yieldRate ?? 100)));
-      const arc = document.getElementById('yieldGaugeArc');
-      const text = document.getElementById('yieldGaugeText');
-      const r = 46;
-      const circ = 2 * Math.PI * r;
-      if (arc) {
-        arc.setAttribute('stroke-dasharray', circ.toFixed(2));
-        arc.setAttribute('stroke-dashoffset', (circ - (circ * rate / 100)).toFixed(2));
-      }
-      if (text) text.textContent = `${rate}%`;
-
+    function renderOnlinePresenceChart(c) {
       const elTotal = document.getElementById('chartValTotal');
       const elAccept = document.getElementById('chartValAccept');
-      const elYield = document.getElementById('chartValYield');
       if (elTotal) elTotal.textContent = String(c.totalReports ?? 0);
       if (elAccept) elAccept.textContent = String(c.acceptCount ?? 0);
-      if (elYield) elYield.textContent = `${rate}%`;
 
-      const metaAccept = document.getElementById('yieldMetaAccept');
-      const metaTotal = document.getElementById('yieldMetaTotal');
-      const metaReviewed = document.getElementById('yieldMetaReviewed');
-      if (metaAccept) metaAccept.textContent = String(c.acceptCount ?? 0);
-      if (metaTotal) metaTotal.textContent = String(c.totalReports ?? 0);
-      if (metaReviewed) metaReviewed.textContent = String(c.reviewedCount ?? 0);
+      const onlineCount = Math.max(0, Number(c.onlineCount ?? 0));
+      const totalUsers = Math.max(0, Number(c.totalUsers ?? 0), onlineCount);
+      const byRole = c.onlineByRole || {};
+      const adminOnline = Math.max(0, Number(byRole.admin ?? 0));
+      const leaderOnline = Math.max(0, Number(byRole.qc_leader ?? 0));
+      const staffOnline = Math.max(0, Number(byRole.user ?? 0));
+
+      const elOnline = document.getElementById('chartValOnline');
+      const elSubTotal = document.getElementById('chartSubTotalUsers');
+      const elCenter = document.getElementById('presenceCenterCount');
+      if (elOnline) elOnline.textContent = String(onlineCount);
+      if (elSubTotal) elSubTotal.textContent = `/ ${totalUsers}`;
+      if (elCenter) elCenter.textContent = String(onlineCount);
+
+      const elRoleAdmin = document.getElementById('presenceRoleAdmin');
+      const elRoleLeader = document.getElementById('presenceRoleLeader');
+      const elRoleStaff = document.getElementById('presenceRoleStaff');
+      if (elRoleAdmin) elRoleAdmin.textContent = String(adminOnline);
+      if (elRoleLeader) elRoleLeader.textContent = String(leaderOnline);
+      if (elRoleStaff) elRoleStaff.textContent = String(staffOnline);
+
+      const r = 44;
+      const circ = 2 * Math.PI * r;
+      const denom = Math.max(1, totalUsers);
+      const adminLen = (adminOnline / denom) * circ;
+      const leaderLen = (leaderOnline / denom) * circ;
+      const staffLen = (staffOnline / denom) * circ;
+
+      const segments = [
+        { id: 'presenceSegAdmin', count: adminOnline, len: adminLen, offset: 0 },
+        { id: 'presenceSegLeader', count: leaderOnline, len: leaderLen, offset: -adminLen },
+        { id: 'presenceSegStaff', count: staffOnline, len: staffLen, offset: -(adminLen + leaderLen) },
+      ];
+
+      segments.forEach(s => {
+        const el = document.getElementById(s.id);
+        if (!el) return;
+        el.setAttribute('stroke-dasharray', `${s.len.toFixed(2)} ${circ.toFixed(2)}`);
+        el.setAttribute('stroke-dashoffset', s.offset.toFixed(2));
+        el.style.opacity = s.count > 0 ? '1' : '0';
+      });
+
+      const stackEl = document.getElementById('onlineAvatarStack');
+      if (stackEl) {
+        const users = Array.isArray(c.onlineUsers) ? c.onlineUsers : [];
+        stackEl.replaceChildren();
+
+        if (users.length === 0) {
+          const emptyEl = document.createElement('span');
+          emptyEl.className = 'chart-metric-sub';
+          emptyEl.textContent = D.no_other_online || 'Tidak ada sesi aktif';
+          stackEl.appendChild(emptyEl);
+        } else {
+          users.slice(0, 4).forEach(u => {
+            const roleKey = ['admin', 'qc_leader', 'user'].includes(u.role) ? u.role : 'user';
+            const chip = document.createElement('span');
+            chip.className = `live-avatar-chip role-${roleKey}`;
+            chip.title = `${u.name || ''} (${u.role_label || roleKey}) • ${D.online_status || 'Online'}`;
+
+            if (u.avatar_url) {
+              const img = document.createElement('img');
+              img.src = u.avatar_url;
+              img.alt = u.initials || '';
+              chip.appendChild(img);
+            } else {
+              chip.textContent = u.initials || '?';
+            }
+            stackEl.appendChild(chip);
+          });
+
+          if (onlineCount > 4) {
+            const overflow = document.createElement('span');
+            overflow.className = 'live-avatar-chip live-avatar-overflow';
+            overflow.title = `+${onlineCount - 4} ${D.online_status || 'Online'}`;
+            overflow.textContent = `+${onlineCount - 4}`;
+            stackEl.appendChild(overflow);
+          }
+        }
+      }
     }
 
     function matchesAdminFilter(action, filter) {
@@ -562,17 +676,30 @@
       }
     }
 
-    function pollDashboardLive() {
+    let lastPollAt = 0;
+
+    function pollDashboardLive(force = false) {
+      const nowMs = Date.now();
+      if (!force && (nowMs - lastPollAt) < 1800) return;
+      lastPollAt = nowMs;
+
       fetch(@json(route('dashboard.liveData')), {
-        headers: { 'Accept': 'application/json' }
+        cache: 'no-store',
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        }
       })
         .then(r => r.ok ? r.json() : null)
         .then(res => {
           if (!res || !res.success || !res.data) return;
           const d = res.data;
 
-          const timeEl = document.getElementById('dashLiveTime');
-          if (timeEl && res.server_time) timeEl.textContent = res.server_time;
+          const livePill = document.getElementById('dashPresenceLivePill');
+          if (livePill && res.server_time) {
+            livePill.title = `${D.live_badge || 'Live'} • ${res.server_time}`;
+          }
 
           const approvalBadge = document.getElementById('quickApprovalBadge');
           if (approvalBadge) {
@@ -585,7 +712,7 @@
             currentCharts = d.charts;
             renderBarChart(d.charts);
             renderDonutChart(d.charts);
-            renderYieldGauge(d.charts);
+            renderOnlinePresenceChart(d.charts);
           }
 
           if (isAdmin) {
@@ -601,7 +728,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       renderDonutChart(currentCharts);
       renderBarChart(currentCharts);
-      renderYieldGauge(currentCharts);
+      renderOnlinePresenceChart(currentCharts);
 
       document.querySelectorAll('#adminLogFilters .activity-filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -613,8 +740,16 @@
       });
 
       setInterval(() => {
-        if (!document.hidden) pollDashboardLive();
+        if (!document.hidden) pollDashboardLive(false);
       }, 5000);
+
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) pollDashboardLive(false);
+      });
+
+      window.addEventListener('focus', () => {
+        if (!document.hidden) pollDashboardLive(false);
+      });
     });
   })();
 </script>
