@@ -4,6 +4,63 @@
 @section('page_title', __('qc.dashboard.heading'))
 
 @section('content')
+  @php
+    $hourWib = now()->timezone('Asia/Jakarta')->hour;
+    $fallbackGreeting = match (true) {
+      $hourWib >= 4 && $hourWib < 11 => __('qc.dashboard.greeting_morning'),
+      $hourWib >= 11 && $hourWib < 15 => __('qc.dashboard.greeting_afternoon'),
+      $hourWib >= 15 && $hourWib < 18 => __('qc.dashboard.greeting_evening'),
+      default => __('qc.dashboard.greeting_night'),
+    };
+    $accountName = auth()->user()?->name ?? '';
+  @endphp
+
+  <!-- Greeting Bar (Syncs immediately with device local clock) -->
+  <section class="dash-welcome-bar" id="dashWelcomeBar" aria-label="{{ __('qc.dashboard.title') }}">
+    <div class="dash-welcome-main">
+      <h1 class="dash-welcome-title">
+        <span id="dashGreetingWord">{{ $fallbackGreeting }}</span>@if($accountName !== ''), <span class="dash-welcome-name">{{ $accountName }}</span>@endif
+      </h1>
+      <p class="dash-welcome-sub">{{ __('qc.dashboard.welcome_subtitle') }}</p>
+    </div>
+    <a href="{{ route('inspection.create') }}" class="btn btn-primary btn-sm dash-welcome-cta">
+      <i data-lucide="file-plus-2"></i> {{ __('qc.dashboard.quick_create') }}
+    </a>
+  </section>
+  @php
+    $greetI18n = [
+      'morning' => __('qc.dashboard.greeting_morning'),
+      'afternoon' => __('qc.dashboard.greeting_afternoon'),
+      'evening' => __('qc.dashboard.greeting_evening'),
+      'night' => __('qc.dashboard.greeting_night'),
+    ];
+  @endphp
+  <script>
+    (function () {
+      const i18n = @json($greetI18n);
+
+      function updateDeviceGreeting() {
+        const hour = new Date().getHours();
+        let word = i18n.night;
+        if (hour >= 4 && hour < 11) {
+          word = i18n.morning;
+        } else if (hour >= 11 && hour < 15) {
+          word = i18n.afternoon;
+        } else if (hour >= 15 && hour < 18) {
+          word = i18n.evening;
+        }
+
+        const greetEl = document.getElementById('dashGreetingWord');
+        if (greetEl && greetEl.textContent !== word) {
+          greetEl.textContent = word;
+        }
+      }
+
+      updateDeviceGreeting();
+      setInterval(updateDeviceGreeting, 30000);
+    })();
+  </script>
+
   <!-- 3 Interactive Visual Charts (Clean & Focused) -->
   <div class="dashboard-charts-grid">
     <!-- Chart 1: Total Inspeksi (Bar Chart) -->
@@ -330,9 +387,6 @@
         <h3>{{ __('qc.dashboard.quick_menu_title') }}</h3>
       </div>
       <div class="card-body" style="display: flex; flex-direction: column; gap: 0.6rem;">
-        <a href="{{ route('inspection.create') }}" class="btn btn-primary btn-sm" style="justify-content: flex-start;">
-          <i data-lucide="file-plus-2"></i> {{ __('qc.dashboard.quick_create') }}
-        </a>
         <a href="{{ route('reports.index') }}" class="btn btn-secondary btn-sm" style="justify-content: flex-start;">
           <i data-lucide="archive"></i> {{ __('qc.dashboard.quick_history') }}
         </a>

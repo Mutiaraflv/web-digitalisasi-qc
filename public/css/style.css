@@ -5200,6 +5200,71 @@ body {
   padding-left: 0.5rem;
 }
 
+.dash-welcome-bar {
+  background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 0.95rem 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.dash-welcome-main {
+  min-width: 0;
+  flex: 1 1 260px;
+}
+
+.dash-welcome-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+
+.dash-welcome-name {
+  color: var(--primary-text);
+}
+
+.dash-welcome-sub {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.dash-welcome-cta {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .dash-welcome-bar {
+  background: var(--bg-surface);
+  border-color: var(--border-subtle);
+}
+
+@media (max-width: 640px) {
+  .dash-welcome-bar {
+    padding: 0.85rem 1rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .dash-welcome-title {
+    font-size: 1.04rem;
+  }
+
+  .dash-welcome-cta {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .dashboard-charts-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
