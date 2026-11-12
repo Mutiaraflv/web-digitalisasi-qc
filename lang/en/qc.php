@@ -511,6 +511,7 @@ return [
         'confirm_password' => 'Confirm New Password',
         'confirm_password_ph' => 'Re-enter new password',
         'update_password' => 'Update Password',
+        'save_password' => 'Save Password',
         'delete_avatar_title' => 'Remove Profile Photo',
         'delete_avatar_msg' => 'Are you sure you want to delete your profile photo and return to name initials?',
     ],

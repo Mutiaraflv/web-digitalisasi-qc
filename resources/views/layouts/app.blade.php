@@ -286,6 +286,110 @@
         return window.qcNotify(message, type, customTitle);
       };
 
+      /**
+       * Client-Side Image Compression & Optimization Engine (WebP / JPEG)
+       * Automatically scales resolution and converts high-res camera photos to lightweight WebP/JPEG.
+       */
+      window.qcCompressImage = function (file, options = {}) {
+        return new Promise((resolve, reject) => {
+          if (!file || !(file instanceof Blob)) {
+            return reject(new Error('File tidak valid'));
+          }
+          if (file.type === 'image/svg+xml') {
+            return resolve({
+              file,
+              blob: file,
+              dataUrl: null,
+              originalSize: file.size,
+              compressedSize: file.size,
+              ratio: 0,
+              format: file.type
+            });
+          }
+
+          const maxWidth = options.maxWidth || 1600;
+          const maxHeight = options.maxHeight || 1600;
+          const quality = typeof options.quality === 'number' ? options.quality : 0.82;
+          const targetFormat = options.format || 'image/webp';
+
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error('Gagal membaca file gambar'));
+          reader.onload = (ev) => {
+            const img = new Image();
+            img.onerror = () => reject(new Error('Format file gambar tidak dapat dibuka'));
+            img.onload = () => {
+              let w = img.naturalWidth || img.width;
+              let h = img.naturalHeight || img.height;
+
+              // Proportional scaling
+              if (w > maxWidth || h > maxHeight) {
+                const scale = Math.min(maxWidth / w, maxHeight / h);
+                w = Math.max(1, Math.round(w * scale));
+                h = Math.max(1, Math.round(h * scale));
+              }
+
+              const canvas = document.createElement('canvas');
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext('2d');
+              if (!ctx) return reject(new Error('Canvas tidak didukung'));
+
+              // Clear background with white (protects transparent PNGs converting to JPEG/WebP)
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(0, 0, w, h);
+              ctx.drawImage(img, 0, 0, w, h);
+
+              const exportBlob = (fmt) => {
+                canvas.toBlob((blob) => {
+                  if (!blob) {
+                    if (fmt !== 'image/jpeg') {
+                      exportBlob('image/jpeg');
+                    } else {
+                      reject(new Error('Gagal mengompres gambar'));
+                    }
+                    return;
+                  }
+
+                  // Fallback if browser returns image/png instead of webp
+                  if (fmt === 'image/webp' && blob.type === 'image/png') {
+                    exportBlob('image/jpeg');
+                    return;
+                  }
+
+                  const finalFormat = blob.type;
+                  const ext = finalFormat === 'image/webp' ? '.webp' : (finalFormat === 'image/png' ? '.png' : '.jpg');
+                  const rawName = (file.name || 'image').replace(/\.[^/.]+$/, '');
+                  const newFileName = `${rawName}${ext}`;
+
+                  const compressedFile = new File([blob], newFileName, {
+                    type: finalFormat,
+                    lastModified: Date.now()
+                  });
+
+                  const dataUrl = canvas.toDataURL(finalFormat, quality);
+
+                  resolve({
+                    file: compressedFile,
+                    blob: blob,
+                    dataUrl: dataUrl,
+                    originalSize: file.size,
+                    compressedSize: blob.size,
+                    ratio: Math.round((1 - (blob.size / Math.max(1, file.size))) * 100),
+                    format: finalFormat,
+                    width: w,
+                    height: h
+                  });
+                }, fmt, quality);
+              };
+
+              exportBlob(targetFormat);
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      };
+
       let dialogResolver = null;
       function closeQcDialog(result) {
         const overlay = document.getElementById('qcDialogOverlay');

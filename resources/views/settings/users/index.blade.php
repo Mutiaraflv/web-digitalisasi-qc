@@ -162,19 +162,13 @@
                       <i data-lucide="trash-2"></i>
                     </button>
                   @else
-                    @php
-                      $delMsg = __('qc.settings.delete_user_confirm', ['name' => $u->name]);
-                    @endphp
-                    <form method="POST" action="{{ route('settings.users.destroy', $u) }}" onsubmit="return window.qcConfirmForm(event, this, { title: @json(__('qc.settings.delete_user_title')), message: @json($delMsg), confirmText: @json(__('qc.common.yes_delete')), cancelText: @json(__('qc.common.cancel')), variant: 'danger' });" style="display: inline;">
-                      @csrf
-                      @method('DELETE')
-                      <button type="submit" 
-                              class="btn btn-danger btn-sm" 
-                              style="padding: 0.3rem 0.55rem; font-size: 0.75rem;" 
-                              title="{{ __('qc.settings.delete_user_tooltip') }}">
-                        <i data-lucide="trash-2"></i>
-                      </button>
-                    </form>
+                    <button type="button" 
+                            class="btn btn-danger btn-sm" 
+                            style="padding: 0.3rem 0.55rem; font-size: 0.75rem;" 
+                            title="{{ __('qc.settings.delete_user_tooltip') }}"
+                            onclick="confirmDeleteUser({{ $u->id }}, @json($u->name), @json($u->email))">
+                      <i data-lucide="trash-2"></i>
+                    </button>
                   @endif
                 </div>
               </td>
@@ -263,7 +257,7 @@
         @csrf
         @method('PUT')
         <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
-          <div style="display: flex; align-items: center; gap: 0.85rem; padding: 0.6rem 0.85rem; background: #f8fafc; border: 1px solid var(--border-subtle); border-radius: 10px;">
+          <div class="edit-user-preview-box" style="display: flex; align-items: center; gap: 0.85rem; padding: 0.6rem 0.85rem; border: 1px solid var(--border-subtle); border-radius: 10px;">
             <div id="edit_avatar_preview" class="user-avatar" style="width: 38px; height: 38px; font-size: 0.85rem; flex-shrink: 0; overflow: hidden;"></div>
             <div style="min-width: 0; flex: 1;">
               <strong id="edit_name_preview" style="display: block; font-size: 0.88rem; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></strong>
@@ -300,19 +294,63 @@
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="closeEditModal()">{{ __('qc.common.cancel') }}</button>
-          <button type="submit" class="btn btn-primary btn-sm">
-            <i data-lucide="check"></i> {{ __('qc.common.save_changes') }}
-          </button>
+        <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <button type="button" id="btnEditModalDelete" class="btn btn-danger btn-sm" onclick="deleteUserFromModal()" style="display: none;">
+              <i data-lucide="trash-2"></i> {{ __('qc.common.delete') }}
+            </button>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeEditModal()">{{ __('qc.common.cancel') }}</button>
+            <button type="submit" class="btn btn-primary btn-sm">
+              <i data-lucide="check"></i> {{ __('qc.common.save_changes') }}
+            </button>
+          </div>
         </div>
       </form>
     </div>
   </div>
+
+  <!-- Global Delete User Form -->
+  <form id="globalDeleteUserForm" method="POST" action="" style="display: none;">
+    @csrf
+    @method('DELETE')
+  </form>
 @endsection
 
 @section('scripts')
 <script>
+  let currentEditUserData = null;
+
+  async function confirmDeleteUser(id, name, email) {
+    const title = @json(__('qc.settings.delete_user_title')) || 'Hapus Akun Pengguna';
+    const rawConfirm = @json(__('qc.settings.delete_user_confirm', ['name' => ':NAME_PLACEHOLDER:']));
+    const message = rawConfirm.replace(':NAME_PLACEHOLDER:', name) + (email ? ` (${email})` : '');
+
+    const confirmed = await window.qcConfirm({
+      title: title,
+      message: message,
+      confirmText: @json(__('qc.common.yes_delete')),
+      cancelText: @json(__('qc.common.cancel')),
+      variant: 'danger',
+      icon: 'trash-2'
+    });
+
+    if (confirmed) {
+      const form = document.getElementById('globalDeleteUserForm');
+      if (form) {
+        form.action = `/settings/users/${id}`;
+        form.submit();
+      }
+    }
+  }
+
+  function deleteUserFromModal() {
+    if (!currentEditUserData || currentEditUserData.is_self) return;
+    const { id, name, email } = currentEditUserData;
+    closeEditModal();
+    confirmDeleteUser(id, name, email);
+  }
   function openAddModal() {
     const modal = document.getElementById('modalAddUser');
     if (modal) {
@@ -331,11 +369,17 @@
     const form = document.getElementById('formEditUser');
     if (!modal || !form) return;
 
+    currentEditUserData = userData;
     form.action = `/settings/users/${userData.id}`;
     document.getElementById('edit_name').value = userData.name;
     document.getElementById('edit_email').value = userData.email;
     document.getElementById('edit_role').value = userData.role;
     document.getElementById('edit_password').value = '';
+
+    const btnDel = document.getElementById('btnEditModalDelete');
+    if (btnDel) {
+      btnDel.style.display = userData.is_self ? 'none' : 'inline-flex';
+    }
 
     const avatarEl = document.getElementById('edit_avatar_preview');
     if (avatarEl) {

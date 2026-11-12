@@ -333,6 +333,11 @@ class ReportController extends Controller
             $filename = 'qc_' . $section . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $file->move($uploadPath, $filename);
 
+            $targetFilePath = $uploadPath . '/' . $filename;
+            if (file_exists($targetFilePath) && filesize($targetFilePath) > 400 * 1024) {
+                $this->optimizeInspectionPhoto($targetFilePath);
+            }
+
             $url = asset('uploads/reports/photos/' . $filename);
 
             return response()->json([
@@ -345,6 +350,67 @@ class ReportController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'Tidak ada file foto yang diunggah'], 400);
+    }
+
+    /**
+     * Ensure uploaded inspection photo is proportionally scaled (max 1600px)
+     * and optimized to keep storage consumption minimal.
+     */
+    private function optimizeInspectionPhoto(string $filePath): void
+    {
+        if (!file_exists($filePath)) return;
+
+        $imgType = @exif_imagetype($filePath);
+        $img = match ($imgType) {
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($filePath),
+            IMAGETYPE_PNG => @imagecreatefrompng($filePath),
+            IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($filePath) : null,
+            default => null,
+        };
+
+        if (!$img) return;
+
+        // Fix orientation for JPEG
+        if ($imgType === IMAGETYPE_JPEG && function_exists('exif_read_data')) {
+            $exif = @exif_read_data($filePath);
+            $ort = $exif['Orientation'] ?? 1;
+            $rot = match ($ort) {
+                3 => imagerotate($img, 180, 0),
+                6 => imagerotate($img, -90, 0),
+                8 => imagerotate($img, 90, 0),
+                default => null,
+            };
+            if ($rot) {
+                imagedestroy($img);
+                $img = $rot;
+            }
+        }
+
+        $w = imagesx($img);
+        $h = imagesy($img);
+        $maxPx = 1600;
+
+        if ($w > $maxPx || $h > $maxPx) {
+            $scale = min($maxPx / $w, $maxPx / $h);
+            $nw = max(1, (int) round($w * $scale));
+            $nh = max(1, (int) round($h * $scale));
+
+            $dst = imagecreatetruecolor($nw, $nh);
+            $white = imagecolorallocate($dst, 255, 255, 255);
+            imagefilledrectangle($dst, 0, 0, $nw, $nh, $white);
+            imagecopyresampled($dst, $img, 0, 0, 0, 0, $nw, $nh, $w, $h);
+            imagedestroy($img);
+            $img = $dst;
+        }
+
+        if ($imgType === IMAGETYPE_WEBP && function_exists('imagewebp')) {
+            imagewebp($img, $filePath, 82);
+        } elseif ($imgType === IMAGETYPE_PNG) {
+            imagepng($img, $filePath, 6);
+        } else {
+            imagejpeg($img, $filePath, 82);
+        }
+        imagedestroy($img);
     }
 
     /**

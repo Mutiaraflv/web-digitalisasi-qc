@@ -619,25 +619,49 @@ window.triggerCameraInput = function (inputId) {
     document.getElementById(inputId)?.click();
 };
 
-window.handleSlotUpload = function (input, slotKey) {
+window.handleSlotUpload = async function (input, slotKey) {
     if (!input.files || !input.files[0]) return;
-    const file = input.files[0];
-
-    // Immediate local preview via FileReader
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const dataUrl = e.target.result;
-        renderSlotPreview(slotKey, dataUrl);
-    };
-    reader.readAsDataURL(file);
-
-    // Asynchronously upload to server
-    const formData = new FormData();
-    formData.append('photo', file);
-    formData.append('section', slotKey);
+    const rawFile = input.files[0];
+    const S = window.qcI18n?.studio || {};
 
     const card = document.getElementById(`card_slot_${slotKey}`);
     if (card) card.style.opacity = '0.5';
+
+    let fileToUpload = rawFile;
+    let previewDataUrl = null;
+
+    // Automatic Client-Side Compression to WebP / JPEG
+    try {
+        if (typeof window.qcCompressImage === 'function') {
+            const result = await window.qcCompressImage(rawFile, {
+                maxWidth: 1600,
+                maxHeight: 1600,
+                quality: 0.82,
+                format: 'image/webp'
+            });
+            fileToUpload = result.file;
+            previewDataUrl = result.dataUrl;
+            console.log(`[QC Image Compress] ${rawFile.name} (${(rawFile.size / 1024).toFixed(1)} KB) -> ${(result.compressedSize / 1024).toFixed(1)} KB [${result.format}], hemat ${result.ratio}%`);
+        }
+    } catch (compressErr) {
+        console.warn('Gagal kompresi foto di klien, menggunakan file asli:', compressErr);
+    }
+
+    // Tampilkan preview instan
+    if (previewDataUrl) {
+        renderSlotPreview(slotKey, previewDataUrl);
+    } else {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            renderSlotPreview(slotKey, e.target.result);
+        };
+        reader.readAsDataURL(rawFile);
+    }
+
+    // Asynchronously upload compressed file to server
+    const formData = new FormData();
+    formData.append('photo', fileToUpload);
+    formData.append('section', slotKey);
 
     fetch('/reports/upload-photo', {
         method: 'POST',
@@ -650,7 +674,6 @@ window.handleSlotUpload = function (input, slotKey) {
         .then(r => r.json())
         .then(data => {
             if (card) card.style.opacity = '1';
-            const S = window.qcI18n?.studio || {};
             if (data.success) {
                 reportPhotos[slotKey] = data.url;
                 renderSlotPreview(slotKey, data.url);
@@ -663,7 +686,6 @@ window.handleSlotUpload = function (input, slotKey) {
         .catch(err => {
             if (card) card.style.opacity = '1';
             console.error('Upload photo error:', err);
-            const S = window.qcI18n?.studio || {};
             showToast(S.photo_saved_local || 'Foto tersimpan di sesi lokal', 'success');
             updatePhotoBadgeCount();
         });

@@ -511,6 +511,7 @@ return [
         'confirm_password' => 'Konfirmasi Kata Sandi Baru',
         'confirm_password_ph' => 'Ulangi kata sandi baru',
         'update_password' => 'Perbarui Sandi',
+        'save_password' => 'Simpan Kata Sandi',
         'delete_avatar_title' => 'Hapus Foto Profil',
         'delete_avatar_msg' => 'Apakah Anda yakin ingin menghapus foto profil dan kembali menggunakan inisial nama?',
     ],

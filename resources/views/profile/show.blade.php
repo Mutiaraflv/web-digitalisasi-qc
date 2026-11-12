@@ -230,17 +230,53 @@
     }
   });
 
-  function handleDirectAvatarUpload(input) {
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      if (file.size > 3 * 1024 * 1024) {
-        window.qcNotify?.('{{ __("qc.profile.photo_too_large") }}', 'warning');
-        input.value = '';
-        return;
-      }
+  async function handleDirectAvatarUpload(input) {
+    if (!input.files || !input.files[0]) return;
+    const rawFile = input.files[0];
+    const form = document.getElementById('avatarUploadForm');
+    if (!form) return;
 
-      window.qcNotify?.('Menyimpan foto profil...', 'loading');
-      document.getElementById('avatarUploadForm')?.submit();
+    window.qcNotify?.('Mengompres dan memproses foto profil...', 'loading');
+
+    let fileToUpload = rawFile;
+    try {
+      if (typeof window.qcCompressImage === 'function') {
+        const result = await window.qcCompressImage(rawFile, {
+          maxWidth: 512,
+          maxHeight: 512,
+          quality: 0.85,
+          format: 'image/webp'
+        });
+        fileToUpload = result.file;
+        console.log(`[Avatar Compress] ${rawFile.name} (${(rawFile.size / 1024).toFixed(1)} KB) -> ${(result.compressedSize / 1024).toFixed(1)} KB [${result.format}]`);
+      }
+    } catch (e) {
+      console.warn('Kompresi avatar di sisi klien gagal, menggunakan file asli:', e);
+    }
+
+    if (fileToUpload.size > 3 * 1024 * 1024) {
+      window.qcNotify?.('{{ __("qc.profile.photo_too_large") }}', 'warning');
+      input.value = '';
+      return;
+    }
+
+    try {
+      const dt = new DataTransfer();
+      dt.items.add(fileToUpload);
+      input.files = dt.files;
+      form.submit();
+    } catch (dtErr) {
+      // Fallback submit via FormData
+      const formData = new FormData(form);
+      formData.set('avatar', fileToUpload);
+      fetch(form.action, {
+        method: 'POST',
+        body: formData
+      }).then(() => {
+        window.location.reload();
+      }).catch(() => {
+        form.submit();
+      });
     }
   }
 
@@ -248,8 +284,8 @@
     const confirmed = await window.qcConfirm({
       title: '{{ __("qc.profile.delete_avatar_title") }}',
       message: '{{ __("qc.profile.delete_avatar_msg") }}',
-      confirmText: '{{ __("qc.reports.delete_confirm_btn") }}',
-      cancelText: '{{ __("qc.reports.cancel") }}',
+      confirmText: '{{ __("qc.common.yes_delete") }}',
+      cancelText: '{{ __("qc.common.cancel") }}',
       variant: 'danger'
     });
     if (confirmed) {
