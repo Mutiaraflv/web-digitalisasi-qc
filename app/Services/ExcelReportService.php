@@ -1293,6 +1293,24 @@ class ExcelReportService
             return null;
         }
         $path = trim($rawUrl);
+
+        // Dukungan jika gambar berformat data URL base64
+        if (preg_match('/^data:image\/(\w+);base64,(.+)$/is', $path, $matches)) {
+            $ext = strtolower($matches[1]);
+            $bin = base64_decode($matches[2]);
+            if ($bin !== false) {
+                $tempDir = storage_path('app/temp');
+                if (!file_exists($tempDir)) {
+                    @mkdir($tempDir, 0777, true);
+                }
+                $tempPath = $tempDir . DIRECTORY_SEPARATOR . 'b64_' . uniqid() . '.' . ($ext === 'png' ? 'png' : 'jpg');
+                if (@file_put_contents($tempPath, $bin)) {
+                    $this->tempImages[] = $tempPath;
+                    return $tempPath;
+                }
+            }
+        }
+
         if (preg_match('/^https?:\/\//i', $path)) {
             $parsed = parse_url($path, PHP_URL_PATH);
             $path = $parsed ?: $path;

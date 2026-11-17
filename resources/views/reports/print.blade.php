@@ -754,10 +754,19 @@
     $dateStr = $report->date ? \Carbon\Carbon::parse($report->date)->format('d-M-y') : date('d-M-y');
     $effDateStr = $report->effective_date ? \Carbon\Carbon::parse($report->effective_date)->format('d-M-Y') : '28-Jan-2022';
 
+    // Helper aman untuk URL foto (mendukung file path, full URL, maupun base64 data URL)
+    $safePhotoUrl = function($raw) {
+      if (empty($raw)) return '';
+      if (str_starts_with($raw, 'data:') || str_starts_with($raw, 'http://') || str_starts_with($raw, 'https://')) {
+        return $raw;
+      }
+      return asset($raw);
+    };
+
     // Helper to render photo slot cleanly
-    $renderPhoto = function($key, $label = 'Foto') use ($photos) {
+    $renderPhoto = function($key, $label = 'Foto') use ($photos, $safePhotoUrl) {
       if (!empty($photos[$key])) {
-        return '<img src="' . asset($photos[$key]) . '" alt="' . $label . '">';
+        return '<img src="' . $safePhotoUrl($photos[$key]) . '" alt="' . $label . '">';
       }
       return '<div class="slot-placeholder"><span>' . $label . '</span></div>';
     };
@@ -864,7 +873,7 @@
     <div class="bar-grey">Drawing / Pictures / Dimension</div>
     <div class="blueprint-box">
       @if(!empty($photos['drawing_dimension']))
-        <img src="{{ asset($photos['drawing_dimension']) }}" alt="Drawing Dimensi">
+        <img src="{{ $safePhotoUrl($photos['drawing_dimension']) }}" alt="Drawing Dimensi">
       @else
         <div class="slot-placeholder" style="height: 135px; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #cbd5e1; color: #94a3b8; font-size: 7.5pt; font-weight: 600;">
           <span>[ Drawing / Pictures / Dimension Belum Diunggah ]</span>
@@ -888,9 +897,9 @@
           <td>
             <div class="finding-img-wrap">
               @if(!empty($photos['finding_component']))
-                <img src="{{ asset($photos['finding_component']) }}" alt="Foto Komponen Utuh">
+                <img src="{{ $safePhotoUrl($photos['finding_component']) }}" alt="Foto Komponen Utuh">
               @elseif(!empty($photos['full_component']))
-                <img src="{{ asset($photos['full_component']) }}" alt="Foto Komponen Utuh">
+                <img src="{{ $safePhotoUrl($photos['full_component']) }}" alt="Foto Komponen Utuh">
               @else
                 <div class="slot-placeholder" style="width: 100%; height: 75px; max-height: 75px; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #cbd5e1; color: #94a3b8; font-size: 7pt; font-weight: 600; box-sizing: border-box; margin: 0;">
                   <span>[ Foto Komponen Utuh Belum Diunggah ]</span>
@@ -1536,7 +1545,7 @@
     <!-- TIR Blueprint Diagram -->
     <div class="blueprint-box">
       @if(!empty($photos['tir_diagram']))
-        <img src="{{ asset($photos['tir_diagram']) }}" alt="Shaft TIR Measurement Diagram">
+        <img src="{{ $safePhotoUrl($photos['tir_diagram']) }}" alt="Shaft TIR Measurement Diagram">
       @else
         <div class="slot-placeholder" style="height: 105px; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #cbd5e1; color: #94a3b8; font-size: 7.5pt; font-weight: 600;">
           <span>[ Diagram / Sketsa Titik Ukur TIR Belum Diunggah ]</span>
