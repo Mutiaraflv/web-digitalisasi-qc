@@ -13,6 +13,12 @@
 
 @section('top_actions')
   <div class="top-action-bar">
+    <!-- Auto-save Status Indicator -->
+    <div id="autoSaveStatusBadge" class="autosave-status-badge is-idle" title="{{ __('qc.studio.autosave_idle') }}">
+      <span class="autosave-dot"></span>
+      <span class="autosave-label" id="autoSaveStatusLabel"></span>
+    </div>
+
     <!-- Desktop Toolbar -->
     <div class="desktop-actions">
       <!-- 1. Clear Form -->
@@ -213,6 +219,27 @@
             </button>
             <button type="button" class="s-tab-btn" data-target="stab-ttd">
               {{ __('qc.studio.tab_6') }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Local Draft Recovery Banner -->
+        <div id="localDraftRestoreBanner" class="local-draft-banner" style="display: none;">
+          <div class="draft-banner-content">
+            <div class="draft-banner-icon">
+              <i data-lucide="history"></i>
+            </div>
+            <div class="draft-banner-text">
+              <strong>{{ __('qc.studio.draft_recovery_title') }}</strong>
+              <span id="localDraftTimestampText">{{ __('qc.studio.draft_recovery_desc', ['time' => '']) }}</span>
+            </div>
+          </div>
+          <div class="draft-banner-actions">
+            <button type="button" id="btnRestoreLocalDraft" class="btn btn-primary btn-sm">
+              <i data-lucide="rotate-ccw"></i> <span>{{ __('qc.studio.draft_restore_btn') }}</span>
+            </button>
+            <button type="button" id="btnDismissLocalDraft" class="btn btn-secondary btn-sm" title="{{ __('qc.studio.draft_discard_btn') }}">
+              <i data-lucide="x"></i>
             </button>
           </div>
         </div>

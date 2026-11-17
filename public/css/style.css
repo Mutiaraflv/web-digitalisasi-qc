@@ -571,6 +571,144 @@ body {
   height: 15px;
 }
 
+/* Autosave Status Badge in Top Action Bar */
+.autosave-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: var(--bg-surface, #f8fafc);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted, #64748b);
+  transition: all 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+.autosave-status-badge .autosave-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #94a3b8;
+  display: inline-block;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.autosave-status-badge.is-idle {
+  display: none;
+}
+
+.autosave-status-badge.is-unsaved {
+  color: #b45309;
+  border-color: rgba(217, 119, 6, 0.25);
+  background: rgba(217, 119, 6, 0.06);
+}
+.autosave-status-badge.is-unsaved .autosave-dot {
+  background: #f59e0b;
+}
+
+.autosave-status-badge.is-saving {
+  color: #2563eb;
+  border-color: rgba(37, 99, 235, 0.25);
+  background: rgba(37, 99, 235, 0.06);
+}
+.autosave-status-badge.is-saving .autosave-dot {
+  background: #3b82f6;
+  animation: autosave-pulse 1s infinite alternate;
+}
+
+.autosave-status-badge.is-saved {
+  color: #166534;
+  border-color: rgba(22, 101, 52, 0.2);
+  background: rgba(22, 101, 52, 0.06);
+}
+.autosave-status-badge.is-saved .autosave-dot {
+  background: #16a34a;
+}
+
+.autosave-status-badge.is-offline {
+  color: #c2410c;
+  border-color: rgba(194, 65, 12, 0.25);
+  background: rgba(194, 65, 12, 0.07);
+}
+.autosave-status-badge.is-offline .autosave-dot {
+  background: #ea580c;
+}
+
+@keyframes autosave-pulse {
+  from { opacity: 0.35; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1.15); }
+}
+
+/* Local Draft Recovery Banner */
+.local-draft-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.95rem;
+  margin: 0.75rem 1rem 0;
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.06);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  color: #1e3a8a;
+  animation: fadeInDown 0.25s ease-out;
+}
+
+.draft-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.draft-banner-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+  flex-shrink: 0;
+}
+.draft-banner-icon svg,
+.draft-banner-icon i {
+  width: 16px;
+  height: 16px;
+}
+
+.draft-banner-text strong {
+  display: block;
+  font-size: 0.82rem;
+  color: #1e40af;
+}
+
+.draft-banner-text span {
+  font-size: 0.76rem;
+  color: #3b82f6;
+}
+
+.draft-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.draft-banner-actions .btn {
+  font-size: 0.76rem;
+  padding: 0.3rem 0.65rem;
+  height: 28px;
+}
+
 /* Export Dropdown Component */
 .export-dropdown {
   position: relative;
@@ -7443,6 +7581,54 @@ nav[role="navigation"] span[aria-disabled="true"] span {
   color: #a5b4fc;
 }
 
+[data-theme="dark"] .autosave-status-badge {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .autosave-status-badge.is-saved {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.25);
+  background: rgba(74, 222, 128, 0.08);
+}
+
+[data-theme="dark"] .autosave-status-badge.is-unsaved {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.25);
+  background: rgba(251, 191, 36, 0.08);
+}
+
+[data-theme="dark"] .autosave-status-badge.is-saving {
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.25);
+  background: rgba(96, 165, 250, 0.08);
+}
+
+[data-theme="dark"] .autosave-status-badge.is-offline {
+  color: #fb923c;
+  border-color: rgba(251, 146, 60, 0.25);
+  background: rgba(251, 146, 60, 0.08);
+}
+
+[data-theme="dark"] .local-draft-banner {
+  background: rgba(30, 58, 138, 0.25);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .draft-banner-icon {
+  background: rgba(96, 165, 250, 0.15);
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .draft-banner-text strong {
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .draft-banner-text span {
+  color: #cbd5e1;
+}
 
 @media print {
 
