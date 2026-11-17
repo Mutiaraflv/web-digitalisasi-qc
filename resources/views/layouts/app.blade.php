@@ -21,6 +21,9 @@
     })();
   </script>
   <script src="{{ asset('js/lucide.min.js') }}"></script>
+  <script>
+    window.qcI18n = @json(__('qc'));
+  </script>
   @yield('styles')
 </head>
 <body>
