@@ -11,6 +11,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PasskeyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +22,10 @@ use App\Http\Controllers\ProfileController;
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'create'])->name('login');
     Route::post('/login', [AuthController::class, 'store'])->middleware('throttle:10,1')->name('login.store');
+
+    // Login dengan wajah / biometrik (Passkey)
+    Route::post('/login/passkey/options', [PasskeyController::class, 'loginOptions'])->middleware('throttle:20,1')->name('passkey.login.options');
+    Route::post('/login/passkey', [PasskeyController::class, 'login'])->middleware('throttle:10,1')->name('passkey.login');
 });
 
 Route::middleware('auth')->group(function () {
@@ -67,6 +72,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.avatar.upload');
     Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
+    // Kelola login wajah (Passkey)
+    Route::post('/profile/passkeys/options', [PasskeyController::class, 'registerOptions'])->middleware('throttle:20,1')->name('passkeys.options');
+    Route::post('/profile/passkeys', [PasskeyController::class, 'register'])->middleware('throttle:10,1')->name('passkeys.store');
+    Route::delete('/profile/passkeys/{passkey}', [PasskeyController::class, 'destroy'])->name('passkeys.destroy');
 
     // 7. Pengaturan Sistem (Umum untuk semua user & Kelola Akun khusus Administrator)
     Route::prefix('settings')->name('settings.')->group(function () {
