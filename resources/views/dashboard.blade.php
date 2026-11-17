@@ -605,7 +605,7 @@
       if (filter === 'all') return true;
       if (filter === 'submit') return ['report_submitted', 'report_draft_created', 'report_draft_updated', 'report_updated', 'report_deleted'].includes(action);
       if (filter === 'review') return action === 'report_reviewed';
-      if (filter === 'auth') return ['login', 'logout', 'user_created', 'user_updated', 'user_deleted', 'preferences_updated'].includes(action);
+      if (filter === 'auth') return ['login', 'logout', 'user_created', 'user_updated', 'user_deleted', 'preferences_updated', 'passkey_added', 'passkey_removed'].includes(action);
       return true;
     }
 

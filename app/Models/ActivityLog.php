@@ -88,6 +88,8 @@ class ActivityLog extends Model
             'password_updated' => ['label' => __('qc.activity.password_updated'), 'tone' => 'warning', 'icon' => 'key'],
             'preferences_updated' => ['label' => __('qc.activity.preferences_updated'), 'tone' => 'primary', 'icon' => 'sliders-horizontal'],
             'login' => ['label' => __('qc.activity.login'), 'tone' => 'primary', 'icon' => 'log-in'],
+            'passkey_added' => ['label' => __('qc.activity.passkey_added'), 'tone' => 'success', 'icon' => 'fingerprint'],
+            'passkey_removed' => ['label' => __('qc.activity.passkey_removed'), 'tone' => 'danger', 'icon' => 'fingerprint'],
             'logout' => ['label' => __('qc.activity.logout'), 'tone' => 'slate', 'icon' => 'log-out'],
             default => ['label' => ucfirst(str_replace('_', ' ', $this->action)), 'tone' => 'slate', 'icon' => 'activity'],
         };
@@ -111,7 +113,11 @@ class ActivityLog extends Model
             'report_reviewed' => __('qc.activity.desc_reviewed', ['ssc' => $ssc]),
             'report_exported_excel' => __('qc.activity.desc_exported_excel', ['ssc' => $ssc]),
             'report_exported_pdf' => __('qc.activity.desc_exported_pdf', ['ssc' => $ssc]),
-            'login' => __('qc.activity.desc_login'),
+            'login' => ($this->meta['method'] ?? null) === 'passkey'
+                ? __('qc.activity.desc_login_passkey')
+                : __('qc.activity.desc_login'),
+            'passkey_added' => __('qc.activity.desc_passkey_added', ['name' => $ssc]),
+            'passkey_removed' => __('qc.activity.desc_passkey_removed', ['name' => $ssc]),
             'logout' => __('qc.activity.desc_logout'),
             'user_created' => __('qc.activity.desc_user_created', ['name' => $ssc, 'role' => $roleName]),
             'user_updated' => __('qc.activity.desc_user_updated', ['name' => $ssc, 'role' => $roleName]),
