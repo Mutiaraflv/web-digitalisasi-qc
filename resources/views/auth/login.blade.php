@@ -38,13 +38,17 @@
     }
 
     /* Edge-to-Edge Full Screen (No Card Box, No Outer Padding) */
+    html,
     body {
-      min-height: 100vh;
+      height: 100%;
+      height: 100vh;
+      height: 100dvh;
       width: 100%;
       margin: 0;
       padding: 0;
       background: #ffffff;
-      overflow-x: hidden;
+      overflow: hidden;
+      overscroll-behavior: none;
       line-height: 1.5;
     }
 
@@ -52,7 +56,11 @@
       position: relative;
       overflow: hidden;
       width: 100%;
-      min-height: 100vh;
+      height: 100%;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100vh;
+      max-height: 100dvh;
       display: grid;
       grid-template-columns: 1fr 1fr;
       background-color: #060722;
@@ -104,11 +112,14 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: clamp(36px, 5vw, 64px);
+      padding: clamp(24px, 4vh, 64px) clamp(28px, 4vw, 64px);
       color: #ffffff;
       background: transparent;
       border-right: none;
-      min-height: 100vh;
+      height: 100%;
+      max-height: 100vh;
+      max-height: 100dvh;
+      overflow: hidden;
     }
 
     .brand-mark {
@@ -146,14 +157,14 @@
     .brand-copy {
       border-left: 3px solid #818cf8;
       padding-left: 20px;
-      margin: 40px 0;
+      margin: clamp(16px, 3vh, 40px) 0;
       max-width: 480px;
     }
 
     .brand-copy h1 {
       font-family: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', sans-serif;
-      margin: 0 0 14px;
-      font-size: clamp(26px, 3.3vw, 38px);
+      margin: 0 0 clamp(8px, 1.5vh, 14px);
+      font-size: clamp(24px, 3.2vw, 38px);
       line-height: 1.18;
       letter-spacing: -.028em;
       color: #ffffff;
@@ -184,9 +195,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: clamp(36px, 5vw, 64px);
+      padding: clamp(16px, 3.2vh, 48px) clamp(24px, 4vw, 64px);
       background: transparent;
-      min-height: 100vh;
+      height: 100%;
+      max-height: 100vh;
+      max-height: 100dvh;
+      overflow: hidden;
     }
 
     .login-form {
@@ -197,7 +211,7 @@
 
     .eyebrow {
       font-family: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', sans-serif;
-      margin: 0 0 8px;
+      margin: 0 0 clamp(4px, 0.8vh, 8px);
       color: #1312b6;
       font-size: 11.5px;
       font-weight: 700;
@@ -208,26 +222,26 @@
     h2 {
       font-family: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', sans-serif;
       margin: 0;
-      font-size: 29px;
+      font-size: clamp(24px, 2.8vh, 29px);
       letter-spacing: -.025em;
       color: #0b1120;
       font-weight: 800;
     }
 
     .intro {
-      margin: 10px 0 28px;
+      margin: clamp(4px, 1vh, 10px) 0 clamp(12px, 2.2vh, 24px);
       color: #334155;
       font-size: 13.5px;
-      line-height: 1.6;
+      line-height: 1.55;
     }
 
     .field {
-      margin-bottom: 18px;
+      margin-bottom: clamp(10px, 1.8vh, 18px);
     }
 
     label {
       display: block;
-      margin-bottom: 7px;
+      margin-bottom: clamp(4px, 0.7vh, 7px);
       font-size: 11.5px;
       font-weight: 700;
       color: #1e293b;
@@ -243,7 +257,7 @@
 
     input[type=email], input[type=password], input[type=text] {
       width: 100%;
-      height: 46px;
+      height: clamp(40px, 4.8vh, 46px);
       padding: 0 14px;
       border: 1.5px solid #94a3b8;
       border-radius: 8px;
@@ -328,7 +342,7 @@
       display: flex;
       align-items: center;
       gap: 9px;
-      margin: 2px 0 24px;
+      margin: 2px 0 clamp(10px, 1.8vh, 20px);
       color: #1e293b;
       font-size: 12.5px;
       font-weight: 500;
@@ -396,7 +410,7 @@
     .submit {
       font-family: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', sans-serif;
       width: 100%;
-      height: 46px;
+      height: clamp(40px, 4.8vh, 46px);
       border: 0;
       border-radius: 8px;
       background: #1312b6;
@@ -431,8 +445,94 @@
       transform: scale(0.99);
     }
 
+    /* Login dengan wajah (Passkey) */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: clamp(8px, 1.4vh, 14px) 0;
+      color: #64748b;
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .or-divider::before,
+    .or-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: rgba(100, 116, 139, 0.35);
+    }
+
+    .btn-face {
+      font-family: 'Plus Jakarta Sans', 'Inter', 'Segoe UI', sans-serif;
+      width: 100%;
+      height: clamp(40px, 4.8vh, 46px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      border: 1.5px solid #1312b6;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.85);
+      color: #1312b6;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      transition: background-color .15s, transform .1s, opacity .15s;
+    }
+
+    .btn-face svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .btn-face:hover {
+      background: rgba(19, 18, 182, 0.07);
+    }
+
+    .btn-face:active {
+      transform: scale(0.99);
+    }
+
+    .btn-face:focus-visible {
+      outline: 2px solid rgba(19, 18, 182, 0.45);
+      outline-offset: 2px;
+    }
+
+    .btn-face[disabled] {
+      opacity: .65;
+      cursor: progress;
+    }
+
+    .face-error {
+      text-align: center;
+      line-height: 1.45;
+    }
+
+    [data-theme="dark"] .or-divider {
+      color: #94a3b8;
+    }
+
+    [data-theme="dark"] .btn-face {
+      background: rgba(15, 23, 42, 0.7);
+      border-color: #818cf8;
+      color: #c7d2fe;
+    }
+
+    [data-theme="dark"] .btn-face:hover {
+      background: rgba(99, 102, 241, 0.16);
+    }
+
     .form-notice {
-      margin: 20px 0 0;
+      margin: clamp(10px, 1.6vh, 20px) 0 0;
       color: #475569;
       text-align: center;
       font-size: 12px;
@@ -759,6 +859,14 @@
         height: 44px;
       }
 
+      .btn-face {
+        height: 44px;
+      }
+
+      .or-divider {
+        margin: 12px 0;
+      }
+
       .form-notice {
         margin-top: 14px;
       }
@@ -819,6 +927,53 @@
         margin: 0 0 14px;
       }
 
+      .or-divider {
+        margin: 9px 0;
+      }
+
+      .form-notice {
+        margin-top: 10px;
+      }
+    }
+
+    @media (min-width: 901px) and (max-height: 760px) {
+      .login-brand {
+        padding: clamp(18px, 3vh, 32px) clamp(24px, 3.5vw, 44px);
+      }
+
+      .brand-copy {
+        margin: clamp(12px, 2.5vh, 24px) 0;
+      }
+
+      .brand-copy h1 {
+        font-size: clamp(22px, 2.6vw, 30px);
+        margin-bottom: 8px;
+      }
+
+      .login-panel {
+        padding: clamp(14px, 2.5vh, 28px) clamp(24px, 3.5vw, 44px);
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      .intro {
+        margin: 4px 0 14px;
+      }
+
+      .field {
+        margin-bottom: 12px;
+      }
+
+      .remember {
+        margin: 0 0 12px;
+      }
+
+      .or-divider {
+        margin: 8px 0;
+      }
+
       .form-notice {
         margin-top: 10px;
       }
@@ -877,12 +1032,75 @@
         </label>
 
         <button class="submit" type="submit">{{ __('qc.auth.sign_in_btn') }}</button>
+
+        <!-- Login dengan Kunci Perangkat / Biometrik (Passkey) — hanya tampil jika browser mendukung -->
+        <div class="face-login" id="faceLoginBlock" hidden>
+          <div class="or-divider"><span>{{ __('qc.auth.or') }}</span></div>
+          <button type="button" class="btn-face" id="btnFaceLogin">
+            <i data-lucide="fingerprint"></i>
+            <span id="faceBtnLabel">{{ __('qc.auth.face_btn') }}</span>
+          </button>
+          <span class="field-error face-error" id="faceLoginError" role="alert" hidden></span>
+        </div>
+
         <p class="form-notice">{{ __('qc.auth.no_account') }}</p>
       </form>
     </section>
   </main>
 
+  <script src="{{ asset('js/passkey.js') }}?v={{ file_exists(public_path('js/passkey.js')) ? filemtime(public_path('js/passkey.js')) : 1 }}"></script>
   <script>
+    (function () {
+      var block = document.getElementById('faceLoginBlock');
+      var btn = document.getElementById('btnFaceLogin');
+      var label = document.getElementById('faceBtnLabel');
+      var errorBox = document.getElementById('faceLoginError');
+      if (!block || !btn || !window.QcPasskey) return;
+
+      // Tampilkan tombol hanya jika browser & koneksi mendukung (HTTPS / localhost)
+      if (!QcPasskey.isSupported() || !QcPasskey.isSecure()) return;
+      block.hidden = false;
+
+      var text = {
+        idle: @json(__('qc.auth.face_btn')),
+        waiting: @json(__('qc.auth.face_waiting')),
+        cancelled: @json(__('qc.passkey.cancelled')),
+        generic: @json(__('qc.passkey.err_generic'))
+      };
+
+      function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.hidden = !msg;
+      }
+
+      btn.addEventListener('click', async function () {
+        showError('');
+        btn.disabled = true;
+        label.textContent = text.waiting;
+
+        try {
+          var remember = document.getElementById('remember');
+          var result = await QcPasskey.login({
+            optionsUrl: @json(route('passkey.login.options')),
+            verifyUrl: @json(route('passkey.login')),
+            remember: remember ? remember.checked : false
+          });
+          window.location.href = result.redirect || @json(route('dashboard'));
+          return;
+        } catch (err) {
+          if (QcPasskey.isCancelled(err)) {
+            showError(text.cancelled);
+          } else {
+            showError(err && err.fromServer ? err.message : text.generic);
+            if (err && !err.fromServer) console.warn('[Passkey]', err);
+          }
+        }
+
+        btn.disabled = false;
+        label.textContent = text.idle;
+      });
+    })();
+
     if (window.lucide) {
       lucide.createIcons();
     }
