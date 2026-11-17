@@ -198,6 +198,7 @@ function initApp() {
     // Check if we are on inspection create/edit page
     const reportIdInput = document.getElementById('reportId');
     if (reportIdInput) {
+        setupAutoSaveManager();
         if (reportIdInput.value) {
             currentReportId = reportIdInput.value;
             loadReportForEdit(currentReportId);
@@ -248,6 +249,7 @@ function setupLivePreviewSync() {
         if (event.target && event.target.id && event.target.id.startsWith('sig_')) {
             syncSigChips(event.target.id);
         }
+        markFormEdited();
     });
     form.addEventListener('focusin', (event) => {
         focusPreviewForInput(event.target);
@@ -258,6 +260,7 @@ function setupLivePreviewSync() {
         if (event.target && event.target.id && event.target.id.startsWith('sig_')) {
             syncSigChips(event.target.id);
         }
+        markFormEdited();
     });
 
     const compSelect = document.getElementById('componentSelect');
@@ -679,6 +682,7 @@ window.handleSlotUpload = async function (input, slotKey) {
                 renderSlotPreview(slotKey, data.url);
                 updatePhotoBadgeCount();
                 showToast(S.photo_uploaded || 'Foto berhasil diunggah', 'success');
+                markFormEdited();
             } else {
                 showToast(data.message || S.photo_upload_failed || 'Gagal mengunggah foto', 'error');
             }
@@ -746,6 +750,9 @@ window.removeSlotPhoto = function (slotKey, silent = false) {
     updatePhotoBadgeCount();
     if (!silent && hadPhoto) {
         showToast(S.photo_removed || 'Foto dihapus', 'success');
+    }
+    if (hadPhoto) {
+        markFormEdited();
     }
 };
 
@@ -1126,6 +1133,9 @@ function syncRecommendationsPreview() {
             findingDesc.innerHTML = listItems.length > 0 ? listItems.join('') : '<span style="color:#9ca3af; font-style:italic;">— Belum ada temuan visual diisi —</span>';
         }
     }
+    if (typeof isInitialFormLoading !== 'undefined' && !isInitialFormLoading) {
+        markFormEdited();
+    }
 }
 
 // -------------------------------------------------------------
@@ -1287,6 +1297,322 @@ function extractFormData() {
     return payload;
 }
 
+// -------------------------------------------------------------
+// Auto-Save & Offline Recovery Engine (Dual-Layer)
+// -------------------------------------------------------------
+let isFormDirty = false;
+let autoSaveDebounceTimer = null;
+let autoSaveServerTimer = null;
+let isAutoSaving = false;
+let lastSavedServerPayload = null;
+let isInitialFormLoading = true;
+
+function getReportStorageKey(reportId = null) {
+    const id = reportId || document.getElementById('reportId')?.value;
+    return id ? `qc_draft_snapshot_${id}` : 'qc_draft_snapshot_new';
+}
+
+function updateAutoSaveBadge(status, customTime = null) {
+    const badge = document.getElementById('autoSaveStatusBadge');
+    const label = document.getElementById('autoSaveStatusLabel');
+    if (!badge || !label) return;
+
+    const S = window.qcI18n?.studio || {};
+    badge.classList.remove('is-idle', 'is-saving', 'is-saved', 'is-offline', 'is-unsaved');
+
+    if (status === 'saving') {
+        badge.classList.add('is-saving');
+        label.textContent = S.autosave_saving || 'Menyimpan draf...';
+    } else if (status === 'saved') {
+        badge.classList.add('is-saved');
+        const now = customTime ? new Date(customTime) : new Date();
+        const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+        label.textContent = (S.autosave_saved || 'Draf tersimpan :time').replace(':time', timeStr);
+    } else if (status === 'offline') {
+        badge.classList.add('is-offline');
+        label.textContent = S.autosave_offline || 'Offline · Tersimpan di perangkat';
+    } else if (status === 'unsaved') {
+        badge.classList.add('is-unsaved');
+        label.textContent = S.autosave_saving || 'Menyimpan...';
+    } else {
+        badge.classList.add('is-idle');
+        label.textContent = '';
+    }
+}
+
+function saveLocalDraftSnapshot(isManual = false) {
+    if (isInitialFormLoading) return;
+    if (window.qcReportStatus && window.qcReportStatus !== 'draft') return;
+    const form = document.getElementById('qcMainForm');
+    if (!form) return;
+
+    const payload = extractFormData();
+    if (!payload) return;
+
+    const reportId = document.getElementById('reportId')?.value || null;
+    const key = getReportStorageKey(reportId);
+
+    const snapshot = {
+        reportId: reportId,
+        timestamp: Date.now(),
+        data: payload,
+        synced: false
+    };
+
+    try {
+        localStorage.setItem(key, JSON.stringify(snapshot));
+    } catch (e) {
+        console.warn('LocalStorage save failed:', e);
+    }
+}
+
+function clearLocalDraftSnapshot(specificId = null) {
+    try {
+        if (specificId) {
+            localStorage.removeItem(`qc_draft_snapshot_${specificId}`);
+        } else {
+            const currentId = document.getElementById('reportId')?.value;
+            if (currentId) {
+                localStorage.removeItem(`qc_draft_snapshot_${currentId}`);
+            }
+            localStorage.removeItem('qc_draft_snapshot_new');
+        }
+    } catch (_) { }
+}
+
+function markLocalSnapshotSynced(specificId = null) {
+    try {
+        const key = getReportStorageKey(specificId);
+        const raw = localStorage.getItem(key);
+        if (raw) {
+            const snap = JSON.parse(raw);
+            snap.synced = true;
+            snap.timestamp = Date.now();
+            localStorage.setItem(key, JSON.stringify(snap));
+        }
+    } catch (_) { }
+}
+
+async function autoSaveToServer() {
+    if (isAutoSaving || isSavingReport || isInitialFormLoading) return;
+    if (window.qcReportStatus && window.qcReportStatus !== 'draft') return;
+
+    if (!navigator.onLine) {
+        updateAutoSaveBadge('offline');
+        return;
+    }
+
+    const sscEl = document.getElementById('g_sscId');
+    if (!sscEl || !sscEl.value.trim()) {
+        updateAutoSaveBadge('saved');
+        return;
+    }
+
+    const payload = extractFormData();
+    if (!payload) return;
+
+    const payloadStr = JSON.stringify(payload);
+    if (payloadStr === lastSavedServerPayload) {
+        return;
+    }
+
+    const reportIdInput = document.getElementById('reportId');
+    const reportId = reportIdInput?.value;
+    const isUpdate = Boolean(reportId);
+    const url = isUpdate ? `/reports/${reportId}` : '/reports';
+    const method = isUpdate ? 'PUT' : 'POST';
+
+    payload.submit_action = 'draft';
+    payload.is_autosave = true;
+
+    isAutoSaving = true;
+    updateAutoSaveBadge('saving');
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
+        const data = await res.json().catch(() => ({}));
+        if (data.success || data.id || data.report) {
+            const savedReport = data.report || data;
+            const savedId = savedReport.id || reportId;
+            if (reportIdInput && savedId) reportIdInput.value = savedId;
+            if (savedId) currentReportId = savedId;
+            if (savedReport.review_status) {
+                window.qcReportStatus = savedReport.review_status;
+            }
+
+            if (!isUpdate && savedId && window.history?.replaceState) {
+                window.history.replaceState({}, '', `/reports/${savedId}/edit`);
+                try {
+                    const oldSnap = localStorage.getItem('qc_draft_snapshot_new');
+                    if (oldSnap) {
+                        localStorage.setItem(`qc_draft_snapshot_${savedId}`, oldSnap);
+                        localStorage.removeItem('qc_draft_snapshot_new');
+                    }
+                } catch (_) { }
+            }
+
+            lastSavedServerPayload = payloadStr;
+            isFormDirty = false;
+            markLocalSnapshotSynced(savedId);
+            updateAutoSaveBadge('saved');
+        } else {
+            updateAutoSaveBadge('offline');
+        }
+    } catch (err) {
+        console.warn('Auto-save to server paused (retained in offline storage):', err);
+        updateAutoSaveBadge('offline');
+    } finally {
+        isAutoSaving = false;
+    }
+}
+
+function markFormEdited() {
+    if (isInitialFormLoading) return;
+    if (window.qcReportStatus && window.qcReportStatus !== 'draft') return;
+
+    isFormDirty = true;
+    updateAutoSaveBadge('unsaved');
+
+    // Layer 1: Debounced Local Storage snapshot (1.2s after user stops typing)
+    clearTimeout(autoSaveDebounceTimer);
+    autoSaveDebounceTimer = setTimeout(() => {
+        saveLocalDraftSnapshot();
+        if (navigator.onLine) {
+            updateAutoSaveBadge('saved');
+        } else {
+            updateAutoSaveBadge('offline');
+        }
+    }, 1200);
+
+    // Layer 2: Debounced Server Auto-save (5s after typing idle)
+    clearTimeout(autoSaveServerTimer);
+    autoSaveServerTimer = setTimeout(() => {
+        autoSaveToServer();
+    }, 5000);
+}
+
+function checkLocalDraftRecovery() {
+    if (window.qcReportStatus && window.qcReportStatus !== 'draft') return;
+    const reportIdInput = document.getElementById('reportId');
+    const reportId = reportIdInput?.value || null;
+    const key = getReportStorageKey(reportId);
+
+    const raw = localStorage.getItem(key);
+    if (!raw) return;
+
+    let snapshot;
+    try {
+        snapshot = JSON.parse(raw);
+    } catch (_) {
+        return;
+    }
+
+    if (!snapshot || !snapshot.data) return;
+
+    // If report already exists and snapshot was marked synced, no need to restore
+    if (reportId && snapshot.synced) return;
+
+    const snapTime = snapshot.timestamp;
+    if (!snapTime) return;
+
+    // Check if snapshot is less than 7 days old
+    const ageMs = Date.now() - snapTime;
+    if (ageMs > 7 * 24 * 3600 * 1000) {
+        localStorage.removeItem(key);
+        return;
+    }
+
+    const dateObj = new Date(snapTime);
+    const timeStr = String(dateObj.getHours()).padStart(2, '0') + ':' + String(dateObj.getMinutes()).padStart(2, '0') + ' (' + dateObj.toLocaleDateString() + ')';
+
+    const banner = document.getElementById('localDraftRestoreBanner');
+    const timeEl = document.getElementById('localDraftTimestampText');
+    if (banner) {
+        if (timeEl) {
+            const S = window.qcI18n?.studio || {};
+            timeEl.textContent = (S.draft_recovery_desc || 'Terdapat draf pengisian belum tersimpan dari sesi sebelumnya (:time). Pulihkan data?').replace(':time', timeStr);
+        }
+        banner.style.display = 'flex';
+        if (window.lucide) window.lucide.createIcons();
+
+        const btnRestore = document.getElementById('btnRestoreLocalDraft');
+        const btnDismiss = document.getElementById('btnDismissLocalDraft');
+
+        btnRestore?.addEventListener('click', () => {
+            populateFormWithData(snapshot.data);
+            banner.style.display = 'none';
+            const S = window.qcI18n?.studio || {};
+            showToast(S.draft_restored_success || 'Draf berhasil dipulihkan dari penyimpanan lokal!', 'success');
+            markFormEdited();
+        }, { once: true });
+
+        btnDismiss?.addEventListener('click', () => {
+            banner.style.display = 'none';
+            localStorage.removeItem(key);
+        }, { once: true });
+    }
+}
+
+function setupAutoSaveManager() {
+    // 1. Accidental browser/tab close prevention
+    window.addEventListener('beforeunload', (e) => {
+        if (isFormDirty && (!window.qcReportStatus || window.qcReportStatus === 'draft')) {
+            saveLocalDraftSnapshot();
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        }
+    });
+
+    // 2. Emergency save on tab minimize/switch/backgrounding
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && isFormDirty) {
+            saveLocalDraftSnapshot();
+        }
+    });
+    window.addEventListener('pagehide', () => {
+        if (isFormDirty) {
+            saveLocalDraftSnapshot();
+        }
+    });
+
+    // 3. Network status listeners (Offline / Online)
+    window.addEventListener('offline', () => {
+        saveLocalDraftSnapshot();
+        updateAutoSaveBadge('offline');
+    });
+
+    window.addEventListener('online', () => {
+        if (isFormDirty || (!window.qcReportStatus || window.qcReportStatus === 'draft')) {
+            updateAutoSaveBadge('saving');
+            autoSaveToServer();
+        } else {
+            updateAutoSaveBadge('saved');
+        }
+    });
+
+    // Periodic auto-sync fallback (every 45 seconds if dirty)
+    setInterval(() => {
+        if (isFormDirty && navigator.onLine) {
+            autoSaveToServer();
+        }
+    }, 45000);
+}
+
 let isSavingReport = false;
 
 function saveReportData(andDownloadExcel = false, submitAction = null) {
@@ -1365,6 +1691,16 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
                     window.history.replaceState({}, '', `/reports/${savedId}/edit`);
                 }
 
+                if (resolvedAction === 'submit') {
+                    clearLocalDraftSnapshot(savedId);
+                    clearLocalDraftSnapshot('new');
+                    isFormDirty = false;
+                } else {
+                    markLocalSnapshotSynced(savedId);
+                    isFormDirty = false;
+                    updateAutoSaveBadge('saved');
+                }
+
                 showToast(data.message || S.save_success || 'Laporan berhasil disimpan!', 'success');
 
                 if (andDownloadExcel) {
@@ -1383,7 +1719,9 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
         .catch(err => {
             console.error('Save error:', err);
             setButtonsBusy(false);
-            showToast((S.save_failed || 'Gagal menyimpan') + ': ' + (err.message || 'Connection error'), 'error');
+            saveLocalDraftSnapshot();
+            updateAutoSaveBadge('offline');
+            showToast((S.save_failed || 'Gagal menyimpan') + ': ' + (err.message || 'Connection error') + '. Draf tersimpan di perangkat.', 'error');
         })
         .finally(() => {
             isSavingReport = false;
@@ -1498,6 +1836,11 @@ function setupButtonActions() {
             })
             : confirm(S.confirm_reset_msg || 'Kosongkan semua nilai input dan mulai form baru?');
         if (ok) {
+            clearLocalDraftSnapshot();
+            isFormDirty = false;
+            updateAutoSaveBadge('idle');
+            const banner = document.getElementById('localDraftRestoreBanner');
+            if (banner) banner.style.display = 'none';
             loadDefaultBlankForm();
         }
     };
@@ -1600,6 +1943,10 @@ function loadDefaultBlankForm() {
     updateLivePreview();
     const S = window.qcI18n?.studio || {};
     showToast(S.reset_done || 'Form baru telah disiapkan dengan data kosong', 'success');
+    setTimeout(() => {
+        isInitialFormLoading = false;
+        checkLocalDraftRecovery();
+    }, 250);
 }
 
 function loadReportForEdit(id) {
@@ -1612,27 +1959,42 @@ function loadReportForEdit(id) {
         .then(data => {
             populateFormWithData(data);
             showToast((S.report_loaded || 'Laporan :ssc berhasil dimuat').replace(':ssc', data.ssc_id), 'success');
+            setTimeout(() => {
+                isInitialFormLoading = false;
+                checkLocalDraftRecovery();
+            }, 250);
         })
         .catch(err => {
             console.error('Load report error:', err);
             showToast(S.load_failed || 'Gagal memuat data laporan', 'error');
+            setTimeout(() => {
+                isInitialFormLoading = false;
+                checkLocalDraftRecovery();
+            }, 250);
         });
 }
 
 function populateFormWithData(data) {
     if (!data) return;
 
+    const g = data.general || {};
+
     // General
-    setValue('g_sscId', data.ssc_id);
-    setValue('g_reportNo', data.report_no);
-    setValue('g_date', data.date ? data.date.split('T')[0] : '');
-    setValue('g_customer', data.customer);
-    setValue('g_partName', data.part_name || 'OUTPUT SHAFT');
-    setValue('g_inspectionType', data.inspection_type || 'Pre');
-    setValue('g_modelUnit', data.model_unit || 'HT051');
-    setValue('g_jobNo', data.job_no || '-');
-    setValue('g_quoteNo', data.quote_no || '-');
-    setValue('g_partNo', data.part_no || '-');
+    setValue('g_sscId', data.ssc_id ?? g.sscId);
+    setValue('g_reportNo', data.report_no ?? g.reportNo);
+    setValue('g_date', (data.date || g.date) ? (data.date || g.date).split('T')[0] : '');
+    setValue('g_customer', data.customer ?? g.customer);
+    setValue('g_partName', data.part_name ?? g.partName ?? 'OUTPUT SHAFT');
+    setValue('g_inspectionType', data.inspection_type ?? g.inspectionType ?? 'Pre');
+    setValue('g_modelUnit', data.model_unit ?? g.modelUnit ?? 'HT051');
+    setValue('g_jobNo', data.job_no ?? g.jobNo ?? '-');
+    setValue('g_quoteNo', data.quote_no ?? g.quoteNo ?? '-');
+    setValue('g_partNo', data.part_no ?? g.partNo ?? '-');
+    setValue('g_docNo', data.doc_no ?? g.docNo ?? 'FORM-QC-002');
+    setValue('g_rev', data.rev ?? g.rev ?? '04');
+    setValue('g_responsibility', data.responsibility ?? g.responsibility ?? 'QC Inspector');
+    setValue('g_effectiveDate', (data.effective_date || g.effectiveDate) ? (data.effective_date || g.effectiveDate).split('T')[0] : '');
+    setValue('g_page', data.page ?? g.page ?? '1');
 
     const sec = typeof data.sections === 'string' ? JSON.parse(data.sections) : (data.sections || {});
 
