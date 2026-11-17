@@ -47,6 +47,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * Passkey (login wajah / biometrik) milik pengguna.
+     */
+    public function passkeys(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Passkey::class)->latest();
+    }
+
+    /**
      * Get avatar public URL or null if none uploaded.
      */
     public function getAvatarUrlAttribute(): ?string
