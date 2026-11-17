@@ -129,7 +129,7 @@
     </div>
 
     <!-- Card 2: Pengaturan Sandi Akun -->
-    <div class="profile-section-card" style="margin-bottom: 0;">
+    <div class="profile-section-card">
       <div class="profile-card-header">
         <h3>
           <i data-lucide="key-round"></i>
@@ -174,11 +174,175 @@
         </form>
       </div>
     </div>
+
+    <!-- Card 3: Login dengan Kunci Perangkat (Passkey) -->
+    @php
+      $passkeysReady = \App\Models\Passkey::tableExists();
+      $passkeys = $passkeysReady ? $user->passkeys : collect();
+    @endphp
+    <div class="profile-section-card" id="faceLoginCard" style="margin-bottom: 0;">
+      <div class="profile-card-header">
+        <h3>
+          <i data-lucide="fingerprint"></i>
+          <span>{{ __('qc.passkey.title') }}</span>
+        </h3>
+      </div>
+      <div class="profile-card-body">
+        <p class="pk-desc">{{ __('qc.passkey.desc') }}</p>
+
+        @if(! $passkeysReady)
+          <div class="pk-alert">
+            <i data-lucide="info"></i>
+            <span>{{ __('qc.passkey.err_not_migrated') }}</span>
+          </div>
+        @else
+          <ul class="pk-list">
+            @forelse($passkeys as $pk)
+              <li class="pk-item">
+                <span class="pk-icon">
+                  <i data-lucide="{{ preg_match('/HP|iPhone|Android|Samsung/i', $pk->name) ? 'smartphone' : 'laptop' }}"></i>
+                </span>
+                <div class="pk-info">
+                  <strong>{{ $pk->name }}</strong>
+                  <span>
+                    {{ __('qc.passkey.added_on', ['date' => $pk->created_at?->translatedFormat('d M Y')]) }}
+                    ·
+                    {{ $pk->last_used_at
+                        ? __('qc.passkey.last_used', ['date' => $pk->last_used_at->translatedFormat('d M Y, H:i')])
+                        : __('qc.passkey.never_used') }}
+                  </span>
+                </div>
+                <form method="POST" action="{{ route('passkeys.destroy', $pk) }}" class="pk-remove-form">
+                  @csrf
+                  @method('DELETE')
+                  <button type="button" class="btn btn-secondary btn-sm pk-remove-btn" data-name="{{ $pk->name }}" title="{{ __('qc.passkey.remove') }}">
+                    <i data-lucide="trash-2"></i>
+                    <span class="pk-remove-label">{{ __('qc.passkey.remove') }}</span>
+                  </button>
+                </form>
+              </li>
+            @empty
+              <li class="pk-empty">{{ __('qc.passkey.empty') }}</li>
+            @endforelse
+          </ul>
+
+          <div class="pk-register" id="pkRegisterBox">
+            <div class="form-group" style="margin: 0; flex: 1; min-width: 0;">
+              <label for="pkDeviceName">{{ __('qc.passkey.device_name') }}</label>
+              <input type="text" id="pkDeviceName" maxlength="60" placeholder="{{ __('qc.passkey.device_name_ph') }}">
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btnPkRegister">
+              <i data-lucide="fingerprint"></i>
+              <span>{{ __('qc.passkey.register_btn') }}</span>
+            </button>
+          </div>
+          <div class="pk-alert" id="pkUnsupported" hidden>
+            <i data-lucide="info"></i>
+            <span id="pkUnsupportedText"></span>
+          </div>
+          <p class="pk-note">{{ __('qc.passkey.tunnel_note') }}</p>
+        @endif
+      </div>
+    </div>
   </div>
 @endsection
 
+@section('styles')
+<style>
+  .pk-desc { font-size: 0.82rem; color: var(--text-subtle); line-height: 1.6; margin: 0 0 1rem; }
+  .pk-list { list-style: none; margin: 0 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .pk-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.75rem; border: 1px solid var(--border, rgba(148,163,184,.35)); border-radius: 10px; }
+  .pk-icon { width: 36px; height: 36px; flex-shrink: 0; display: grid; place-items: center; border-radius: 9px; background: rgba(99,102,241,.12); color: var(--primary, #4f46e5); }
+  .pk-icon svg { width: 18px; height: 18px; }
+  .pk-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .pk-info strong { font-size: 0.86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pk-info span { font-size: 0.72rem; color: var(--text-subtle); }
+  .pk-remove-form { margin: 0; }
+  .pk-remove-btn { color: var(--danger, #dc2626); }
+  .pk-empty { font-size: 0.8rem; color: var(--text-subtle); padding: 0.75rem; border: 1px dashed var(--border, rgba(148,163,184,.45)); border-radius: 10px; text-align: center; }
+  .pk-register { display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap; }
+  .pk-register .btn { white-space: nowrap; }
+  .pk-alert { display: flex; gap: 0.5rem; align-items: flex-start; margin-top: 0.75rem; padding: 0.65rem 0.75rem; border-radius: 10px; font-size: 0.78rem; line-height: 1.5; background: rgba(245,158,11,.12); color: inherit; }
+  .pk-alert svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+  .pk-note { font-size: 0.72rem; color: var(--text-subtle); margin: 0.75rem 0 0; }
+  @media (max-width: 560px) {
+    .pk-remove-label { display: none; }
+    .pk-register .btn { width: 100%; justify-content: center; }
+  }
+</style>
+@endsection
+
 @section('scripts')
+<script src="{{ asset('js/passkey.js') }}?v={{ file_exists(public_path('js/passkey.js')) ? filemtime(public_path('js/passkey.js')) : 1 }}"></script>
 <script>
+  // ---------- Login dengan Wajah (Passkey) ----------
+  (function () {
+    const btn = document.getElementById('btnPkRegister');
+    const nameInput = document.getElementById('pkDeviceName');
+    const regBox = document.getElementById('pkRegisterBox');
+    const unsupported = document.getElementById('pkUnsupported');
+    const unsupportedText = document.getElementById('pkUnsupportedText');
+    const text = {
+      unsupported: @json(__('qc.passkey.unsupported')),
+      insecure: @json(__('qc.passkey.insecure')),
+      registering: @json(__('qc.passkey.registering')),
+      registered: @json(__('qc.passkey.registered')),
+      cancelled: @json(__('qc.passkey.cancelled')),
+      duplicate: @json(__('qc.passkey.err_duplicate')),
+      generic: @json(__('qc.passkey.err_generic')),
+      removeTitle: @json(__('qc.passkey.remove_title')),
+      removeMsg: @json(__('qc.passkey.remove_msg')),
+      removeBtn: @json(__('qc.passkey.remove')),
+      cancel: @json(__('qc.common.cancel'))
+    };
+
+    // Hapus perangkat (dengan konfirmasi)
+    document.querySelectorAll('.pk-remove-btn').forEach((b) => {
+      b.addEventListener('click', async () => {
+        const msg = text.removeMsg.replace(':name', b.dataset.name || '');
+        const ok = typeof window.qcConfirm === 'function'
+          ? await window.qcConfirm({ title: text.removeTitle, message: msg, confirmText: text.removeBtn, cancelText: text.cancel, variant: 'danger' })
+          : window.confirm(msg);
+        if (ok) b.closest('form')?.submit();
+      });
+    });
+
+    if (!btn || !window.QcPasskey) return;
+
+    if (!QcPasskey.isSupported() || !QcPasskey.isSecure()) {
+      regBox.style.display = 'none';
+      unsupportedText.textContent = QcPasskey.isSupported() ? text.insecure : text.unsupported;
+      unsupported.hidden = false;
+      return;
+    }
+
+    if (nameInput && !nameInput.value) nameInput.value = QcPasskey.guessDeviceName();
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      window.qcNotify?.(text.registering, 'loading');
+      try {
+        await QcPasskey.register({
+          optionsUrl: @json(route('passkeys.options')),
+          storeUrl: @json(route('passkeys.store')),
+          name: (nameInput?.value || '').trim()
+        });
+        window.qcNotify?.(text.registered, 'success');
+        setTimeout(() => window.location.reload(), 900);
+        return;
+      } catch (err) {
+        let msg = text.generic;
+        if (QcPasskey.isCancelled(err)) msg = text.cancelled;
+        else if (err?.name === 'InvalidStateError') msg = text.duplicate;
+        else if (err?.name === 'UnsupportedError') msg = text.unsupported;
+        else if (err?.fromServer) msg = err.message;
+        else console.warn('[Passkey]', err);
+        window.qcNotify?.(msg, 'error');
+      }
+      btn.disabled = false;
+    });
+  })();
+
   const hasAvatar = {{ $user->avatar_url ? 'true' : 'false' }};
 
   function handleAvatarBadgeClick(event) {
