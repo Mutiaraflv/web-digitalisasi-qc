@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. Web & PHP Application (Laravel)
+  # ==========================================
+  app:
+    image: webdevops/php-apache:8.2
+    container_name: qcms-app
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    environment:
+      WEB_DOCUMENT_ROOT: /var/www/html/public
+      PHP_MEMORY_LIMIT: 512M
+      PHP_MAX_EXECUTION_TIME: 300
+      PHP_POST_MAX_SIZE: 100M
+      PHP_UPLOAD_MAX_FILESIZE: 100M
+    volumes:
+      - ./app:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - qcms-network
+
+  # ==========================================
+  # 2. Database MariaDB (Ringan untuk Synology NAS)
+  # ==========================================
+  db:
+    image: mariadb:10.11
+    container_name: qcms-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: ccr_db
+      MYSQL_USER: ccr_user
+      MYSQL_PASSWORD: ccrpassword123
+    volumes:
+      - ./db_data:/var/lib/mysql
+    networks:
+      - qcms-network
+
+  # ==========================================
+  # 3. phpMyAdmin (GUI Database via Browser)
+  # ==========================================
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: qcms-pma
+    restart: unless-stopped
+    ports:
+      - "8088:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 100M
+    depends_on:
+      - db
+    networks:
+      - qcms-network
+
+networks:
+  qcms-network:
+    driver: bridge
