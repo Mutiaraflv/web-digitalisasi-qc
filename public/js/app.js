@@ -24,6 +24,7 @@ const photoSlotKeys = [
 
 let reportPhotos = {};
 photoSlotKeys.forEach(k => reportPhotos[k] = null);
+window.reportPhotos = reportPhotos;
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
@@ -678,6 +679,8 @@ window.handleSlotUpload = async function (input, slotKey) {
         .then(data => {
             if (card) card.style.opacity = '1';
             if (data.success) {
+                window.qcOriginalPhotos = window.qcOriginalPhotos || {};
+                window.qcOriginalPhotos[slotKey] = data.url;
                 reportPhotos[slotKey] = data.url;
                 renderSlotPreview(slotKey, data.url);
                 updatePhotoBadgeCount();
@@ -728,6 +731,16 @@ window.removeSlotPhoto = function (slotKey, silent = false) {
     // Hide remove button
     const remBtn = document.getElementById(`btn_rem_slot_${slotKey}`);
     if (remBtn) remBtn.style.display = 'none';
+
+    // Hide crop and annotate buttons
+    const cropBtn = document.getElementById(`btn_crop_slot_${slotKey}`);
+    if (cropBtn) cropBtn.style.display = 'none';
+
+    const annBtn = document.getElementById(`btn_annotate_slot_${slotKey}`);
+    if (annBtn) annBtn.style.display = 'none';
+
+    if (window.qcPhotoMarkers) delete window.qcPhotoMarkers[slotKey];
+    if (window.qcOriginalPhotos) delete window.qcOriginalPhotos[slotKey];
 
     // Reset right-hand preview slot to empty placeholder
     const prevSlot = document.getElementById(`prev_slot_${slotKey}`);
@@ -784,9 +797,20 @@ function renderSlotPreview(slotKey, imageUrl) {
         viewContainer.innerHTML = `<img src="${imageUrl}" alt="${slotKey}">`;
     }
 
-    // 2. Show remove button
+    // 2. Show remove, crop, and annotate buttons
     const remBtn = document.getElementById(`btn_rem_slot_${slotKey}`);
     if (remBtn) remBtn.style.display = 'inline-flex';
+
+    const cropBtn = document.getElementById(`btn_crop_slot_${slotKey}`);
+    if (cropBtn) cropBtn.style.display = 'inline-flex';
+
+    const annBtn = document.getElementById(`btn_annotate_slot_${slotKey}`);
+    if (annBtn) annBtn.style.display = 'inline-flex';
+
+    window.qcOriginalPhotos = window.qcOriginalPhotos || {};
+    if (!window.qcOriginalPhotos[slotKey]) {
+        window.qcOriginalPhotos[slotKey] = imageUrl;
+    }
 
     // 3. Right-hand live document preview slot
     const prevSlot = document.getElementById(`prev_slot_${slotKey}`);
@@ -811,6 +835,8 @@ function updatePhotoBadgeCount() {
 window.handlePhotoSelect = window.handleSlotUpload;
 window.removePhoto = window.removeSlotPhoto;
 window.renderPhotoPreview = renderSlotPreview;
+window.renderSlotPreview = renderSlotPreview;
+window.markFormEdited = markFormEdited;
 
 // -------------------------------------------------------------
 // Recommendations Dynamic Table
@@ -1281,7 +1307,11 @@ function extractFormData() {
             const uid = sel?.selectedOptions?.[0]?.dataset?.userId;
             return uid ? Number(uid) : null;
         })(),
-        photos: reportPhotos
+        photos: {
+            ...reportPhotos,
+            _markers: window.qcPhotoMarkers || {},
+            _originals: window.qcOriginalPhotos || {}
+        }
     };
 
     // Extract dynamic recommendations
@@ -2120,7 +2150,14 @@ function populateFormWithData(data) {
 
     // Photos
     const photos = typeof data.photos === 'string' ? JSON.parse(data.photos) : (data.photos || {});
+    if (photos._markers) {
+        window.qcPhotoMarkers = photos._markers;
+    }
+    if (photos._originals) {
+        window.qcOriginalPhotos = photos._originals;
+    }
     for (const key in photos) {
+        if (key.startsWith('_')) continue;
         if (photos[key]) {
             renderSlotPreview(key, photos[key]);
         }

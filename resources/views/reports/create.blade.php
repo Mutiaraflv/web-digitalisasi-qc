@@ -120,6 +120,8 @@
     $camLabel = __('qc.studio.photo_camera');
     $galLabel = __('qc.studio.photo_gallery');
     $remTitle = __('qc.studio.photo_remove');
+    $annTitle = __('qc.studio.photo_annotate');
+    $cropTitle = __('qc.studio.photo_frame');
 
     $html = '<div class="slot-item-card ' . $hasPhotoClass . '" id="card_slot_' . $key . '">';
     $html .= '<input type="file" id="input_slot_' . $key . '" accept="image/*" style="display:none;" onchange="handleSlotUpload(this, \'' . $key . '\')">';
@@ -143,6 +145,12 @@
     $html .= '</button>';
     $html .= '<button type="button" class="btn-slot-action btn-file" onclick="triggerFileInput(\'input_slot_' . $key . '\')" title="' . e(__('qc.studio.photo_pick_gallery')) . '">';
     $html .= '<i data-lucide="folder-image"></i> <span>' . e($galLabel) . '</span>';
+    $html .= '</button>';
+    $html .= '<button type="button" class="btn-slot-action btn-crop" id="btn_crop_slot_' . $key . '" onclick="openPhotoFramingModal(\'' . $key . '\')" style="' . $remStyle . '" title="' . e(__('qc.studio.photo_frame_title')) . '">';
+    $html .= '<i data-lucide="crop"></i> <span>' . e($cropTitle) . '</span>';
+    $html .= '</button>';
+    $html .= '<button type="button" class="btn-slot-action btn-annotate" id="btn_annotate_slot_' . $key . '" onclick="openPhotoAnnotationModal(\'' . $key . '\')" style="' . $remStyle . '" title="' . e($annTitle) . '">';
+    $html .= '<i data-lucide="stamp"></i> <span>' . e($annTitle) . '</span>';
     $html .= '</button>';
     $html .= '<button type="button" class="btn-slot-action btn-del" id="btn_rem_slot_' . $key . '" onclick="removeSlotPhoto(\'' . $key . '\')" style="' . $remStyle . '" title="' . e($remTitle) . '">';
     $html .= '<i data-lucide="trash-2"></i>';
@@ -686,6 +694,12 @@
                       <button type="button" class="btn btn-secondary btn-xs" onclick="useDefaultBlueprint('drawing_dimension')">
                         <i data-lucide="copy"></i> {{ __('qc.studio.photo_use_blueprint') }}
                       </button>
+                      <button type="button" class="btn btn-secondary btn-xs btn-crop-large" id="btn_crop_slot_drawing_dimension" onclick="openPhotoFramingModal('drawing_dimension')" style="{{ !empty($photos['drawing_dimension']) ? '' : 'display:none;' }}" title="{{ __('qc.studio.photo_frame_title') }}">
+                        <i data-lucide="crop"></i> {{ __('qc.studio.photo_frame') }}
+                      </button>
+                      <button type="button" class="btn btn-secondary btn-xs btn-annotate-large" id="btn_annotate_slot_drawing_dimension" onclick="openPhotoAnnotationModal('drawing_dimension')" style="{{ !empty($photos['drawing_dimension']) ? '' : 'display:none;' }}" title="{{ __('qc.studio.photo_annotate') }}">
+                        <i data-lucide="stamp"></i> {{ __('qc.studio.photo_annotate') }}
+                      </button>
                       <button type="button" class="btn btn-secondary btn-xs" id="btn_rem_slot_drawing_dimension" onclick="removeSlotPhoto('drawing_dimension')" style="{{ !empty($photos['drawing_dimension']) ? '' : 'display:none;' }}">
                         <i data-lucide="trash-2"></i> {{ __('qc.studio.photo_remove') }}
                       </button>
@@ -717,6 +731,12 @@
                       </button>
                       <button type="button" class="btn btn-secondary btn-xs" onclick="triggerFileInput('input_slot_finding_component')">
                         <i data-lucide="folder-image"></i> {{ __('qc.studio.photo_pick_gallery') }}
+                      </button>
+                      <button type="button" class="btn btn-secondary btn-xs btn-crop-large" id="btn_crop_slot_finding_component" onclick="openPhotoFramingModal('finding_component')" style="{{ !empty($photos['finding_component']) ? '' : 'display:none;' }}" title="{{ __('qc.studio.photo_frame_title') }}">
+                        <i data-lucide="crop"></i> {{ __('qc.studio.photo_frame') }}
+                      </button>
+                      <button type="button" class="btn btn-secondary btn-xs btn-annotate-large" id="btn_annotate_slot_finding_component" onclick="openPhotoAnnotationModal('finding_component')" style="{{ !empty($photos['finding_component']) ? '' : 'display:none;' }}" title="{{ __('qc.studio.photo_annotate') }}">
+                        <i data-lucide="stamp"></i> {{ __('qc.studio.photo_annotate') }}
                       </button>
                       <button type="button" class="btn btn-secondary btn-xs" id="btn_rem_slot_finding_component" onclick="removeSlotPhoto('finding_component')" style="{{ !empty($photos['finding_component']) ? '' : 'display:none;' }}">
                         <i data-lucide="trash-2"></i> {{ __('qc.studio.photo_remove') }}
@@ -936,6 +956,12 @@
                       </button>
                       <button type="button" class="btn btn-secondary btn-xs" onclick="useDefaultBlueprint('tir_diagram')">
                         <i data-lucide="copy"></i> {{ __('qc.studio.photo_use_tir') }}
+                      </button>
+                      <button type="button" class="btn btn-secondary btn-xs btn-crop-large" id="btn_crop_slot_tir_diagram" onclick="openPhotoFramingModal('tir_diagram')" style="{{ !empty($photos['tir_diagram']) ? '' : 'display:none;' }}" title="{{ __('qc.studio.photo_frame_title') }}">
+                        <i data-lucide="crop"></i> {{ __('qc.studio.photo_frame') }}
+                      </button>
+                      <button type="button" class="btn btn-secondary btn-xs btn-annotate-large" id="btn_annotate_slot_tir_diagram" onclick="openPhotoAnnotationModal('tir_diagram')" style="{{ !empty($photos['tir_diagram']) ? '' : 'display:none;' }}" title="{{ __('qc.studio.photo_annotate') }}">
+                        <i data-lucide="stamp"></i> {{ __('qc.studio.photo_annotate') }}
                       </button>
                       <button type="button" class="btn btn-secondary btn-xs" id="btn_rem_slot_tir_diagram" onclick="removeSlotPhoto('tir_diagram')" style="{{ !empty($photos['tir_diagram']) ? '' : 'display:none;' }}">
                         <i data-lucide="trash-2"></i> {{ __('qc.studio.photo_remove') }}
@@ -1959,6 +1985,204 @@
   <i data-lucide="file-text"></i>
   <span>{{ __('qc.studio.preview_fab') }}</span>
 </button>
+
+<!-- Photo Defect Callout / Marker Annotator Modal -->
+<div class="modal-overlay" id="qcAnnotatorModal" aria-hidden="true">
+  <div class="modal-dialog annotator-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="annotatorTitle">
+    
+    <!-- Modal Header -->
+    <div class="annotator-header">
+      <div class="annotator-title-wrap">
+        <div class="annotator-icon-badge">
+          <i data-lucide="stamp"></i>
+        </div>
+        <div class="annotator-title-text">
+          <h3 id="annotatorTitle">
+            {{ __('qc.studio.annotator_title') }}
+            <span class="annotator-slot-pill" id="annotatorSlotBadge">-</span>
+          </h3>
+          <p>{{ __('qc.studio.annotator_desc') }}</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" data-annotator-close title="{{ __('qc.common.close') }}">&times;</button>
+    </div>
+
+    <!-- Modal Toolbar -->
+    <div class="annotator-toolbar">
+      <!-- 1. Number Selector -->
+      <div class="annotator-tool-group">
+        <span class="annotator-tool-label">{{ __('qc.studio.annotator_next_number') }}:</span>
+        <div class="annotator-num-box">
+          <button type="button" class="annotator-num-btn" id="btnAnnotatorNumMinus" title="Kurangi nomor"><i data-lucide="minus"></i></button>
+          <input type="number" id="annotatorNumInput" class="annotator-num-input" value="1" min="1" max="99">
+          <button type="button" class="annotator-num-btn" id="btnAnnotatorNumPlus" title="Tambah nomor"><i data-lucide="plus"></i></button>
+        </div>
+      </div>
+
+      <!-- 2. Arrow Direction Selector -->
+      <div class="annotator-tool-group">
+        <span class="annotator-tool-label">{{ __('qc.studio.annotator_arrow_dir') }}:</span>
+        <div class="annotator-btn-pill-group">
+          <button type="button" class="annotator-btn-pill annotator-dir-btn active" data-dir="down" title="{{ __('qc.studio.annotator_dir_down') }}">↓</button>
+          <button type="button" class="annotator-btn-pill annotator-dir-btn" data-dir="up" title="{{ __('qc.studio.annotator_dir_up') }}">↑</button>
+          <button type="button" class="annotator-btn-pill annotator-dir-btn" data-dir="left" title="{{ __('qc.studio.annotator_dir_left') }}">←</button>
+          <button type="button" class="annotator-btn-pill annotator-dir-btn" data-dir="right" title="{{ __('qc.studio.annotator_dir_right') }}">→</button>
+          <button type="button" class="annotator-btn-pill annotator-dir-btn" data-dir="down-left" title="{{ __('qc.studio.annotator_dir_down_left') }}">↙</button>
+          <button type="button" class="annotator-btn-pill annotator-dir-btn" data-dir="down-right" title="{{ __('qc.studio.annotator_dir_down_right') }}">↘</button>
+          <button type="button" class="annotator-btn-pill annotator-dir-btn" data-dir="none" title="{{ __('qc.studio.annotator_dir_none') }}">○</button>
+        </div>
+      </div>
+
+      <!-- 3. Size Selector -->
+      <div class="annotator-tool-group">
+        <span class="annotator-tool-label">{{ __('qc.studio.annotator_size') }}:</span>
+        <div class="annotator-btn-pill-group">
+          <button type="button" class="annotator-btn-pill" data-annotator-size="sm" title="{{ __('qc.studio.annotator_size_sm') }}">S</button>
+          <button type="button" class="annotator-btn-pill active" data-annotator-size="md" title="{{ __('qc.studio.annotator_size_md') }}">M</button>
+          <button type="button" class="annotator-btn-pill" data-annotator-size="lg" title="{{ __('qc.studio.annotator_size_lg') }}">L</button>
+        </div>
+      </div>
+
+      <!-- 4. Quick Actions -->
+      <div class="annotator-actions-group">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnAnnotatorUndo" title="{{ __('qc.studio.annotator_undo') }}">
+          <i data-lucide="undo-2"></i> <span>{{ __('qc.studio.annotator_undo') }}</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnAnnotatorClear" title="{{ __('qc.studio.annotator_clear') }}">
+          <i data-lucide="trash-2"></i> <span>{{ __('qc.studio.annotator_clear') }}</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnAnnotatorResetOriginal" title="{{ __('qc.studio.annotator_reset_original') }}">
+          <i data-lucide="rotate-ccw"></i> <span>{{ __('qc.studio.annotator_reset_original') }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Stage / Workspace -->
+    <div class="annotator-stage" id="annotatorStage">
+      <div class="annotator-image-wrap" id="annotatorImageWrap">
+        <img id="annotatorImage" src="" alt="Workspace Image">
+        <svg id="annotatorSvgOverlay" class="annotator-svg-overlay"></svg>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="annotator-footer">
+      <div class="annotator-tip-text">
+        <i data-lucide="info"></i>
+        <span>{{ __('qc.studio.annotator_tip') }}</span>
+      </div>
+      <div class="annotator-footer-actions">
+        <button type="button" class="btn btn-secondary btn-sm" data-annotator-close>{{ __('qc.common.cancel') }}</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnAnnotatorSave">
+          <i data-lucide="check"></i> <span>{{ __('qc.studio.annotator_save') }}</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Photo Framing & Position / Zoom Crop Modal -->
+<div class="modal-overlay" id="qcFramerModal" aria-hidden="true">
+  <div class="modal-dialog framer-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="framerTitle">
+    
+    <!-- Modal Header -->
+    <div class="framer-header">
+      <div class="framer-title-wrap">
+        <div class="framer-icon-badge">
+          <i data-lucide="crop"></i>
+        </div>
+        <div class="framer-title-text">
+          <h3 id="framerTitle">
+            {{ __('qc.studio.framer_title') }}
+            <span class="framer-slot-pill" id="framerSlotBadge">-</span>
+          </h3>
+          <p>{{ __('qc.studio.framer_desc') }}</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" data-framer-close title="{{ __('qc.common.close') }}">&times;</button>
+    </div>
+
+    <!-- Modal Controls Toolbar -->
+    <div class="framer-toolbar">
+      <!-- Ratio Selector -->
+      <div class="framer-tool-group">
+        <label class="framer-label"><i data-lucide="ratio"></i> {{ __('qc.studio.framer_ratio') }}</label>
+        <div class="framer-ratio-pills">
+          <button type="button" class="framer-ratio-btn is-active" data-ratio="slot" title="{{ __('qc.studio.framer_ratio_slot') }}">
+            <i data-lucide="maximize-2"></i> {{ __('qc.studio.framer_ratio_slot') }}
+          </button>
+          <button type="button" class="framer-ratio-btn" data-ratio="4:3">4:3</button>
+          <button type="button" class="framer-ratio-btn" data-ratio="16:9">16:9</button>
+          <button type="button" class="framer-ratio-btn" data-ratio="1:1">1:1</button>
+          <button type="button" class="framer-ratio-btn" data-ratio="free">{{ __('qc.studio.framer_ratio_free') }}</button>
+        </div>
+      </div>
+
+      <!-- Zoom Slider Control -->
+      <div class="framer-tool-group framer-zoom-group">
+        <label class="framer-label"><i data-lucide="zoom-in"></i> {{ __('qc.studio.framer_zoom') }} <span id="framerZoomVal" class="framer-badge-val">100%</span></label>
+        <div class="framer-zoom-control">
+          <button type="button" class="framer-btn-icon" id="btnFramerZoomOut" title="Zoom Out"><i data-lucide="minus"></i></button>
+          <input type="range" id="framerZoomSlider" min="100" max="350" step="2" value="100" class="framer-slider">
+          <button type="button" class="framer-btn-icon" id="btnFramerZoomIn" title="Zoom In"><i data-lucide="plus"></i></button>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="framer-tool-group framer-action-group">
+        <button type="button" class="btn btn-secondary btn-xs" id="btnFramerRotate" title="{{ __('qc.studio.framer_rotate') }}">
+          <i data-lucide="rotate-cw"></i> <span>{{ __('qc.studio.framer_rotate') }}</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-xs" id="btnFramerFitCenter" title="{{ __('qc.studio.framer_fit') }}">
+          <i data-lucide="focus"></i> <span>{{ __('qc.studio.framer_fit') }}</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-xs" id="btnFramerReset" title="{{ __('qc.studio.framer_reset') }}">
+          <i data-lucide="rotate-ccw"></i> <span>{{ __('qc.studio.framer_reset') }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Stage / Viewport -->
+    <div class="framer-stage" id="framerStage">
+      <!-- Dark backdrop mask with cutout aperture window -->
+      <div class="framer-viewport-container" id="framerViewportContainer">
+        <!-- Interactive canvas / layer that gets transformed -->
+        <div class="framer-canvas-wrap" id="framerCanvasWrap">
+          <img id="framerSourceImg" src="" alt="Framer Photo" draggable="false">
+        </div>
+        <!-- Crop overlay guides & aperture border -->
+        <div class="framer-aperture-overlay" id="framerAperture">
+          <div class="framer-guide-grid">
+            <span class="framer-grid-h h1"></span>
+            <span class="framer-grid-h h2"></span>
+            <span class="framer-grid-v v1"></span>
+            <span class="framer-grid-v v2"></span>
+          </div>
+          <div class="framer-corner tl"></div>
+          <div class="framer-corner tr"></div>
+          <div class="framer-corner bl"></div>
+          <div class="framer-corner br"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="framer-footer">
+      <div class="framer-tip-text">
+        <i data-lucide="info"></i>
+        <span>{{ __('qc.studio.framer_tip') }}</span>
+      </div>
+      <div class="framer-footer-actions">
+        <button type="button" class="btn btn-secondary btn-sm" data-framer-close>{{ __('qc.common.cancel') }}</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnFramerApply">
+          <i data-lucide="check"></i> <span>{{ __('qc.studio.framer_apply') }}</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -1966,5 +2190,7 @@
     window.qcCurrentUserName = @json(auth()->user()->name ?? '');
     window.qcReportStatus = @json($reportStatus);
   </script>
+  <script src="{{ asset('js/photo-framer.js') }}?v={{ file_exists(public_path('js/photo-framer.js')) ? filemtime(public_path('js/photo-framer.js')) : time() }}"></script>
+  <script src="{{ asset('js/photo-annotator.js') }}?v={{ file_exists(public_path('js/photo-annotator.js')) ? filemtime(public_path('js/photo-annotator.js')) : time() }}"></script>
   <script src="{{ asset('js/app.js') }}?v={{ file_exists(public_path('js/app.js')) ? filemtime(public_path('js/app.js')) : time() }}"></script>
 @endsection

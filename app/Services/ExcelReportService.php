@@ -108,14 +108,21 @@ class ExcelReportService
             // ==================== LEMBAR 1 DARI 6 ====================
             $row = $this->renderKopHeader($sheet, $report, $row);
             $row = $this->renderBlueBar($sheet, $row, 'Drawing / Pictures / Dimension');
+
+            $drawingImg = $photos['drawing_dimension'] ?? null;
+            $drawingMarkers = $photos['_markers']['drawing_dimension'] ?? [];
+            $drawingOrig = $photos['_originals']['drawing_dimension'] ?? null;
+            $drawingToUse = (!empty($drawingMarkers) && !empty($drawingOrig)) ? $drawingOrig : $drawingImg;
+
             $row = $this->renderFullWidthPhotoBox(
                 $sheet,
                 $row,
                 9,
                 18.0,
-                $photos['drawing_dimension'] ?? null,
+                $drawingToUse,
                 '[ Gambar Drawing / Pictures / Dimension Belum Diunggah ]',
-                950
+                950,
+                $drawingMarkers
             );
             $row = $this->renderBlueBar($sheet, $row, 'FINDING');
             $row = $this->renderFindingSection($sheet, $row, $report, $photos);
@@ -186,14 +193,20 @@ class ExcelReportService
                 $sections['item06']['penetrantRemark'] ?? 'No indication crack at area OD spline after penetrant check'
             );
             $row = $this->renderAmberBar($sheet, $row, 'Check TIR');
+            $tirImg = $photos['tir_diagram'] ?? null;
+            $tirMarkers = $photos['_markers']['tir_diagram'] ?? [];
+            $tirOrig = $photos['_originals']['tir_diagram'] ?? null;
+            $tirToUse = (!empty($tirMarkers) && !empty($tirOrig)) ? $tirOrig : $tirImg;
+
             $row = $this->renderFullWidthPhotoBox(
                 $sheet,
                 $row,
                 7,
                 17.5,
-                $photos['tir_diagram'] ?? null,
+                $tirToUse,
                 '[ Diagram / Sketsa Titik Ukur TIR Belum Diunggah ]',
-                950
+                950,
+                $tirMarkers
             );
             $row = $this->renderTirTable($sheet, $row, $tir);
             $sheet->setBreak('A' . ($row - 1), Worksheet::BREAK_ROW);
@@ -462,7 +475,8 @@ class ExcelReportService
         float $rowHeight,
         ?string $photoUrl,
         string $placeholder,
-        int $maxImgPx
+        int $maxImgPx,
+        array $markers = []
     ): int {
         $endRow = $row + $numRows - 1;
         for ($r = $row; $r <= $endRow; $r++) {
@@ -472,7 +486,7 @@ class ExcelReportService
 
         $localPath = $this->resolveLocalPhotoPath($photoUrl);
         if ($localPath) {
-            $this->placeImageInBox($sheet, $localPath, 'A', 'U', $row, $endRow, $maxImgPx, 4);
+            $this->placeImageInBox($sheet, $localPath, 'A', 'U', $row, $endRow, $maxImgPx, 4, false, $markers);
         } else {
             $sheet->setCellValue("A{$row}", $placeholder);
             $sheet->getStyle("A{$row}:U{$endRow}")->applyFromArray([
@@ -522,9 +536,13 @@ class ExcelReportService
 
         $sheet->mergeCells("B{$rStart}:K{$rEnd}");
         $findingImg = $photos['finding_component'] ?? ($photos['full_component'] ?? null);
-        $localPath = $this->resolveLocalPhotoPath($findingImg);
+        $findingMarkers = $photos['_markers']['finding_component'] ?? ($photos['_markers']['full_component'] ?? []);
+        $findingOrig = $photos['_originals']['finding_component'] ?? ($photos['_originals']['full_component'] ?? null);
+        $findingToUse = (!empty($findingMarkers) && !empty($findingOrig)) ? $findingOrig : $findingImg;
+
+        $localPath = $this->resolveLocalPhotoPath($findingToUse);
         if ($localPath) {
-            $this->placeImageInBox($sheet, $localPath, 'B', 'K', $rStart, $rEnd, 550, 3);
+            $this->placeImageInBox($sheet, $localPath, 'B', 'K', $rStart, $rEnd, 550, 3, false, $findingMarkers);
         } else {
             $sheet->setCellValue("B{$rStart}", '[ Foto Komponen Utuh Belum Diunggah ]');
             $sheet->getStyle("B{$rStart}:K{$rEnd}")->applyFromArray([
@@ -1106,9 +1124,14 @@ class ExcelReportService
 
         foreach ($quads as [$c1, $c2, $r1, $r2, $key, $lbl]) {
             $sheet->mergeCells("{$c1}{$r1}:{$c2}{$r2}");
-            $localPath = $this->resolveLocalPhotoPath($photos[$key] ?? null);
+            $rawImg = $photos[$key] ?? null;
+            $markers = $photos['_markers'][$key] ?? [];
+            $origImg = $photos['_originals'][$key] ?? null;
+            $imgToUse = (!empty($markers) && !empty($origImg)) ? $origImg : $rawImg;
+
+            $localPath = $this->resolveLocalPhotoPath($imgToUse);
             if ($localPath) {
-                $this->placeImageInBox($sheet, $localPath, $c1, $c2, $r1, $r2, 420, 3);
+                $this->placeImageInBox($sheet, $localPath, $c1, $c2, $r1, $r2, 420, 3, false, $markers);
             } else {
                 $sheet->setCellValue("{$c1}{$r1}", $lbl);
                 $sheet->getStyle("{$c1}{$r1}:{$c2}{$r2}")->applyFromArray([
@@ -1321,7 +1344,16 @@ class ExcelReportService
     }
 
     /**
+     * Check if GD extension is loaded and active in PHP.
+     */
+    private function hasGd(): bool
+    {
+        return extension_loaded('gd') && function_exists('imagecreatetruecolor');
+    }
+
+    /**
      * Load photo via GD, fix EXIF orientation, downscale if large, and save normalized PNG/JPG.
+     * If GD is not available, returns the original image dimensions and path directly without manipulation.
      */
     private function prepareExcelImage(string $srcPath, int $maxPx): ?array
     {
@@ -1330,15 +1362,20 @@ class ExcelReportService
             return null;
         }
         [$w, $h, $type] = $info;
+
+        if (!$this->hasGd()) {
+            return ['path' => $srcPath, 'width' => $w, 'height' => $h];
+        }
+
         $img = match ($type) {
-            IMAGETYPE_JPEG => @imagecreatefromjpeg($srcPath),
-            IMAGETYPE_PNG => @imagecreatefrompng($srcPath),
-            IMAGETYPE_GIF => @imagecreatefromgif($srcPath),
+            IMAGETYPE_JPEG => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($srcPath) : null,
+            IMAGETYPE_PNG => function_exists('imagecreatefrompng') ? @imagecreatefrompng($srcPath) : null,
+            IMAGETYPE_GIF => function_exists('imagecreatefromgif') ? @imagecreatefromgif($srcPath) : null,
             IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($srcPath) : null,
             default => null,
         };
         if (!$img) {
-            return null;
+            return ['path' => $srcPath, 'width' => $w, 'height' => $h];
         }
 
         // Fix mobile camera EXIF orientation for JPEG
@@ -1395,6 +1432,7 @@ class ExcelReportService
 
     /**
      * Place image inside merged cell box [colStart..colEnd, rowStart..rowEnd], keeping aspect ratio.
+     * Optionally layers defect callout markers on top as independent draggable Drawing objects in Excel!
      */
     private function placeImageInBox(
         Worksheet $sheet,
@@ -1405,7 +1443,8 @@ class ExcelReportService
         int $rowEnd,
         int $maxPx = 500,
         int $padding = 4,
-        bool $alignLeft = false
+        bool $alignLeft = false,
+        array $markers = []
     ): void {
         $prep = $this->prepareExcelImage($srcPath, $maxPx);
         if (!$prep) {
@@ -1474,6 +1513,268 @@ class ExcelReportService
         $drawing->setOffsetY((int) round($remY));
         $drawing->setWidthAndHeight($renderW, $renderH);
         $drawing->setWorksheet($sheet);
+
+        // Place floating movable markers on top as separate draggable drawings in Excel!
+        if (!empty($markers)) {
+            foreach ($markers as $m) {
+                $mkImg = null;
+
+                // Priority 1: Use client-rendered transparent PNG badge (zero GD dependency)
+                if (!empty($m['rendered']['dataUrl']) && preg_match('#^data:image/png;base64,(.+)$#i', $m['rendered']['dataUrl'], $matches)) {
+                    $pngData = base64_decode($matches[1]);
+                    if ($pngData !== false) {
+                        $tempDir = storage_path('app/temp');
+                        if (!is_dir($tempDir)) {
+                            @mkdir($tempDir, 0755, true);
+                        }
+                        $tempPath = $tempDir . DIRECTORY_SEPARATOR . 'mk_' . uniqid() . '.png';
+                        if (@file_put_contents($tempPath, $pngData)) {
+                            $this->tempImages[] = $tempPath;
+                            $mkImg = [
+                                'path' => $tempPath,
+                                'width' => (int) ($m['rendered']['width'] ?? 42),
+                                'height' => (int) ($m['rendered']['height'] ?? 42),
+                                'tipOffsetX' => (int) ($m['rendered']['tipOffsetX'] ?? 21),
+                                'tipOffsetY' => (int) ($m['rendered']['tipOffsetY'] ?? 21),
+                            ];
+                        }
+                    }
+                }
+
+                // Priority 2: Use server-side GD rendering
+                if (!$mkImg) {
+                    $mkImg = $this->createMarkerImage(
+                        $m['number'] ?? '1',
+                        $m['direction'] ?? 'down',
+                        $m['size'] ?? 'md',
+                        $m['color'] ?? '#dc2626'
+                    );
+                }
+
+                if (!$mkImg) {
+                    continue;
+                }
+
+                $xPct = (float) ($m['xPercent'] ?? 0);
+                $yPct = (float) ($m['yPercent'] ?? 0);
+
+                $sizeMultiplier = match ($m['size'] ?? 'md') {
+                    'sm' => 0.75,
+                    'lg' => 1.35,
+                    default => 1.0,
+                };
+
+                // Scale marker proportionally so it fits neatly on Excel photos without covering defects
+                $baseDim = min($renderW, $renderH);
+                $targetBadgeDiameter = max(13, min(18, (int) round($baseDim * 0.13 * $sizeMultiplier)));
+                $rawBadgeDiameter = max(16, (int) round($mkImg['width'] * 0.8));
+                $scale = $targetBadgeDiameter / (float) $rawBadgeDiameter;
+
+                $dispW = max(10, (int) round($mkImg['width'] * $scale));
+                $dispH = max(10, (int) round($mkImg['height'] * $scale));
+                $scaledTipX = $mkImg['tipOffsetX'] * $scale;
+                $scaledTipY = $mkImg['tipOffsetY'] * $scale;
+
+                // Pixel coordinates of target tip within the rendered image
+                $targetImgX = ($xPct / 100.0) * $renderW;
+                $targetImgY = ($yPct / 100.0) * $renderH;
+
+                // Position within total merged box
+                $markerTopLeftX = $offsetX + $targetImgX - $scaledTipX;
+                $markerTopLeftY = $offsetY + $targetImgY - $scaledTipY;
+
+                // Calculate Excel anchor cell for this marker
+                $mAnchorCol = $colStart;
+                $mRemX = max(0, $markerTopLeftX);
+                for ($c = $c1; $c <= $c2; $c++) {
+                    if ($mRemX < $colPx[$c] || $c === $c2) {
+                        $mAnchorCol = Coordinate::stringFromColumnIndex($c);
+                        break;
+                    }
+                    $mRemX -= $colPx[$c];
+                }
+
+                $mAnchorRow = $rowStart;
+                $mRemY = max(0, $markerTopLeftY);
+                for ($r = $rowStart; $r <= $rowEnd; $r++) {
+                    if ($mRemY < $rowPx[$r] || $r === $rowEnd) {
+                        $mAnchorRow = $r;
+                        break;
+                    }
+                    $mRemY -= $rowPx[$r];
+                }
+
+                $markerDrawing = new Drawing();
+                $markerDrawing->setName("Callout_{$m['number']}");
+                $markerDrawing->setDescription("Marker Temuan {$m['number']}");
+                $markerDrawing->setPath($mkImg['path']);
+                $markerDrawing->setCoordinates("{$mAnchorCol}{$mAnchorRow}");
+                $markerDrawing->setOffsetX((int) round($mRemX));
+                $markerDrawing->setOffsetY((int) round($mRemY));
+                $markerDrawing->setWidthAndHeight($dispW, $dispH);
+                $markerDrawing->setWorksheet($sheet);
+            }
+        }
+    }
+
+    /**
+     * Generate a transparent PNG for an inspection defect marker callout.
+     * Returns temp file path, width, height, and tip offsets.
+     */
+    private function createMarkerImage(
+        string|int $number,
+        string $direction = 'down',
+        string $size = 'md',
+        string $color = '#dc2626'
+    ): ?array {
+        if (!$this->hasGd()) {
+            return null;
+        }
+
+        $sizeMultiplier = match ($size) {
+            'sm' => 0.72,
+            'lg' => 1.35,
+            default => 1.0,
+        };
+
+        $radius = (int) round(16 * $sizeMultiplier);
+        $arrowLen = (int) round(20 * $sizeMultiplier);
+        $headSize = (int) round(10 * $sizeMultiplier);
+        $lineWidth = max(2, (int) round(3 * $sizeMultiplier));
+
+        $hasArrow = ($direction !== 'none');
+
+        // Parse hex color
+        $hex = ltrim($color, '#');
+        if (strlen($hex) === 6) {
+            $r = hexdec(substr($hex, 0, 2));
+            $g = hexdec(substr($hex, 2, 2));
+            $b = hexdec(substr($hex, 4, 2));
+        } else {
+            $r = 220; $g = 38; $b = 38;
+        }
+
+        $pad = 6;
+        $totalDist = $radius + $arrowLen;
+        $dim = ($radius + $totalDist + $pad) * 2;
+        $cx = $dim / 2;
+        $cy = $dim / 2;
+
+        [$dirX, $dirY] = match ($direction) {
+            'down' => [0.0, -1.0],
+            'up' => [0.0, 1.0],
+            'left' => [1.0, 0.0],
+            'right' => [-1.0, 0.0],
+            'down-left' => [0.707, -0.707],
+            'down-right' => [-0.707, -0.707],
+            'up-left' => [0.707, 0.707],
+            'up-right' => [-0.707, 0.707],
+            default => [0.0, 0.0],
+        };
+
+        $tipX = $cx;
+        $tipY = $cy;
+
+        if ($hasArrow) {
+            $circleX = $tipX + ($dirX * $totalDist);
+            $circleY = $tipY + ($dirY * $totalDist);
+        } else {
+            $circleX = $tipX;
+            $circleY = $tipY;
+        }
+
+        $minX = min($tipX - $headSize, $circleX - $radius - $lineWidth) - 2;
+        $maxX = max($tipX + $headSize, $circleX + $radius + $lineWidth) + 2;
+        $minY = min($tipY - $headSize, $circleY - $radius - $lineWidth) - 2;
+        $maxY = max($tipY + $headSize, $circleY + $radius + $lineWidth) + 2;
+
+        $cropW = max(10, (int) ceil($maxX - $minX));
+        $cropH = max(10, (int) ceil($maxY - $minY));
+
+        $im = imagecreatetruecolor($cropW, $cropH);
+        imagealphablending($im, false);
+        imagesavealpha($im, true);
+        $transparent = imagecolorallocatealpha($im, 0, 0, 0, 127);
+        imagefill($im, 0, 0, $transparent);
+        imagealphablending($im, true);
+
+        $cCircleX = (int) round($circleX - $minX);
+        $cCircleY = (int) round($circleY - $minY);
+        $cTipX = (int) round($tipX - $minX);
+        $cTipY = (int) round($tipY - $minY);
+
+        $primaryColor = imagecolorallocate($im, $r, $g, $b);
+        $white = imagecolorallocate($im, 255, 255, 255);
+        $darkText = imagecolorallocate($im, 17, 24, 39);
+
+        // Draw arrow if has arrow
+        if ($hasArrow) {
+            $arrowStartX = $cCircleX - ($dirX * $radius);
+            $arrowStartY = $cCircleY - ($dirY * $radius);
+
+            imagesetthickness($im, $lineWidth);
+            imageline($im, (int) round($arrowStartX), (int) round($arrowStartY), $cTipX, $cTipY, $primaryColor);
+
+            $angle = atan2($cTipY - $arrowStartY, $cTipX - $arrowStartX);
+            $arrowAngle = M_PI / 6;
+
+            $p1x = (int) round($cTipX - $headSize * cos($angle - $arrowAngle));
+            $p1y = (int) round($cTipY - $headSize * sin($angle - $arrowAngle));
+            $p2x = (int) round($cTipX - $headSize * cos($angle + $arrowAngle));
+            $p2y = (int) round($cTipY - $headSize * sin($angle + $arrowAngle));
+
+            imagefilledpolygon($im, [$cTipX, $cTipY, $p1x, $p1y, $p2x, $p2y], $primaryColor);
+        }
+
+        // Draw circular badge
+        imagefilledellipse($im, $cCircleX, $cCircleY, $radius * 2, $radius * 2, $white);
+        for ($i = 0; $i < $lineWidth; $i++) {
+            imageellipse($im, $cCircleX, $cCircleY, ($radius * 2) - $i, ($radius * 2) - $i, $primaryColor);
+        }
+
+        // Draw number text
+        $numStr = (string) $number;
+        $fontPath = null;
+        $candidates = [
+            'C:/Windows/Fonts/arialbd.ttf',
+            'C:/Windows/Fonts/arial.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+        ];
+        foreach ($candidates as $cand) {
+            if (file_exists($cand)) {
+                $fontPath = $cand;
+                break;
+            }
+        }
+
+        if ($fontPath && function_exists('imagettftext')) {
+            $fontSize = (int) round($radius * 0.95);
+            $bbox = imagettfbbox($fontSize, 0, $fontPath, $numStr);
+            $textW = abs($bbox[4] - $bbox[0]);
+            $textH = abs($bbox[5] - $bbox[1]);
+            $tx = (int) round($cCircleX - ($textW / 2));
+            $ty = (int) round($cCircleY + ($textH / 2) - 1);
+            imagettftext($im, $fontSize, 0, $tx, $ty, $darkText, $fontPath, $numStr);
+        } else {
+            $font = ($radius > 16) ? 5 : 4;
+            $fw = imagefontwidth($font) * strlen($numStr);
+            $fh = imagefontheight($font);
+            imagestring($im, $font, (int) round($cCircleX - ($fw / 2)), (int) round($cCircleY - ($fh / 2)), $numStr, $darkText);
+        }
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'qc_mk_') . '.png';
+        imagepng($im, $tempPath);
+        imagedestroy($im);
+
+        $this->tempImages[] = $tempPath;
+
+        return [
+            'path' => $tempPath,
+            'width' => $cropW,
+            'height' => $cropH,
+            'tipOffsetX' => $cTipX,
+            'tipOffsetY' => $cTipY,
+        ];
     }
 
     // =========================================================================

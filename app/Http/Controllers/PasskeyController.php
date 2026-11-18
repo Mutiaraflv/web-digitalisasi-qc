@@ -169,6 +169,10 @@ class PasskeyController extends Controller
             return $this->fail(__('qc.passkey.err_not_migrated'), 503);
         }
 
+        if (Passkey::count() === 0) {
+            return $this->fail(__('qc.passkey.err_none_registered'), 422);
+        }
+
         $challenge = WebAuthnService::newChallenge();
         $request->session()->put('passkey.login', [
             'challenge' => $challenge,
