@@ -4198,13 +4198,11 @@ body {
 }
 
 .p-photo-slot img {
-  width: 110px;
-  height: 110px;
-  min-width: 110px;
+  width: 100%;
+  height: 100%;
   max-width: 110px;
-  min-height: 110px;
   max-height: 110px;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   border-radius: 3px;
 }
@@ -8268,11 +8266,16 @@ nav[role="navigation"] span[aria-disabled="true"] span {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform-origin: center center;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
   pointer-events: none;
 }
 
 .framer-canvas-wrap img {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: block;
   max-width: none;
   max-height: none;
@@ -8434,4 +8437,12 @@ nav[role="navigation"] span[aria-disabled="true"] span {
   .dash-live-pill {
     display: none !important;
   }
+}
+/* Foto menunggu diunggah (offline / server bermasalah): akan dicoba ulang otomatis */
+.photo-pending { position: relative; outline: 2px dashed #f59e0b; outline-offset: -2px; }
+.photo-pending::after {
+  content: "Menunggu unggah…";
+  position: absolute; left: 6px; bottom: 6px;
+  background: #f59e0b; color: #111; font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 999px; pointer-events: none; z-index: 3;
 }

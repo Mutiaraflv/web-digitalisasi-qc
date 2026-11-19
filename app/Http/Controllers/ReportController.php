@@ -12,6 +12,16 @@ use Illuminate\Support\Facades\File;
 
 class ReportController extends Controller
 {
+    /** Folder foto laporan yang PRIVAT (hanya bisa dibuka lewat route berotorisasi). */
+    public const PRIVATE_PHOTO_DIR = 'app/private/report-photos';
+
+    /** Awalan path foto yang diizinkan tersimpan di data laporan. */
+    private const ALLOWED_PHOTO_PREFIXES = [
+        '/reports/photo/',
+        '/uploads/reports/photos/',
+        '/images/doc_assets/',
+    ];
+
     protected ExcelReportService $excelService;
 
     public function __construct(ExcelReportService $excelService)
@@ -30,7 +40,13 @@ class ReportController extends Controller
             $activeTab = 'all';
         }
 
-        $query = Report::with(['creator:id,name', 'checker:id,name', 'reviewer:id,name', 'reviewerUser:id,name'])
+        // Kolom JSON besar (sections, tir, photos, recommendations) tidak dimuat untuk daftar
+        $query = Report::select([
+                'id', 'created_by', 'checker_id', 'reviewer_id', 'ssc_id', 'report_no', 'doc_no', 'date',
+                'customer', 'part_name', 'model_unit', 'inspection_type', 'signatures', 'has_rejects',
+                'review_status', 'submitted_at', 'reviewed_at', 'reviewed_by', 'created_at', 'updated_at',
+            ])
+            ->with(['creator:id,name', 'checker:id,name', 'reviewer:id,name', 'reviewerUser:id,name'])
             ->orderBy('created_at', 'desc');
 
         if ($activeTab === 'mine' && $user) {
@@ -165,10 +181,26 @@ class ReportController extends Controller
     }
 
     /**
+     * Draf hanya boleh dilihat oleh pembuat/pemeriksa laporan dan admin.
+     */
+    private function authorizeView(Report $report): void
+    {
+        if (!$report->isDraft()) {
+            return;
+        }
+        $user = Auth::user();
+        if (!$user || (!$report->canBeModifiedBy($user) && !$user->isAdmin())) {
+            abort(403, 'Draf laporan hanya dapat dilihat oleh pembuat atau pemeriksanya.');
+        }
+    }
+
+    /**
      * Return single report JSON
      */
     public function show(Report $report)
     {
+        $this->authorizeView($report);
+
         return response()->json($report);
     }
 
@@ -186,10 +218,39 @@ class ReportController extends Controller
         $data['review_status'] = $isDraft ? Report::STATUS_DRAFT : Report::STATUS_WAITING_REVIEW;
         $data['submitted_at'] = $isDraft ? null : now();
 
-        $report = Report::create($data);
+        $identifiersChanged = false;
+        try {
+            $report = Report::create($data);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // Permintaan ganda dari pengguna yang sama (draf sudah terbentuk): jadikan pembaruan, bukan laporan baru
+            $dup = Report::where('ssc_id', $data['ssc_id'] ?? '')->first();
+            if ($dup && (int) $dup->created_by === (int) Auth::id() && $dup->isDraft()) {
+                return $this->update($request, $dup);
+            }
+
+            // SSC ID dipakai orang lain (mis. dua orang membuka form baru bersamaan): beri nomor berikutnya
+            $report = null;
+            for ($attempt = 0; $attempt < 5 && !$report; $attempt++) {
+                $ids = $this->generateNextIdentifiers();
+                $data['ssc_id'] = $ids['nextSscId'];
+                $data['report_no'] = $ids['nextReportNo'];
+                try {
+                    $report = Report::create($data);
+                    $identifiersChanged = true;
+                } catch (\Illuminate\Database\UniqueConstraintViolationException $retry) {
+                    $report = null;
+                }
+            }
+            if (!$report) {
+                throw $e;
+            }
+        }
         $message = $isDraft
             ? "Draft laporan {$report->ssc_id} berhasil disimpan!"
             : "Laporan {$report->ssc_id} berhasil disubmit (Waiting Review)!";
+        if ($identifiersChanged) {
+            $message .= " (SSC ID diubah otomatis karena nomor sebelumnya sudah dipakai)";
+        }
 
         ActivityLog::record(
             $isDraft ? 'report_draft_created' : 'report_submitted',
@@ -207,7 +268,8 @@ class ReportController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => $message,
-                'report' => $report
+                'report' => $report,
+                'identifiers_changed' => $identifiersChanged,
             ], 201);
         }
 
@@ -230,7 +292,35 @@ class ReportController extends Controller
         }
 
         $submitAction = strtolower(trim((string) ($request->input('submit_action') ?? $request->input('action') ?? '')));
-        $data = $this->extractReportData($request);
+        $isAutosave = $request->boolean('is_autosave');
+
+        // Deteksi konflik: laporan sudah diubah (tab/perangkat/orang lain) sejak versi yang dilihat klien
+        $baseUpdatedAt = $request->input('base_updated_at');
+        if ($baseUpdatedAt && $report->updated_at) {
+            try {
+                $baseTs = \Illuminate\Support\Carbon::parse($baseUpdatedAt)->timestamp;
+            } catch (\Throwable $e) {
+                $baseTs = null;
+            }
+            if ($baseTs !== null && $report->updated_at->timestamp > $baseTs) {
+                return response()->json([
+                    'success' => false,
+                    'conflict' => true,
+                    'message' => 'Laporan ini sudah diubah di tab/perangkat lain sejak Anda membukanya.',
+                    'server_updated_at' => $report->updated_at->toISOString(),
+                ], 409);
+            }
+        }
+
+        // Autosave tidak boleh menimpa laporan yang sudah dikirim / direview
+        if ($isAutosave && !$report->isDraft()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Laporan sudah dikirim; autosave diabaikan.',
+            ], 409);
+        }
+
+        $data = $this->extractReportData($request, $report);
         $data['has_rejects'] = $this->checkHasRejects($data);
 
         $wasDraft = $report->isDraft();
@@ -248,6 +338,15 @@ class ReportController extends Controller
         }
 
         $report->update($data);
+
+        // Autosave berjalan tiap beberapa detik: jangan membanjiri log aktivitas
+        if ($isAutosave) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'report' => $report->fresh(),
+            ]);
+        }
 
         if ($wasDraft && $submitAction === 'submit') {
             ActivityLog::record('report_submitted', "Mensubmit laporan {$report->ssc_id} dari Draft ke Waiting Review", $report, [
@@ -297,7 +396,9 @@ class ReportController extends Controller
 
         $sscId = $report->ssc_id;
         $partName = $report->part_name;
+        $photoPaths = $this->collectOwnedPhotoPaths($report->photos);
         $report->delete();
+        $this->deletePhotoFiles($photoPaths);
 
         ActivityLog::record('report_deleted', "Menghapus laporan {$sscId}", null, [
             'subject' => $sscId,
@@ -312,44 +413,177 @@ class ReportController extends Controller
     }
 
     /**
-     * Upload photo for an inspection section
+     * Upload photo for an inspection section.
+     * Foto disimpan di folder PRIVAT (storage/app/private/report-photos) dan hanya
+     * dapat dibuka lewat route /reports/photo/{filename} yang mewajibkan login.
      */
     public function uploadPhoto(Request $request)
     {
         $request->validate([
             'photo' => 'required|image|mimes:jpeg,png,jpg,webp|max:10240', // 10MB max
-            'section' => 'nullable|string'
+            'section' => 'nullable|string|max:80'
         ]);
 
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $uploadPath = public_path('uploads/reports/photos');
-            
-            if (!File::isDirectory($uploadPath)) {
-                File::makeDirectory($uploadPath, 0755, true, true);
-            }
+        $file = $request->file('photo');
 
-            $section = preg_replace('/[^a-zA-Z0-9_-]/', '_', $request->input('section', 'sec'));
-            $filename = 'qc_' . $section . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move($uploadPath, $filename);
-
-            $targetFilePath = $uploadPath . '/' . $filename;
-            if (file_exists($targetFilePath) && filesize($targetFilePath) > 400 * 1024) {
-                $this->optimizeInspectionPhoto($targetFilePath);
-            }
-
-            $url = asset('uploads/reports/photos/' . $filename);
-
-            return response()->json([
-                'success' => true,
-                'url' => $url,
-                'path' => '/uploads/reports/photos/' . $filename,
-                'filename' => $filename,
-                'section' => $request->input('section')
-            ]);
+        // Cegah gambar raksasa yang menghabiskan memori saat diproses GD
+        $dim = @getimagesize($file->getRealPath());
+        if (!$dim || ($dim[0] * $dim[1]) > 50_000_000) {
+            return response()->json(['success' => false, 'message' => 'Resolusi foto terlalu besar atau file tidak valid.'], 422);
         }
 
-        return response()->json(['success' => false, 'message' => 'Tidak ada file foto yang diunggah'], 400);
+        $uploadPath = storage_path(self::PRIVATE_PHOTO_DIR);
+        if (!File::isDirectory($uploadPath)) {
+            File::makeDirectory($uploadPath, 0755, true, true);
+        }
+
+        // Ekstensi ditentukan dari ISI file (bukan nama dari klien)
+        $ext = match ($dim[2] ?? null) {
+            IMAGETYPE_PNG => 'png',
+            IMAGETYPE_WEBP => 'webp',
+            default => 'jpg',
+        };
+
+        $section = preg_replace('/[^a-zA-Z0-9_-]/', '_', $request->input('section', 'sec'));
+        $filename = 'qc_' . $section . '_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
+        $file->move($uploadPath, $filename);
+
+        $targetFilePath = $uploadPath . DIRECTORY_SEPARATOR . $filename;
+
+        // Kompres ulang di server hanya bila benar-benar perlu (hindari kompresi ganda)
+        if (file_exists($targetFilePath) && (max($dim[0], $dim[1]) > 1600 || filesize($targetFilePath) > 1024 * 1024)) {
+            $this->optimizeInspectionPhoto($targetFilePath);
+        }
+
+        $path = '/reports/photo/' . $filename;
+
+        return response()->json([
+            'success' => true,
+            'url' => $path,
+            'path' => $path,
+            'filename' => $filename,
+            'section' => $request->input('section')
+        ]);
+    }
+
+    /**
+     * Sajikan foto privat (wajib login).
+     */
+    public function photo(string $filename)
+    {
+        if (!preg_match('/^[A-Za-z0-9_.-]+\.(jpg|jpeg|png|webp)$/i', $filename)) {
+            abort(404);
+        }
+
+        $path = storage_path(self::PRIVATE_PHOTO_DIR . DIRECTORY_SEPARATOR . $filename);
+        if (!is_file($path)) {
+            abort(404);
+        }
+
+        return response()->file($path, [
+            'Cache-Control' => 'private, max-age=86400',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    /**
+     * Hanya izinkan path foto yang berasal dari sistem ini (blokir path traversal,
+     * file lokal sembarang, dan base64 baru). URL absolut diubah menjadi path relatif
+     * supaya tetap valid ketika domain/host berubah.
+     */
+    private function sanitizePhotoPath($value, $existingValue = null): ?string
+    {
+        if (!is_string($value) || trim($value) === '') {
+            return null;
+        }
+        $v = trim($value);
+
+        // Data lama berupa base64 hanya dipertahankan bila memang sudah ada di laporan ini
+        if (str_starts_with($v, 'data:')) {
+            return ($existingValue !== null && $existingValue === $v) ? $v : null;
+        }
+
+        if (preg_match('#^https?://#i', $v)) {
+            $v = (string) (parse_url($v, PHP_URL_PATH) ?: '');
+        }
+        if ($v === '' || str_contains($v, '..') || str_contains($v, '\\') || str_contains($v, "\0")) {
+            return null;
+        }
+        if ($v[0] !== '/') {
+            $v = '/' . $v;
+        }
+        foreach (self::ALLOWED_PHOTO_PREFIXES as $prefix) {
+            if (str_starts_with($v, $prefix)) {
+                return $v;
+            }
+        }
+        return null;
+    }
+
+    private function sanitizePhotos($photos, $existing = null): array
+    {
+        if (!is_array($photos)) {
+            return [];
+        }
+        $existing = is_array($existing) ? $existing : [];
+        $out = [];
+        foreach ($photos as $key => $value) {
+            if ($key === '_markers') {
+                $out[$key] = is_array($value) ? $value : [];
+            } elseif ($key === '_originals') {
+                $out[$key] = [];
+                if (is_array($value)) {
+                    foreach ($value as $slot => $orig) {
+                        $out[$key][$slot] = $this->sanitizePhotoPath($orig, $existing['_originals'][$slot] ?? null);
+                    }
+                }
+            } else {
+                $out[$key] = $this->sanitizePhotoPath($value, $existing[$key] ?? null);
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Kumpulkan path file foto milik laporan (selain aset bawaan /images/doc_assets).
+     */
+    private function collectOwnedPhotoPaths($photos): array
+    {
+        if (!is_array($photos)) {
+            return [];
+        }
+        $paths = [];
+        $consider = function ($value) use (&$paths) {
+            if (is_string($value) && preg_match('#^(?:https?://[^/]+)?(/(?:reports/photo|uploads/reports/photos)/[A-Za-z0-9_.-]+)$#i', $value, $m)) {
+                $paths[$m[1]] = true;
+            }
+        };
+        foreach ($photos as $key => $value) {
+            if ($key === '_markers') {
+                continue;
+            }
+            if ($key === '_originals' && is_array($value)) {
+                foreach ($value as $orig) {
+                    $consider($orig);
+                }
+            } else {
+                $consider($value);
+            }
+        }
+        return array_keys($paths);
+    }
+
+    private function deletePhotoFiles(array $paths): void
+    {
+        foreach ($paths as $path) {
+            $name = basename($path);
+            $file = str_starts_with($path, '/reports/photo/')
+                ? storage_path(self::PRIVATE_PHOTO_DIR . DIRECTORY_SEPARATOR . $name)
+                : public_path('uploads/reports/photos/' . $name);
+            if (is_file($file)) {
+                @unlink($file);
+            }
+        }
     }
 
     /**
@@ -429,6 +663,8 @@ class ReportController extends Controller
      */
     public function export(Report $report)
     {
+        $this->authorizeView($report);
+
         try {
             $filePath = $this->excelService->generateExcelFile($report);
             $filename = $this->buildExportFilename($report);
@@ -453,7 +689,7 @@ class ReportController extends Controller
         $submitAction = strtolower(trim((string) ($request->input('submit_action') ?? $request->input('action') ?? 'submit')));
         $isDraft = ($submitAction === 'draft');
 
-        $data = $this->extractReportData($request);
+        $data = $this->extractReportData($request, Report::where('ssc_id', trim((string) ($request->input('ssc_id') ?? ($request->input('general.sscId') ?? ''))))->first());
         $data['has_rejects'] = $this->checkHasRejects($data);
 
         $existing = Report::where('ssc_id', $data['ssc_id'])->first();
@@ -488,6 +724,8 @@ class ReportController extends Controller
      */
     public function pdf(Report $report)
     {
+        $this->authorizeView($report);
+
         ActivityLog::record('report_exported_pdf', "Membuka cetak / PDF laporan {$report->ssc_id}", $report, [
             'part_name' => $report->part_name,
         ]);
@@ -503,6 +741,8 @@ class ReportController extends Controller
      */
     public function review(Report $report)
     {
+        $this->authorizeView($report);
+
         $report->loadMissing(['creator:id,name', 'reviewer:id,name', 'reviewerUser:id,name']);
 
         return view('reports.print', [
@@ -586,7 +826,7 @@ class ReportController extends Controller
     /**
      * Extract report payload safely
      */
-    private function extractReportData(Request $request): array
+    private function extractReportData(Request $request, ?Report $existing = null): array
     {
         $g = $request->input('general', []);
 
@@ -610,7 +850,7 @@ class ReportController extends Controller
         $tir = $request->input('tir', []);
         $recommendations = $request->input('recommendations', []);
         $signatures = $request->input('signatures', []);
-        $photos = $request->input('photos', []);
+        $photos = $this->sanitizePhotos($request->input('photos', []), $existing?->photos);
 
         $rawCheckerId = $request->input('checker_id') ?? ($g['checkerId'] ?? ($g['checker_id'] ?? null));
         $resolvedCheckerId = null;

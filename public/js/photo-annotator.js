@@ -881,47 +881,26 @@
 
                 const result = await self.exportToCanvas();
 
-                // Save marker metadata in memory/cache
-                window.qcPhotoMarkers[self.slotKey] = JSON.parse(JSON.stringify(self.markers));
+                const newMarkers = JSON.parse(JSON.stringify(self.markers));
 
-                // Upload to server
-                const formData = new FormData();
+                // Upload ke server (antre otomatis bila offline)
                 const filename = `annotated_${self.slotKey}_${Date.now()}.jpg`;
-                formData.append('photo', result.blob, filename);
-                formData.append('section', self.slotKey);
+                const up = await window.qcUploadPhoto(self.slotKey, result.blob, filename, 'annotated', { markers: newMarkers });
 
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-
-                const response = await fetch('/reports/upload-photo', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (data.success && data.url) {
+                if (up.queued) {
+                    // Hanya tampilan; marker & foto baru diterapkan bersamaan setelah upload berhasil
                     if (typeof window.renderSlotPreview === 'function') {
-                        window.renderSlotPreview(self.slotKey, data.url);
+                        window.renderSlotPreview(self.slotKey, result.dataUrl, true);
                     }
-                    if (typeof window.markFormEdited === 'function') {
-                        window.markFormEdited();
-                    }
-                    window.qcNotify?.(S.annotator_saved_success || 'Marker temuan berhasil diterapkan ke foto!', 'success');
+                    window.qcNotify?.(S.photo_queued || 'Foto belum terunggah (koneksi bermasalah). Akan diunggah otomatis saat koneksi pulih.', 'error');
                     self.close();
-                } else {
-                    // Fallback offline dataUrl
-                    if (typeof window.renderSlotPreview === 'function') {
-                        window.renderSlotPreview(self.slotKey, result.dataUrl);
-                    }
-                    if (typeof window.markFormEdited === 'function') {
-                        window.markFormEdited();
-                    }
-                    window.qcNotify?.('Marker diterapkan secara lokal pada draf ini', 'success');
-                    self.close();
+                    return;
                 }
+
+                window.qcPhotoMarkers[self.slotKey] = newMarkers;
+                window.qcApplyUploadedPhoto('annotated', self.slotKey, up.url);
+                window.qcNotify?.(S.annotator_saved_success || 'Marker temuan berhasil diterapkan ke foto!', 'success');
+                self.close();
             } catch (err) {
                 console.error('Save annotated photo error:', err);
                 window.qcNotify?.('Gagal menyimpan foto: ' + (err.message || 'Error'), 'error');

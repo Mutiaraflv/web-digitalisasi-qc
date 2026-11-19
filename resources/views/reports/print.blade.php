@@ -342,13 +342,11 @@
       border-radius: 3px;
     }
     .photo-slot img {
-      width: 110px;
-      height: 110px;
-      min-width: 110px;
+      width: 100%;
+      height: 100%;
       max-width: 110px;
-      min-height: 110px;
       max-height: 110px;
-      object-fit: cover;
+      object-fit: contain;
       display: block;
       border-radius: 3px;
     }

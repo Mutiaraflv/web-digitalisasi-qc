@@ -254,6 +254,7 @@
 
         <form id="qcMainForm" class="studio-form">
           <input type="hidden" id="reportId" value="{{ isset($report) && $report ? $report->id : '' }}">
+          <input type="hidden" id="reportUpdatedAt" value="{{ isset($report) && $report && $report->updated_at ? $report->updated_at->toISOString() : '' }}">
 
           <!-- TAB 1: IDENTITAS & JOB ORDER -->
           <div class="s-tab-content active" id="stab-identitas">

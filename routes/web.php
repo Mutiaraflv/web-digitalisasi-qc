@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [ReportController::class, 'store'])->name('store');
         Route::post('/submit-and-download', [ReportController::class, 'submitAndDownload'])->name('submitAndDownload');
         Route::post('/upload-photo', [ReportController::class, 'uploadPhoto'])->name('uploadPhoto');
+        Route::get('/photo/{filename}', [ReportController::class, 'photo'])->where('filename', '[A-Za-z0-9_.\-]+')->name('photo');
         Route::get('/{report}', [ReportController::class, 'show'])->name('show');
         Route::get('/{report}/edit', [ReportController::class, 'edit'])->name('edit');
         Route::put('/{report}', [ReportController::class, 'update'])->name('update');

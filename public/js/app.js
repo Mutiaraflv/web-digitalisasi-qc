@@ -28,6 +28,229 @@ window.reportPhotos = reportPhotos;
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
+// -------------------------------------------------------------
+// Photo Upload Queue (retry otomatis saat sinyal/internet hilang)
+// Foto yang gagal diunggah disimpan di IndexedDB (bukan sebagai base64 di
+// data laporan) lalu diunggah ulang otomatis saat koneksi pulih.
+// -------------------------------------------------------------
+const QC_PHOTO_DB_NAME = 'qc_photo_queue';
+const QC_PHOTO_QUEUE_MAX_AGE_MS = 7 * 24 * 3600 * 1000;
+const qcPhotoQueue = new Map(); // key -> { key, slotKey, blob, filename, kind, extra, reportId, ts }
+let qcPhotoFlushing = false;
+
+function qcCurrentReportId() {
+    return document.getElementById('reportId')?.value || '';
+}
+
+function qcPhotoQueueKey(slotKey, reportId = null) {
+    const rid = reportId === null ? qcCurrentReportId() : reportId;
+    return `${rid || 'new'}::${slotKey}`;
+}
+
+function qcIdbOpen() {
+    return new Promise((resolve) => {
+        if (!window.indexedDB) return resolve(null);
+        try {
+            const req = indexedDB.open(QC_PHOTO_DB_NAME, 1);
+            req.onupgradeneeded = () => {
+                if (!req.result.objectStoreNames.contains('pending')) {
+                    req.result.createObjectStore('pending', { keyPath: 'key' });
+                }
+            };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => resolve(null);
+            req.onblocked = () => resolve(null);
+        } catch (_) {
+            resolve(null);
+        }
+    });
+}
+
+async function qcIdbRun(mode, fn) {
+    const db = await qcIdbOpen();
+    if (!db) return null;
+    return new Promise((resolve) => {
+        let result = null;
+        try {
+            const tx = db.transaction('pending', mode);
+            const req = fn(tx.objectStore('pending'));
+            if (req) req.onsuccess = () => { result = req.result; };
+            tx.oncomplete = () => { db.close(); resolve(result); };
+            tx.onerror = tx.onabort = () => { db.close(); resolve(null); };
+        } catch (_) {
+            try { db.close(); } catch (__) { }
+            resolve(null);
+        }
+    });
+}
+
+async function qcQueueAdd(slotKey, blob, filename, kind, extra) {
+    const entry = {
+        key: qcPhotoQueueKey(slotKey),
+        slotKey,
+        blob,
+        filename,
+        kind,
+        extra: extra || null,
+        reportId: qcCurrentReportId(),
+        ts: Date.now()
+    };
+    qcPhotoQueue.set(entry.key, entry); // satu foto tertunda per slot (yang terbaru menang)
+    await qcIdbRun('readwrite', (s) => s.put(entry));
+}
+
+async function qcQueueRemove(key) {
+    qcPhotoQueue.delete(key);
+    await qcIdbRun('readwrite', (s) => s.delete(key));
+}
+
+window.qcQueueDrop = function (slotKey) {
+    const key = qcPhotoQueueKey(slotKey);
+    if (qcPhotoQueue.has(key)) qcQueueRemove(key);
+    document.getElementById(`card_slot_${slotKey}`)?.classList.remove('photo-pending');
+};
+
+// Laporan baru yang baru dapat ID dari autosave: pindahkan antrean ke ID tersebut
+async function qcQueueRebind(newId) {
+    if (!newId) return;
+    for (const entry of Array.from(qcPhotoQueue.values())) {
+        if (entry.reportId === '') {
+            await qcQueueRemove(entry.key);
+            entry.reportId = String(newId);
+            entry.key = qcPhotoQueueKey(entry.slotKey, entry.reportId);
+            qcPhotoQueue.set(entry.key, entry);
+            await qcIdbRun('readwrite', (s) => s.put(entry));
+        }
+    }
+}
+
+window.qcPendingPhotoCount = function () {
+    const rid = qcCurrentReportId();
+    let n = 0;
+    qcPhotoQueue.forEach((e) => { if (e.reportId === rid) n++; });
+    return n;
+};
+
+async function qcQueueLoad() {
+    const all = await qcIdbRun('readonly', (s) => s.getAll());
+    if (!Array.isArray(all)) return;
+    const rid = qcCurrentReportId();
+    for (const entry of all) {
+        if (Date.now() - (entry.ts || 0) > QC_PHOTO_QUEUE_MAX_AGE_MS) {
+            await qcIdbRun('readwrite', (s) => s.delete(entry.key));
+        } else if (entry.reportId === rid && !qcPhotoQueue.has(entry.key)) {
+            qcPhotoQueue.set(entry.key, entry);
+        }
+    }
+    qcPhotoQueue.forEach((e) => {
+        if (e.reportId === rid) document.getElementById(`card_slot_${e.slotKey}`)?.classList.add('photo-pending');
+    });
+}
+
+async function qcPostPhoto(slotKey, blob, filename) {
+    const fd = new FormData();
+    fd.append('photo', blob, filename);
+    fd.append('section', slotKey);
+    const res = await fetch('/reports/upload-photo', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: fd
+    });
+    let data = null;
+    try { data = await res.json(); } catch (_) { }
+    if (res.ok && data && data.success && data.url) return data.url;
+
+    const err = new Error(data?.message || `HTTP ${res.status}`);
+    // 422/413 = file ditolak server (tidak ada gunanya diulang). Lainnya: coba lagi nanti.
+    err.permanent = res.status === 422 || res.status === 413;
+    err.sessionExpired = res.status === 401 || res.status === 419;
+    throw err;
+}
+
+// Terapkan foto yang sudah ada di server ke form
+window.qcApplyUploadedPhoto = function (kind, slotKey, url, extra = null) {
+    reportPhotos[slotKey] = url;
+    if (kind === 'slot' || kind === 'framed') {
+        window.qcOriginalPhotos = window.qcOriginalPhotos || {};
+        window.qcOriginalPhotos[slotKey] = url;
+        if (window.qcPhotoMarkers && window.qcPhotoMarkers[slotKey]) {
+            delete window.qcPhotoMarkers[slotKey];
+        }
+    }
+    if (kind === 'annotated' && extra && extra.markers) {
+        window.qcPhotoMarkers = window.qcPhotoMarkers || {};
+        window.qcPhotoMarkers[slotKey] = extra.markers;
+    }
+    window.renderSlotPreview(slotKey, url);
+    window.markFormEdited();
+};
+
+/**
+ * Unggah foto. Hasil: { url } bila berhasil, { queued: true } bila ditunda
+ * (offline / server bermasalah, akan diulang otomatis). Melempar error hanya
+ * bila file ditolak server (format/ukuran tidak valid).
+ */
+window.qcUploadPhoto = async function (slotKey, blob, filename, kind = 'slot', extra = null) {
+    if (navigator.onLine !== false) {
+        try {
+            const url = await qcPostPhoto(slotKey, blob, filename);
+            await qcQueueRemove(qcPhotoQueueKey(slotKey)); // buang antrean lama slot ini
+            return { url };
+        } catch (err) {
+            if (err.permanent) throw err;
+            console.warn('Upload foto ditunda:', err);
+        }
+    }
+    await qcQueueAdd(slotKey, blob, filename, kind, extra);
+    document.getElementById(`card_slot_${slotKey}`)?.classList.add('photo-pending');
+    return { queued: true };
+};
+
+async function qcFlushPhotoQueue() {
+    if (qcPhotoFlushing || navigator.onLine === false) return;
+    const rid = qcCurrentReportId();
+    const pending = Array.from(qcPhotoQueue.values()).filter((e) => e.reportId === rid);
+    if (!pending.length) return;
+
+    qcPhotoFlushing = true;
+    const S = window.qcI18n?.studio || {};
+    let done = 0;
+    try {
+        for (const entry of pending) {
+            try {
+                const url = await qcPostPhoto(entry.slotKey, entry.blob, entry.filename);
+                await qcQueueRemove(entry.key);
+                document.getElementById(`card_slot_${entry.slotKey}`)?.classList.remove('photo-pending');
+                window.qcApplyUploadedPhoto(entry.kind, entry.slotKey, url, entry.extra);
+                done++;
+            } catch (err) {
+                if (err.permanent) {
+                    await qcQueueRemove(entry.key);
+                    document.getElementById(`card_slot_${entry.slotKey}`)?.classList.remove('photo-pending');
+                    showToast(err.message || S.photo_upload_failed || 'Foto ditolak server', 'error');
+                    continue;
+                }
+                if (err.sessionExpired) {
+                    showToast(S.session_expired || 'Sesi login berakhir. Muat ulang halaman dan login lagi; foto tertunda tetap tersimpan di perangkat ini.', 'error');
+                }
+                break; // masalah sementara: coba lagi nanti
+            }
+        }
+    } finally {
+        qcPhotoFlushing = false;
+    }
+    if (done > 0) {
+        showToast((S.photo_queue_flushed || ':n foto tertunda berhasil diunggah').replace(':n', done), 'success');
+    }
+}
+
+window.addEventListener('online', () => { qcFlushPhotoQueue(); });
+setInterval(() => { if (qcPhotoQueue.size) qcFlushPhotoQueue(); }, 30000);
+
 // Blank Template (Zero fake measurement data)
 const blankDefaultTemplate = {
     general: {
@@ -200,6 +423,7 @@ function initApp() {
     const reportIdInput = document.getElementById('reportId');
     if (reportIdInput) {
         setupAutoSaveManager();
+        qcQueueLoad().then(() => setTimeout(qcFlushPhotoQueue, 2500));
         if (reportIdInput.value) {
             currentReportId = reportIdInput.value;
             loadReportForEdit(currentReportId);
@@ -651,56 +875,45 @@ window.handleSlotUpload = async function (input, slotKey) {
         console.warn('Gagal kompresi foto di klien, menggunakan file asli:', compressErr);
     }
 
-    // Tampilkan preview instan
+    // Tampilkan preview instan (hanya tampilan; belum masuk data laporan)
     if (previewDataUrl) {
-        renderSlotPreview(slotKey, previewDataUrl);
+        renderSlotPreview(slotKey, previewDataUrl, true);
     } else {
         const reader = new FileReader();
         reader.onload = function (e) {
-            renderSlotPreview(slotKey, e.target.result);
+            renderSlotPreview(slotKey, e.target.result, true);
         };
         reader.readAsDataURL(rawFile);
     }
 
-    // Asynchronously upload compressed file to server
-    const formData = new FormData();
-    formData.append('photo', fileToUpload);
-    formData.append('section', slotKey);
+    try {
+        const result = await window.qcUploadPhoto(slotKey, fileToUpload, fileToUpload.name || `photo_${Date.now()}.jpg`, 'slot');
+        if (card) card.style.opacity = '1';
 
-    fetch('/reports/upload-photo', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json'
-        },
-        body: formData
-    })
-        .then(r => r.json())
-        .then(data => {
-            if (card) card.style.opacity = '1';
-            if (data.success) {
-                window.qcOriginalPhotos = window.qcOriginalPhotos || {};
-                window.qcOriginalPhotos[slotKey] = data.url;
-                reportPhotos[slotKey] = data.url;
-                renderSlotPreview(slotKey, data.url);
-                updatePhotoBadgeCount();
-                showToast(S.photo_uploaded || 'Foto berhasil diunggah', 'success');
-                markFormEdited();
-            } else {
-                showToast(data.message || S.photo_upload_failed || 'Gagal mengunggah foto', 'error');
-            }
-        })
-        .catch(err => {
-            if (card) card.style.opacity = '1';
-            console.error('Upload photo error:', err);
-            showToast(S.photo_saved_local || 'Foto tersimpan di sesi lokal', 'success');
-            updatePhotoBadgeCount();
-        });
+        if (result.url) {
+            card?.classList.remove('photo-pending');
+            window.qcApplyUploadedPhoto('slot', slotKey, result.url);
+            showToast(S.photo_uploaded || 'Foto berhasil diunggah', 'success');
+        } else {
+            showToast(S.photo_queued || 'Foto belum terunggah (koneksi bermasalah). Akan diunggah otomatis saat koneksi pulih.', 'error');
+        }
+    } catch (err) {
+        // File ditolak server: kembalikan tampilan ke foto sebelumnya
+        if (card) card.style.opacity = '1';
+        console.error('Upload photo error:', err);
+        showToast(err.message || S.photo_upload_failed || 'Gagal mengunggah foto', 'error');
+        if (reportPhotos[slotKey]) {
+            renderSlotPreview(slotKey, reportPhotos[slotKey]);
+        } else {
+            window.removeSlotPhoto(slotKey, true);
+        }
+    }
 };
 
 window.removeSlotPhoto = function (slotKey, silent = false) {
     const hadPhoto = Boolean(reportPhotos[slotKey]);
     reportPhotos[slotKey] = null;
+    if (window.qcQueueDrop) window.qcQueueDrop(slotKey);
     const S = window.qcI18n?.studio || {};
 
     // Reset file input and camera input
@@ -785,8 +998,9 @@ window.useDefaultBlueprint = function (slotKey) {
     showToast(S.blueprint_applied || 'Standar gambar diterapkan', 'success');
 };
 
-function renderSlotPreview(slotKey, imageUrl) {
-    reportPhotos[slotKey] = imageUrl;
+// previewOnly=true: hanya tampilan (mis. foto belum terunggah), TIDAK masuk ke data laporan
+function renderSlotPreview(slotKey, imageUrl, previewOnly = false) {
+    if (!previewOnly) reportPhotos[slotKey] = imageUrl;
 
     // 1. Dropzone preview in Tab 3
     const card = document.getElementById(`card_slot_${slotKey}`);
@@ -808,7 +1022,7 @@ function renderSlotPreview(slotKey, imageUrl) {
     if (annBtn) annBtn.style.display = 'inline-flex';
 
     window.qcOriginalPhotos = window.qcOriginalPhotos || {};
-    if (!window.qcOriginalPhotos[slotKey]) {
+    if (!previewOnly && !window.qcOriginalPhotos[slotKey]) {
         window.qcOriginalPhotos[slotKey] = imageUrl;
     }
 
@@ -1335,6 +1549,41 @@ let autoSaveDebounceTimer = null;
 let autoSaveServerTimer = null;
 let isAutoSaving = false;
 let lastSavedServerPayload = null;
+// -------------------------------------------------------------
+// Versi laporan (deteksi konflik) & penyesuaian nomor otomatis
+// -------------------------------------------------------------
+let autosaveConflict = false;
+
+function qcGetBaseUpdatedAt() {
+    return document.getElementById('reportUpdatedAt')?.value || '';
+}
+
+function qcSetBaseUpdatedAt(value) {
+    const el = document.getElementById('reportUpdatedAt');
+    if (el && value) el.value = value;
+}
+
+// Dipanggil setelah simpan sukses: perbarui versi dasar & sinkronkan nomor bila server mengubahnya
+function qcAfterServerSave(savedReport) {
+    if (!savedReport) return;
+    qcSetBaseUpdatedAt(savedReport.updated_at);
+    const sscEl = document.getElementById('g_sscId');
+    if (sscEl && savedReport.ssc_id && sscEl.value !== savedReport.ssc_id) {
+        sscEl.value = savedReport.ssc_id;
+        const noEl = document.getElementById('g_reportNo');
+        if (noEl && savedReport.report_no) noEl.value = savedReport.report_no;
+        const S = window.qcI18n?.studio || {};
+        showToast((S.ssc_renumbered || 'SSC ID diubah otomatis menjadi :id karena nomor sebelumnya sudah dipakai.').replace(':id', savedReport.ssc_id), 'success');
+    }
+}
+
+function qcFormatServerTime(iso) {
+    try {
+        const d = new Date(iso);
+        return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    } catch (_) { return ''; }
+}
+
 let isInitialFormLoading = true;
 
 function getReportStorageKey(reportId = null) {
@@ -1349,6 +1598,7 @@ function updateAutoSaveBadge(status, customTime = null) {
 
     const S = window.qcI18n?.studio || {};
     badge.classList.remove('is-idle', 'is-saving', 'is-saved', 'is-offline', 'is-unsaved');
+    badge.title = '';
 
     if (status === 'saving') {
         badge.classList.add('is-saving');
@@ -1363,7 +1613,24 @@ function updateAutoSaveBadge(status, customTime = null) {
         label.textContent = S.autosave_offline || 'Offline · Tersimpan di perangkat';
     } else if (status === 'unsaved') {
         badge.classList.add('is-unsaved');
-        label.textContent = S.autosave_saving || 'Menyimpan...';
+        label.textContent = S.autosave_unsaved || 'Ada perubahan belum tersimpan...';
+    } else if (status === 'local') {
+        // Sudah aman di perangkat ini, belum dikonfirmasi server
+        badge.classList.add('is-unsaved');
+        label.textContent = S.autosave_local || 'Tersimpan di perangkat · menunggu server';
+    } else if (status === 'local_manual') {
+        // Laporan sudah dikirim: tidak ada autosave ke server, hanya cadangan di perangkat
+        badge.classList.add('is-unsaved');
+        label.textContent = S.autosave_local_manual || 'Cadangan di perangkat · klik Simpan untuk menyimpan ke server';
+    } else if (status === 'conflict') {
+        badge.classList.add('is-offline');
+        label.textContent = S.autosave_conflict || 'Konflik: laporan diubah di tempat lain · autosave dijeda';
+    } else if (status === 'session') {
+        badge.classList.add('is-offline');
+        label.textContent = S.autosave_session || 'Sesi login berakhir · login ulang (data aman di perangkat)';
+    } else if (status === 'error') {
+        badge.classList.add('is-offline');
+        label.textContent = S.autosave_error || 'Server bermasalah · tersimpan di perangkat, mencoba lagi';
     } else {
         badge.classList.add('is-idle');
         label.textContent = '';
@@ -1372,7 +1639,6 @@ function updateAutoSaveBadge(status, customTime = null) {
 
 function saveLocalDraftSnapshot(isManual = false) {
     if (isInitialFormLoading) return;
-    if (window.qcReportStatus && window.qcReportStatus !== 'draft') return;
     const form = document.getElementById('qcMainForm');
     if (!form) return;
 
@@ -1424,7 +1690,7 @@ function markLocalSnapshotSynced(specificId = null) {
 }
 
 async function autoSaveToServer() {
-    if (isAutoSaving || isSavingReport || isInitialFormLoading) return;
+    if (isAutoSaving || isSavingReport || isInitialFormLoading || autosaveConflict) return;
     if (window.qcReportStatus && window.qcReportStatus !== 'draft') return;
 
     if (!navigator.onLine) {
@@ -1434,7 +1700,7 @@ async function autoSaveToServer() {
 
     const sscEl = document.getElementById('g_sscId');
     if (!sscEl || !sscEl.value.trim()) {
-        updateAutoSaveBadge('saved');
+        updateAutoSaveBadge('local');
         return;
     }
 
@@ -1454,6 +1720,7 @@ async function autoSaveToServer() {
 
     payload.submit_action = 'draft';
     payload.is_autosave = true;
+    if (isUpdate && qcGetBaseUpdatedAt()) payload.base_updated_at = qcGetBaseUpdatedAt();
 
     isAutoSaving = true;
     updateAutoSaveBadge('saving');
@@ -1471,7 +1738,12 @@ async function autoSaveToServer() {
         });
 
         if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`);
+            const errBody = await res.json().catch(() => ({}));
+            const httpErr = new Error(errBody.message || `HTTP ${res.status}`);
+            httpErr.status = res.status;
+            httpErr.conflict = Boolean(errBody.conflict);
+            httpErr.serverUpdatedAt = errBody.server_updated_at || null;
+            throw httpErr;
         }
 
         const data = await res.json().catch(() => ({}));
@@ -1480,6 +1752,8 @@ async function autoSaveToServer() {
             const savedId = savedReport.id || reportId;
             if (reportIdInput && savedId) reportIdInput.value = savedId;
             if (savedId) currentReportId = savedId;
+            qcAfterServerSave(savedReport);
+            if (!isUpdate && savedId) qcQueueRebind(savedId);
             if (savedReport.review_status) {
                 window.qcReportStatus = savedReport.review_status;
             }
@@ -1504,7 +1778,21 @@ async function autoSaveToServer() {
         }
     } catch (err) {
         console.warn('Auto-save to server paused (retained in offline storage):', err);
-        updateAutoSaveBadge('offline');
+        saveLocalDraftSnapshot();
+        if (err && err.status === 409) {
+            // Ada versi yang lebih baru di server (atau laporan sudah dikirim): jeda autosave, jangan menimpa
+            autosaveConflict = true;
+            updateAutoSaveBadge('conflict');
+            const S = window.qcI18n?.studio || {};
+            const when = err.serverUpdatedAt ? qcFormatServerTime(err.serverUpdatedAt) : '';
+            showToast((S.conflict_toast || 'Laporan ini diubah di tab/perangkat lain:time. Autosave dijeda agar tidak menimpa. Muat ulang halaman untuk melihat versi terbaru, atau klik Simpan untuk menimpa dengan versi Anda.').replace(':time', when ? ` (${when})` : ''), 'error');
+        } else if (err && (err.status === 401 || err.status === 419)) {
+            updateAutoSaveBadge('session');
+        } else if (err && err.status) {
+            updateAutoSaveBadge('error');
+        } else {
+            updateAutoSaveBadge('offline');
+        }
     } finally {
         isAutoSaving = false;
     }
@@ -1512,7 +1800,7 @@ async function autoSaveToServer() {
 
 function markFormEdited() {
     if (isInitialFormLoading) return;
-    if (window.qcReportStatus && window.qcReportStatus !== 'draft') return;
+    const isDraftReport = !window.qcReportStatus || window.qcReportStatus === 'draft';
 
     isFormDirty = true;
     updateAutoSaveBadge('unsaved');
@@ -1521,14 +1809,17 @@ function markFormEdited() {
     clearTimeout(autoSaveDebounceTimer);
     autoSaveDebounceTimer = setTimeout(() => {
         saveLocalDraftSnapshot();
-        if (navigator.onLine) {
-            updateAutoSaveBadge('saved');
+        if (!isDraftReport) {
+            updateAutoSaveBadge('local_manual');
+        } else if (navigator.onLine) {
+            updateAutoSaveBadge(autosaveConflict ? 'conflict' : 'local');
         } else {
             updateAutoSaveBadge('offline');
         }
     }, 1200);
 
-    // Layer 2: Debounced Server Auto-save (5s after typing idle)
+    // Layer 2: Debounced Server Auto-save (5s after typing idle) — hanya untuk draf
+    if (!isDraftReport) return;
     clearTimeout(autoSaveServerTimer);
     autoSaveServerTimer = setTimeout(() => {
         autoSaveToServer();
@@ -1536,7 +1827,6 @@ function markFormEdited() {
 }
 
 function checkLocalDraftRecovery() {
-    if (window.qcReportStatus && window.qcReportStatus !== 'draft') return;
     const reportIdInput = document.getElementById('reportId');
     const reportId = reportIdInput?.value || null;
     const key = getReportStorageKey(reportId);
@@ -1597,10 +1887,46 @@ function checkLocalDraftRecovery() {
     }
 }
 
+// Simpan darurat ke server saat tab ditutup/disembunyikan (hanya laporan yang sudah punya ID,
+// agar tidak membuat laporan ganda). Batas body keepalive browser ~64 KB.
+function autoSaveOnExit() {
+    try {
+        if (!isFormDirty || isAutoSaving || isSavingReport || isInitialFormLoading) return;
+        if (window.qcReportStatus && window.qcReportStatus !== 'draft') return;
+        if (!navigator.onLine) return;
+        const reportId = document.getElementById('reportId')?.value;
+        if (!reportId) return;
+        const payload = extractFormData();
+        if (!payload) return;
+        payload.submit_action = 'draft';
+        payload.is_autosave = true;
+        if (autosaveConflict) return;
+        if (qcGetBaseUpdatedAt()) payload.base_updated_at = qcGetBaseUpdatedAt();
+        const body = JSON.stringify(payload);
+        if (body.length > 60000) return;
+        isAutoSaving = true;
+        fetch(`/reports/${reportId}`, {
+            method: 'PUT',
+            keepalive: true,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body
+        })
+            .then(r => r.ok ? r.json() : null)
+            .then(d => { if (d && d.report) qcAfterServerSave(d.report); })
+            .catch(() => { })
+            .finally(() => { isAutoSaving = false; });
+    } catch (_) { }
+}
+
 function setupAutoSaveManager() {
     // 1. Accidental browser/tab close prevention
     window.addEventListener('beforeunload', (e) => {
-        if (isFormDirty && (!window.qcReportStatus || window.qcReportStatus === 'draft')) {
+        if (isFormDirty) {
             saveLocalDraftSnapshot();
             e.preventDefault();
             e.returnValue = '';
@@ -1612,11 +1938,13 @@ function setupAutoSaveManager() {
     document.addEventListener('visibilitychange', () => {
         if (document.hidden && isFormDirty) {
             saveLocalDraftSnapshot();
+            autoSaveOnExit();
         }
     });
     window.addEventListener('pagehide', () => {
         if (isFormDirty) {
             saveLocalDraftSnapshot();
+            autoSaveOnExit();
         }
     });
 
@@ -1668,6 +1996,13 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
         ? ((!isUpdate || window.qcReportStatus === 'draft') ? 'draft' : 'save')
         : 'submit');
     payload.submit_action = resolvedAction;
+    if (isUpdate && qcGetBaseUpdatedAt()) payload.base_updated_at = qcGetBaseUpdatedAt();
+
+    if (resolvedAction !== 'draft' && window.qcPendingPhotoCount && window.qcPendingPhotoCount() > 0) {
+        showToast(S.photo_pending_block || 'Masih ada foto yang belum terunggah. Tunggu hingga koneksi pulih (otomatis) sebelum mengirim laporan, atau simpan sebagai draft.', 'error');
+        qcFlushPhotoQueue();
+        return;
+    }
 
     isSavingReport = true;
     const actionBtnIds = [
@@ -1704,7 +2039,11 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
         .then(async r => {
             const data = await r.json().catch(() => ({}));
             if (!r.ok) {
-                throw new Error(data.message || `HTTP ${r.status}`);
+                const httpErr = new Error(data.message || `HTTP ${r.status}`);
+                httpErr.status = r.status;
+                httpErr.conflict = Boolean(data.conflict);
+                httpErr.serverUpdatedAt = data.server_updated_at || null;
+                throw httpErr;
             }
             return data;
         })
@@ -1714,12 +2053,14 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
                 const savedId = savedReport.id || reportId;
                 if (reportIdInput) reportIdInput.value = savedId;
                 currentReportId = savedId;
+                qcAfterServerSave(savedReport);
                 if (savedReport.review_status) {
                     window.qcReportStatus = savedReport.review_status;
                 }
                 if (!isUpdate && savedId && window.history?.replaceState) {
                     window.history.replaceState({}, '', `/reports/${savedId}/edit`);
                 }
+                if (!isUpdate && savedId) qcQueueRebind(savedId);
 
                 if (resolvedAction === 'submit') {
                     clearLocalDraftSnapshot(savedId);
@@ -1746,10 +2087,34 @@ function saveReportData(andDownloadExcel = false, submitAction = null) {
                 showToast((S.save_failed || 'Gagal menyimpan laporan') + ': ' + (data.message || 'Unknown error'), 'error');
             }
         })
-        .catch(err => {
+        .catch(async err => {
             console.error('Save error:', err);
             setButtonsBusy(false);
             saveLocalDraftSnapshot();
+
+            if (err && err.conflict) {
+                const when = err.serverUpdatedAt ? qcFormatServerTime(err.serverUpdatedAt) : '';
+                const overwrite = window.qcConfirm
+                    ? await window.qcConfirm({
+                        title: S.conflict_title || 'Laporan diubah di tempat lain',
+                        message: (S.conflict_message || 'Laporan ini sudah diubah di tab/perangkat lain:time. Menyimpan sekarang akan MENIMPA perubahan tersebut. Lanjutkan menimpa dengan versi Anda?').replace(':time', when ? ` (${when})` : ''),
+                        confirmText: S.conflict_overwrite || 'Timpa dengan versi saya',
+                        cancelText: S.conflict_cancel || 'Batal (jangan simpan)',
+                        variant: 'danger'
+                    })
+                    : false;
+                if (overwrite) {
+                    qcSetBaseUpdatedAt(err.serverUpdatedAt);
+                    autosaveConflict = false;
+                    isSavingReport = false;
+                    setTimeout(() => saveReportData(andDownloadExcel, submitAction), 0);
+                } else {
+                    autosaveConflict = true;
+                    updateAutoSaveBadge('conflict');
+                }
+                return;
+            }
+
             updateAutoSaveBadge('offline');
             showToast((S.save_failed || 'Gagal menyimpan') + ': ' + (err.message || 'Connection error') + '. Draf tersimpan di perangkat.', 'error');
         })
@@ -2111,6 +2476,10 @@ function populateFormWithData(data) {
     if (data.review_status) {
         window.qcReportStatus = data.review_status;
     }
+    // Versi dasar untuk deteksi konflik (hanya data dari server yang membawa updated_at)
+    if (data.updated_at && data.id) {
+        qcSetBaseUpdatedAt(data.updated_at);
+    }
 
     // Signatures
     const sig = typeof data.signatures === 'string' ? JSON.parse(data.signatures) : (data.signatures || {});
@@ -2261,6 +2630,7 @@ window.exportOfficialPdf = function () {
 
     // Preserve draft status when exporting/printing before submitting
     payload.submit_action = (!isUpdate || window.qcReportStatus === 'draft') ? 'draft' : 'save';
+    if (isUpdate && qcGetBaseUpdatedAt()) payload.base_updated_at = qcGetBaseUpdatedAt();
 
     showToast(S.preparing_pdf || 'Menyiapkan dokumen resmi 6 lembar (PDF)...', 'loading');
 
@@ -2276,7 +2646,11 @@ window.exportOfficialPdf = function () {
         .then(async r => {
             const data = await r.json().catch(() => ({}));
             if (!r.ok) {
-                throw new Error(data.message || `HTTP ${r.status}`);
+                const httpErr = new Error(data.message || `HTTP ${r.status}`);
+                httpErr.status = r.status;
+                httpErr.conflict = Boolean(data.conflict);
+                httpErr.serverUpdatedAt = data.server_updated_at || null;
+                throw httpErr;
             }
             return data;
         })
@@ -2286,6 +2660,7 @@ window.exportOfficialPdf = function () {
                 const savedId = savedReport.id || existingId;
                 if (reportIdInput) reportIdInput.value = savedId;
                 currentReportId = savedId;
+                qcAfterServerSave(savedReport);
                 if (savedReport.review_status) {
                     window.qcReportStatus = savedReport.review_status;
                 }
@@ -2304,6 +2679,13 @@ window.exportOfficialPdf = function () {
         })
         .catch(err => {
             console.error('PDF export error:', err);
+            if (err && err.conflict) {
+                saveLocalDraftSnapshot();
+                autosaveConflict = true;
+                updateAutoSaveBadge('conflict');
+                showToast((S.conflict_toast || 'Laporan ini diubah di tab/perangkat lain:time. Autosave dijeda agar tidak menimpa. Muat ulang halaman untuk melihat versi terbaru, atau klik Simpan untuk menimpa dengan versi Anda.').replace(':time', ''), 'error');
+                return;
+            }
             if (existingId) {
                 window.open(`/reports/${existingId}/pdf?autoprint=1`, '_blank');
             } else {

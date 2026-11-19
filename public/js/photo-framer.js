@@ -18,15 +18,17 @@
 
         // Transformation state
         scale: 1.0,
-        minScale: 0.5,
-        maxScale: 3.5,
+        baseCoverScale: 1.0,
+        userZoom: 1.0,
+        minZoom: 1.0,
+        maxZoom: 3.5,
         panX: 0,
         panY: 0,
         rotation: 0, // 0, 90, 180, 270
 
         // Ratio state
         activeRatioMode: 'slot', // 'slot', '4:3', '16:9', '1:1', 'free'
-        apertureRatio: 1.3333,
+        apertureRatio: 1.0,
 
         // Drag state
         isDragging: false,
@@ -37,7 +39,7 @@
 
         // Pinch state
         initialPinchDist: 0,
-        initialPinchScale: 1.0,
+        initialPinchZoom: 1.0,
 
         // DOM elements
         modal: null,
@@ -100,16 +102,16 @@
             if (this.zoomSlider) {
                 this.zoomSlider.addEventListener('input', (e) => {
                     const val = parseFloat(e.target.value) / 100;
-                    self.setScale(val);
+                    self.setUserZoom(val);
                 });
             }
 
             // Zoom In / Out Buttons
             document.getElementById('btnFramerZoomIn')?.addEventListener('click', () => {
-                self.setScale(self.scale + 0.15);
+                self.setUserZoom((self.userZoom || 1.0) + 0.15);
             });
             document.getElementById('btnFramerZoomOut')?.addEventListener('click', () => {
-                self.setScale(self.scale - 0.15);
+                self.setUserZoom((self.userZoom || 1.0) - 0.15);
             });
 
             // Rotate Button
@@ -154,7 +156,7 @@
                 this.viewportContainer.addEventListener('wheel', (e) => {
                     e.preventDefault();
                     const delta = e.deltaY < 0 ? 0.08 : -0.08;
-                    self.setScale(self.scale + delta);
+                    self.setUserZoom((self.userZoom || 1.0) + delta);
                 }, { passive: false });
 
                 // Touch support (Drag & Pinch)
@@ -169,7 +171,7 @@
                             e.touches[0].clientY - e.touches[1].clientY
                         );
                         self.initialPinchDist = dist;
-                        self.initialPinchScale = self.scale;
+                        self.initialPinchZoom = self.userZoom || 1.0;
                     }
                 }, { passive: true });
 
@@ -183,7 +185,7 @@
                             e.touches[0].clientY - e.touches[1].clientY
                         );
                         const factor = dist / self.initialPinchDist;
-                        self.setScale(self.initialPinchScale * factor);
+                        self.setUserZoom(self.initialPinchZoom * factor);
                     }
                 }, { passive: true });
 
@@ -206,7 +208,7 @@
             if (slotKey === 'finding_component' || slotKey === 'full_component') {
                 return 1.85; // component finding box
             }
-            return 1.3333; // 4:3 standard grid photo
+            return 1.0; // 1:1 standard square grid photo (matches 110x110 slot preview & print)
         },
 
         open(slotKey) {
@@ -247,6 +249,8 @@
             });
 
             // Reset transformations
+            this.userZoom = 1.0;
+            this.baseCoverScale = 1.0;
             this.scale = 1.0;
             this.panX = 0;
             this.panY = 0;
@@ -270,16 +274,23 @@
 
         loadImage(src) {
             const self = this;
-            this.img.onload = () => {
+            const onReady = () => {
                 self.naturalWidth = self.img.naturalWidth;
                 self.naturalHeight = self.img.naturalHeight;
 
-                self.updateApertureGeometry();
-                self.fitCenter();
+                requestAnimationFrame(() => {
+                    self.updateApertureGeometry();
+                    self.fitCenter();
+                });
 
                 if (window.lucide) lucide.createIcons();
             };
+
+            this.img.onload = onReady;
             this.img.src = src;
+            if (this.img.complete && this.img.naturalWidth) {
+                onReady();
+            }
         },
 
         setRatioMode(mode) {
@@ -339,8 +350,8 @@
         fitCenter() {
             if (!this.naturalWidth || !this.naturalHeight || !this.aperture) return;
 
-            const apW = this.aperture.offsetWidth;
-            const apH = this.aperture.offsetHeight;
+            const apW = this.aperture.offsetWidth || this.viewportContainer?.offsetWidth || 400;
+            const apH = this.aperture.offsetHeight || this.viewportContainer?.offsetHeight || 400;
 
             const isRotated = (this.rotation === 90 || this.rotation === 270);
             const effW = isRotated ? this.naturalHeight : this.naturalWidth;
@@ -349,6 +360,8 @@
             // Scale image to cover aperture completely (no black bars by default)
             const coverScale = Math.max(apW / effW, apH / effH);
 
+            this.baseCoverScale = coverScale;
+            this.userZoom = 1.0;
             this.scale = coverScale;
             this.panX = 0;
             this.panY = 0;
@@ -356,8 +369,9 @@
             this.updateTransformUI();
         },
 
-        setScale(newScale) {
-            this.scale = Math.max(this.minScale, Math.min(this.maxScale, newScale));
+        setUserZoom(newZoom) {
+            this.userZoom = Math.max(this.minZoom, Math.min(this.maxZoom, newZoom));
+            this.scale = (this.baseCoverScale || 1.0) * this.userZoom;
             this.updateTransformUI();
         },
 
@@ -406,8 +420,8 @@
             this.canvasWrap.style.transform = transform;
 
             // Update zoom slider and badge
-            const pct = Math.round(this.scale * 100);
-            if (this.zoomSlider) this.zoomSlider.value = Math.max(100, Math.min(350, pct));
+            const pct = Math.round((this.userZoom || 1.0) * 100);
+            if (this.zoomSlider) this.zoomSlider.value = pct;
             if (this.zoomVal) this.zoomVal.textContent = `${pct}%`;
         },
 
@@ -478,33 +492,26 @@
             try {
                 const result = await self.exportFramedCanvas();
 
-                // Upload cropped high-res photo to server
-                const formData = new FormData();
+                // Upload cropped high-res photo to server (antre otomatis bila offline)
                 const filename = `framed_${self.slotKey}_${Date.now()}.jpg`;
-                formData.append('photo', result.blob, filename);
-                formData.append('section', self.slotKey);
+                const up = await window.qcUploadPhoto(self.slotKey, result.blob, filename, 'framed');
 
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-
-                const response = await fetch('/reports/upload-photo', {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': csrfToken },
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                const finalUrl = (data.success && data.url) ? data.url : result.dataUrl;
-
-                // Update original photo so future annotations will use this framed photo
-                window.qcOriginalPhotos[self.slotKey] = finalUrl;
-
-                if (typeof window.renderSlotPreview === 'function') {
-                    window.renderSlotPreview(self.slotKey, finalUrl);
+                if (up.queued) {
+                    // Hanya tampilan; data laporan tetap memakai foto lama sampai upload berhasil
+                    if (typeof window.renderSlotPreview === 'function') {
+                        window.renderSlotPreview(self.slotKey, result.dataUrl, true);
+                    }
+                    window.qcNotify?.(S.photo_queued || 'Foto belum terunggah (koneksi bermasalah). Akan diunggah otomatis saat koneksi pulih.', 'error');
+                    self.close();
+                    return;
                 }
-                if (typeof window.markFormEdited === 'function') {
-                    window.markFormEdited();
+
+                // Reset any existing markers on this slot since photo framing/coordinates changed
+                if (window.qcPhotoMarkers && window.qcPhotoMarkers[self.slotKey]) {
+                    delete window.qcPhotoMarkers[self.slotKey];
                 }
+
+                window.qcApplyUploadedPhoto('framed', self.slotKey, up.url);
 
                 window.qcNotify?.(S.framer_success || 'Posisi dan framing foto berhasil diterapkan!', 'success');
                 self.close();

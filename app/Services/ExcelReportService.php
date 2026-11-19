@@ -1338,9 +1338,24 @@ class ExcelReportService
             $parsed = parse_url($path, PHP_URL_PATH);
             $path = $parsed ?: $path;
         }
-        $path = ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR);
-        $fullPath = public_path($path);
-        return file_exists($fullPath) && is_file($fullPath) ? $fullPath : null;
+        $normalized = '/' . ltrim(str_replace('\\', '/', $path), '/');
+
+        // Foto privat (storage/app/private/report-photos)
+        if (str_starts_with($normalized, '/reports/photo/')) {
+            $privateFile = storage_path('app/private/report-photos/' . basename($normalized));
+            return is_file($privateFile) ? $privateFile : null;
+        }
+
+        // Aset publik: tolak path traversal & pastikan tetap di dalam folder public
+        if (str_contains($normalized, '..')) {
+            return null;
+        }
+        $real = realpath(public_path(ltrim($normalized, '/')));
+        $root = realpath(public_path());
+        if ($real === false || $root === false || !str_starts_with($real, $root . DIRECTORY_SEPARATOR)) {
+            return null;
+        }
+        return is_file($real) ? $real : null;
     }
 
     /**
