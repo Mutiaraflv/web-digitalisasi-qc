@@ -1009,6 +1009,13 @@
         <h2>{{ __('qc.auth.sign_in_title') }}</h2>
         <p class="intro">{{ __('qc.auth.sign_in_desc') }}</p>
 
+        @if (request()->has('timeout') || session('timeout'))
+          <div class="timeout-alert" style="margin: 0 0 16px; padding: 10px 14px; border-radius: 10px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #d97706; font-size: 13px; line-height: 1.45; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="clock" style="width: 18px; height: 18px; flex-shrink: 0; color: #f59e0b;"></i>
+            <span>{{ __('qc.auth.timeout_message') }}</span>
+          </div>
+        @endif
+
         <div class="field">
           <label for="email">{{ __('qc.auth.email') }}</label>
           <input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="username" required autofocus>
@@ -1025,11 +1032,6 @@
           </div>
           @error('password') <span class="field-error">{{ $message }}</span> @enderror
         </div>
-
-        <label class="remember" for="remember">
-          <input id="remember" type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }}>
-          <span>{{ __('qc.auth.remember') }}</span>
-        </label>
 
         <button class="submit" type="submit">{{ __('qc.auth.sign_in_btn') }}</button>
 

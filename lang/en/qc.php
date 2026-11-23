@@ -71,6 +71,8 @@ return [
         'password' => 'Password',
         'remember' => 'Keep me signed in on this device',
         'sign_in_btn' => 'Sign In',
+        'timeout_message' => 'Your session has expired due to 20 minutes of inactivity. Please log in again.',
+        'session_timeout' => 'Session expired automatically due to inactivity.',
         'no_account' => 'If you do not have an account, contact the system administrator.',
         'or' => 'or',
         'face_btn' => 'Sign in with Device Key / Biometrics',

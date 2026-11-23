@@ -733,9 +733,15 @@
     let lastPollAt = 0;
 
     function pollDashboardLive(force = false) {
+      if (typeof window.__qcCheckIdleTimeout === 'function' && window.__qcCheckIdleTimeout()) {
+        return;
+      }
+
       const nowMs = Date.now();
       if (!force && (nowMs - lastPollAt) < 1800) return;
       lastPollAt = nowMs;
+
+      const isUserActive = typeof window.__qcIsUserActive === 'function' ? window.__qcIsUserActive() : true;
 
       fetch(@json(route('dashboard.liveData')), {
         cache: 'no-store',
@@ -743,9 +749,16 @@
         headers: {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
+          'X-QC-User-Active': isUserActive ? '1' : '0',
         }
       })
-        .then(r => r.ok ? r.json() : null)
+        .then(r => {
+          if (r.status === 401 || r.status === 419) {
+            window.location.href = '{{ route("login", ["timeout" => 1]) }}';
+            return null;
+          }
+          return r.ok ? r.json() : null;
+        })
         .then(res => {
           if (!res || !res.success || !res.data) return;
           const d = res.data;

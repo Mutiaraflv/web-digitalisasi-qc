@@ -239,8 +239,9 @@ class PasskeyController extends Controller
             'last_used_at' => now(),
         ])->save();
 
-        Auth::login($passkey->user, (bool) ($validated['remember'] ?? false));
+        Auth::login($passkey->user, false);
         $request->session()->regenerate();
+        $request->session()->put('_last_user_activity', time());
 
         User::touchPresence(Auth::user(), $request, true);
         ActivityLog::record('login', 'Masuk ke sistem QCMS dengan kunci perangkat (Passkey)', null, [

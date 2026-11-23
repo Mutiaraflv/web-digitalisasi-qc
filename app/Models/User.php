@@ -136,6 +136,10 @@ class User extends Authenticatable
             return;
         }
 
+        if ($request && $request->header('X-QC-User-Active') === '0' && ! $force) {
+            return;
+        }
+
         $nowTs = time();
         if (! $force && $request && $request->hasSession()) {
             $lastTouch = (int) $request->session()->get('_qc_presence_ts', 0);
