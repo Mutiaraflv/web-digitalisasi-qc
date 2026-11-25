@@ -24,14 +24,15 @@ class PhotosCleanup extends Command
         $apply = (bool) $this->option('apply');
         $cutoff = time() - max(1, (int) $this->option('hours')) * 3600;
 
-        // Kumpulkan semua nama file yang masih dirujuk oleh laporan
+        // Kumpulkan semua nama file yang masih dirujuk oleh laporan (foto & tanda tangan)
         $referenced = [];
-        DB::table('reports')->select('id', 'photos')->orderBy('id')->chunkById(100, function ($rows) use (&$referenced) {
+        DB::table('reports')->select('id', 'photos', 'signatures')->orderBy('id')->chunkById(100, function ($rows) use (&$referenced) {
             foreach ($rows as $row) {
-                if (!is_string($row->photos) || $row->photos === '') {
+                $payload = ($row->photos ?? '') . ' ' . ($row->signatures ?? '');
+                if (trim($payload) === '') {
                     continue;
                 }
-                if (preg_match_all('/[A-Za-z0-9_.\-]+\.(?:jpe?g|png|webp)/i', $row->photos, $m)) {
+                if (preg_match_all('/[A-Za-z0-9_.\-]+\.(?:jpe?g|png|webp)/i', $payload, $m)) {
                     foreach ($m[0] as $name) {
                         $referenced[strtolower($name)] = true;
                     }

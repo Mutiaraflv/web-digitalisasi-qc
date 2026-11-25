@@ -797,6 +797,49 @@ class ReportController extends Controller
             'date' => !empty($signatures['reviewedBy']['date']) ? $signatures['reviewedBy']['date'] : date('Y-m-d'),
         ]);
 
+        $signatureInput = $request->input('signature');
+        if ($signatureInput === 'profile' && !empty($user->signature_url)) {
+            // Salin berkas TTD profil resmi ke folder privat laporan agar permanen & mandiri
+            $sigSrc = !empty($user->signature) ? public_path('uploads/signatures/' . $user->signature) : null;
+            if ($sigSrc && file_exists($sigSrc)) {
+                $dir = storage_path(self::PRIVATE_PHOTO_DIR);
+                if (!File::isDirectory($dir)) {
+                    File::makeDirectory($dir, 0755, true, true);
+                }
+                $filename = 'sig_reviewed_' . $report->id . '_' . time() . '.png';
+                $destPath = $dir . DIRECTORY_SEPARATOR . $filename;
+                $rawBytes = @file_get_contents($sigSrc);
+                if ($rawBytes && $this->cropAndSaveSignatureImage($rawBytes, $destPath)) {
+                    $signatures['reviewedBy']['signature'] = '/reports/photo/' . $filename;
+                } elseif (@copy($sigSrc, $destPath)) {
+                    $signatures['reviewedBy']['signature'] = '/reports/photo/' . $filename;
+                } else {
+                    $signatures['reviewedBy']['signature'] = $user->signature_url;
+                }
+            } else {
+                $signatures['reviewedBy']['signature'] = $user->signature_url;
+            }
+        } elseif (!empty($signatureInput) && is_string($signatureInput) && str_starts_with($signatureInput, 'data:image/')) {
+            $savedSig = $this->saveDigitalSignature($report, $signatureInput);
+            if ($savedSig) {
+                $signatures['reviewedBy']['signature'] = $savedSig;
+            }
+            if ($request->boolean('save_to_profile') && empty($user->signature)) {
+                $sigDir = public_path('uploads/signatures');
+                if (!file_exists($sigDir)) {
+                    @mkdir($sigDir, 0755, true);
+                }
+                $profileSigFile = 'sig_' . $user->id . '_' . time() . '.png';
+                if (preg_match('#^data:image/(png|jpeg|jpg);base64,(.+)$#i', $signatureInput, $m)) {
+                    $bin = base64_decode($m[2]);
+                    if ($bin) {
+                        $this->cropAndSaveSignatureImage($bin, $sigDir . '/' . $profileSigFile);
+                        $user->update(['signature' => $profileSigFile]);
+                    }
+                }
+            }
+        }
+
         $report->update([
             'review_status' => Report::STATUS_REVIEWED,
             'reviewed_at' => now(),
@@ -821,6 +864,91 @@ class ReportController extends Controller
 
         return redirect()->route('reports.index', ['tab' => 'approval'])
             ->with('success', "Laporan {$report->ssc_id} berhasil diselesaikan (Reviewed)!");
+    }
+
+    /**
+     * Simpan file tanda tangan digital dari base64 data URL.
+     */
+    private function saveDigitalSignature(Report $report, string $dataUrl): ?string
+    {
+        if (!preg_match('#^data:image/(png|jpeg|jpg);base64,(.+)$#i', $dataUrl, $m)) {
+            return null;
+        }
+
+        $bin = base64_decode($m[2]);
+        if ($bin === false || strlen($bin) < 20 || strlen($bin) > 3_000_000) {
+            return null;
+        }
+
+        $dir = storage_path(self::PRIVATE_PHOTO_DIR);
+        if (!File::isDirectory($dir)) {
+            File::makeDirectory($dir, 0755, true, true);
+        }
+
+        $filename = 'sig_reviewed_' . $report->id . '_' . time() . '.png';
+        $fullPath = $dir . DIRECTORY_SEPARATOR . $filename;
+        if ($this->cropAndSaveSignatureImage($bin, $fullPath)) {
+            return '/reports/photo/' . $filename;
+        } elseif (@File::put($fullPath, $bin)) {
+            return '/reports/photo/' . $filename;
+        }
+
+        return $dataUrl;
+    }
+
+    /**
+     * Pangkas area transparan/kosong berlebih di sekeliling goresan tanda tangan.
+     */
+    private function cropAndSaveSignatureImage(string $binaryData, string $destPath, int $pad = 8): bool
+    {
+        if (!extension_loaded('gd') || !function_exists('imagecreatefromstring')) {
+            return (bool) @file_put_contents($destPath, $binaryData);
+        }
+
+        $im = @imagecreatefromstring($binaryData);
+        if (!$im) {
+            return (bool) @file_put_contents($destPath, $binaryData);
+        }
+
+        $w = imagesx($im);
+        $h = imagesy($im);
+        $minX = $w; $maxX = -1; $minY = $h; $maxY = -1;
+
+        for ($y = 0; $y < $h; $y++) {
+            for ($x = 0; $x < $w; $x++) {
+                $rgba = imagecolorat($im, $x, $y);
+                $alpha = ($rgba >> 24) & 0x7F;
+                if ($alpha < 125) { // piksel tidak transparan
+                    if ($x < $minX) $minX = $x;
+                    if ($x > $maxX) $maxX = $x;
+                    if ($y < $minY) $minY = $y;
+                    if ($y > $maxY) $maxY = $y;
+                }
+            }
+        }
+
+        if ($maxX !== -1) {
+            $cropX = max(0, $minX - $pad);
+            $cropY = max(0, $minY - $pad);
+            $cropW = min($w - 1, $maxX + $pad) - $cropX + 1;
+            $cropH = min($h - 1, $maxY + $pad) - $cropY + 1;
+
+            $cropped = imagecreatetruecolor($cropW, $cropH);
+            imagealphablending($cropped, false);
+            imagesavealpha($cropped, true);
+            $trans = imagecolorallocatealpha($cropped, 0, 0, 0, 127);
+            imagefilledrectangle($cropped, 0, 0, $cropW, $cropH, $trans);
+            imagecopy($cropped, $im, 0, 0, $cropX, $cropY, $cropW, $cropH);
+
+            imagedestroy($im);
+            $im = $cropped;
+        }
+
+        imagealphablending($im, false);
+        imagesavealpha($im, true);
+        $saved = (bool) @imagepng($im, $destPath, 6);
+        imagedestroy($im);
+        return $saved;
     }
 
     /**

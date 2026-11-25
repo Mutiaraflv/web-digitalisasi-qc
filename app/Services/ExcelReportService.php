@@ -1018,7 +1018,7 @@ class ExcelReportService
         $metaRow = $row + 3;
 
         $sheet->getRowDimension($hdrRow)->setRowHeight(18);
-        $sheet->getRowDimension($spaceRow)->setRowHeight(42);
+        $sheet->getRowDimension($spaceRow)->setRowHeight(56);
         $sheet->getRowDimension($nameRow)->setRowHeight(17);
         $sheet->getRowDimension($metaRow)->setRowHeight(16);
 
@@ -1044,6 +1044,13 @@ class ExcelReportService
 
             // Signature blank space
             $sheet->mergeCells("{$cStart}{$spaceRow}:{$cEnd}{$spaceRow}");
+            if (!empty($d['signature'])) {
+                try {
+                    $this->placeImageInBox($sheet, (string) $d['signature'], $cStart, $cEnd, $spaceRow, $spaceRow, 300, 2);
+                } catch (\Throwable) {
+                    // Abaikan jika berkas tanda tangan gagal dimuat
+                }
+            }
 
             // Personnel name
             $name = !empty($d['name']) ? trim((string) $d['name']) : '............................';
@@ -1461,6 +1468,11 @@ class ExcelReportService
         bool $alignLeft = false,
         array $markers = []
     ): void {
+        $resolved = $this->resolveLocalPhotoPath($srcPath);
+        if ($resolved) {
+            $srcPath = $resolved;
+        }
+
         $prep = $this->prepareExcelImage($srcPath, $maxPx);
         if (!$prep) {
             return;

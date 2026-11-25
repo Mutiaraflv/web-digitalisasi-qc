@@ -128,6 +128,121 @@
       </div>
     </div>
 
+    <!-- Card Tanda Tangan Digital Saya -->
+    <div class="profile-section-card" id="cardProfileSignature">
+      <div class="profile-card-header">
+        <h3>
+          <i data-lucide="pen-tool"></i>
+          <span>{{ __('qc.profile.signature_section') }}</span>
+        </h3>
+      </div>
+      <div class="profile-card-body">
+        @if($user->signature_url)
+          <!-- Tampilan Tanda Tangan Aktif -->
+          <div class="sig-profile-display-card" id="sigProfileActiveView">
+            <div class="sig-profile-preview-box">
+              <img src="{{ $user->signature_url }}" alt="Tanda Tangan {{ $user->name }}" class="sig-profile-img">
+            </div>
+            <div class="sig-profile-meta">
+              <div>
+                <span class="badge badge-green">
+                  <i data-lucide="check-circle-2" style="width: 12px; height: 12px;"></i>
+                  {{ __('qc.profile.signature_active') }}
+                </span>
+              </div>
+              <p class="sig-profile-hint">{{ __('qc.profile.signature_hint') }}</p>
+              <div class="sig-profile-actions">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="toggleSignatureEditor(true)">
+                  <i data-lucide="edit-3"></i> {{ __('qc.profile.signature_change') }}
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmDeleteSignature()">
+                  <i data-lucide="trash-2"></i> {{ __('qc.profile.signature_delete') }}
+                </button>
+              </div>
+            </div>
+          </div>
+        @endif
+
+        <!-- Editor Input / Ubah Tanda Tangan -->
+        <div id="sigEditorContainer" style="{{ $user->signature_url ? 'display: none; margin-top: 1rem;' : '' }}">
+          <div class="sig-tab-pills">
+            <button type="button" class="sig-tab-pill active" id="tabBtnDraw" onclick="switchSigTab('draw')">
+              <i data-lucide="pen-line"></i> {{ __('qc.profile.tab_draw') }}
+            </button>
+            <button type="button" class="sig-tab-pill" id="tabBtnUpload" onclick="switchSigTab('upload')">
+              <i data-lucide="upload-cloud"></i> {{ __('qc.profile.tab_upload') }}
+            </button>
+          </div>
+
+          <!-- TAB 1: Goreskan Tanda Tangan di Kanvas -->
+          <div id="sigTabDraw" class="sig-tab-pane">
+            <div class="sig-profile-canvas-wrap" id="profileCanvasWrap">
+              <canvas id="profileSigCanvas"></canvas>
+              <div class="sig-profile-placeholder" id="profileSigPlaceholder">
+                <i data-lucide="pen" style="width: 20px; height: 20px; display: block; margin: 0 auto 4px auto; opacity: 0.7;"></i>
+                {{ __('qc.profile.draw_ph') }}
+              </div>
+            </div>
+            <div class="sig-profile-canvas-tools">
+              <button type="button" class="btn-sig-clear" onclick="clearProfileSigCanvas()">
+                <i data-lucide="rotate-ccw"></i> {{ __('qc.profile.draw_clear') }}
+              </button>
+            </div>
+            <form id="formSaveDrawSignature" method="POST" action="{{ route('profile.signature.upload') }}">
+              @csrf
+              <input type="hidden" name="signature_data" id="profileSigDataInput">
+              <div class="sig-profile-submit-row">
+                @if($user->signature_url)
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="toggleSignatureEditor(false)">
+                    {{ __('qc.common.cancel') }}
+                  </button>
+                @endif
+                <button type="button" class="btn btn-primary btn-sm" onclick="submitProfileDrawSignature()">
+                  <i data-lucide="check"></i> {{ __('qc.profile.draw_save') }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- TAB 2: Unggah Berkas Gambar TTD -->
+          <div id="sigTabUpload" class="sig-tab-pane" style="display: none;">
+            <form method="POST" action="{{ route('profile.signature.upload') }}" enctype="multipart/form-data">
+              @csrf
+              <div class="sig-upload-box" onclick="document.getElementById('profileSigFileInput').click()">
+                <i data-lucide="image-up" class="sig-upload-icon"></i>
+                <div class="sig-upload-text">{{ __('qc.profile.upload_drag') }}</div>
+                <div class="sig-upload-subtext">{{ __('qc.profile.upload_hint') }}</div>
+                <input type="file" id="profileSigFileInput" name="signature_file" accept="image/png, image/jpeg, image/jpg, image/webp" style="display: none;" onchange="previewUploadSig(this)">
+              </div>
+              <div id="uploadPreviewWrap" style="display: none; margin-top: 10px; text-align: center;">
+                <img id="uploadPreviewImg" style="max-height: 70px; max-width: 180px; object-fit: contain; border: 1px dashed var(--border); border-radius: 6px; padding: 4px; background: #fff;">
+                <div id="uploadFileName" style="font-size: 11px; color: var(--text-subtle); margin-top: 4px;"></div>
+              </div>
+              <div class="sig-profile-submit-row">
+                @if($user->signature_url)
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="toggleSignatureEditor(false)">
+                    {{ __('qc.common.cancel') }}
+                  </button>
+                @endif
+                <button type="submit" class="btn btn-primary btn-sm" id="btnSubmitUploadSig" disabled>
+                  <i data-lucide="upload"></i> {{ __('qc.profile.upload_btn') }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Hidden Form for Signature Deletion -->
+    @if($user->signature_url)
+      <form id="formDeleteSignature" method="POST" action="{{ route('profile.signature.destroy') }}" style="display: none;">
+        @csrf
+        @method('DELETE')
+      </form>
+    @endif
+
     <!-- Card 2: Pengaturan Sandi Akun -->
     <div class="profile-section-card">
       <div class="profile-card-header">
@@ -456,5 +571,220 @@
       document.getElementById('formDeleteAvatar')?.submit();
     }
   }
+
+  // Profile Signature Logic
+  let pSigCanvas = null;
+  let pSigCtx = null;
+  let pSigIsDrawing = false;
+  let pSigHasDrawn = false;
+  let pSigLastX = 0;
+  let pSigLastY = 0;
+
+  function toggleSignatureEditor(show) {
+    const activeView = document.getElementById('sigProfileActiveView');
+    const editor = document.getElementById('sigEditorContainer');
+    if (activeView) activeView.style.display = show ? 'none' : 'flex';
+    if (editor) {
+      editor.style.display = show ? 'block' : 'none';
+      if (show) {
+        switchSigTab('draw');
+      }
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function switchSigTab(tab) {
+    const tabDraw = document.getElementById('sigTabDraw');
+    const tabUpload = document.getElementById('sigTabUpload');
+    const btnDraw = document.getElementById('tabBtnDraw');
+    const btnUpload = document.getElementById('tabBtnUpload');
+
+    if (tab === 'draw') {
+      if (tabDraw) tabDraw.style.display = 'block';
+      if (tabUpload) tabUpload.style.display = 'none';
+      btnDraw?.classList.add('active');
+      btnUpload?.classList.remove('active');
+      requestAnimationFrame(() => {
+        initProfileCanvas();
+      });
+    } else {
+      if (tabDraw) tabDraw.style.display = 'none';
+      if (tabUpload) tabUpload.style.display = 'block';
+      btnDraw?.classList.remove('active');
+      btnUpload?.classList.add('active');
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function initProfileCanvas() {
+    pSigCanvas = document.getElementById('profileSigCanvas');
+    const wrap = document.getElementById('profileCanvasWrap');
+    if (!pSigCanvas || !wrap) return;
+
+    pSigCtx = pSigCanvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = wrap.getBoundingClientRect();
+    const displayW = Math.max(300, rect.width || 500);
+    const displayH = 150;
+
+    pSigCanvas.style.width = displayW + 'px';
+    pSigCanvas.style.height = displayH + 'px';
+    pSigCanvas.width = Math.round(displayW * dpr);
+    pSigCanvas.height = Math.round(displayH * dpr);
+
+    pSigCtx.scale(dpr, dpr);
+    pSigCtx.strokeStyle = '#0f2b5c';
+    pSigCtx.lineWidth = 2.4;
+    pSigCtx.lineCap = 'round';
+    pSigCtx.lineJoin = 'round';
+  }
+
+  function clearProfileSigCanvas() {
+    if (!pSigCanvas || !pSigCtx) return;
+    const dpr = window.devicePixelRatio || 1;
+    pSigCtx.clearRect(0, 0, pSigCanvas.width / dpr, pSigCanvas.height / dpr);
+    pSigHasDrawn = false;
+    document.getElementById('profileCanvasWrap')?.classList.remove('has-drawn');
+  }
+
+  function trimCanvas(origCanvas, pad = 6) {
+    const origCtx = origCanvas.getContext('2d');
+    const width = origCanvas.width;
+    const height = origCanvas.height;
+    if (!width || !height) return origCanvas;
+
+    try {
+      const imgData = origCtx.getImageData(0, 0, width, height);
+      const data = imgData.data;
+      let minX = width, minY = height, maxX = -1, maxY = -1;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const alpha = data[((y * width + x) * 4) + 3];
+          if (alpha > 10) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+
+      if (maxX === -1) return origCanvas;
+
+      const pX = Math.max(0, minX - pad);
+      const pY = Math.max(0, minY - pad);
+      const pW = Math.min(width - 1, maxX + pad) - pX + 1;
+      const pH = Math.min(height - 1, maxY + pad) - pY + 1;
+
+      const trimmed = document.createElement('canvas');
+      trimmed.width = pW;
+      trimmed.height = pH;
+      const tCtx = trimmed.getContext('2d');
+      tCtx.drawImage(origCanvas, pX, pY, pW, pH, 0, 0, pW, pH);
+      return trimmed;
+    } catch (e) {
+      return origCanvas;
+    }
+  }
+
+  function submitProfileDrawSignature() {
+    if (!pSigHasDrawn || !pSigCanvas) {
+      window.qcNotify?.('Silakan goreskan tanda tangan Anda terlebih dahulu.', 'warning');
+      return;
+    }
+    const trimmed = trimCanvas(pSigCanvas, 6);
+    const dataUrl = trimmed.toDataURL('image/png');
+    document.getElementById('profileSigDataInput').value = dataUrl;
+    document.getElementById('formSaveDrawSignature').submit();
+  }
+
+  function previewUploadSig(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const previewWrap = document.getElementById('uploadPreviewWrap');
+    const previewImg = document.getElementById('uploadPreviewImg');
+    const fileName = document.getElementById('uploadFileName');
+    const submitBtn = document.getElementById('btnSubmitUploadSig');
+
+    if (previewImg && previewWrap) {
+      previewImg.src = URL.createObjectURL(file);
+      previewWrap.style.display = 'block';
+      if (fileName) fileName.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  }
+
+  async function confirmDeleteSignature() {
+    const confirmed = await window.qcConfirm({
+      title: '{{ __("qc.profile.signature_delete_title") }}',
+      message: '{{ __("qc.profile.signature_delete_msg") }}',
+      confirmText: '{{ __("qc.common.yes_delete") }}',
+      cancelText: '{{ __("qc.common.cancel") }}',
+      variant: 'danger'
+    });
+    if (confirmed) {
+      document.getElementById('formDeleteSignature')?.submit();
+    }
+  }
+
+  // Bind mouse and touch events for profile canvas
+  document.addEventListener('DOMContentLoaded', () => {
+    const pCanvas = document.getElementById('profileSigCanvas');
+    const pWrap = document.getElementById('profileCanvasWrap');
+    if (!pCanvas) return;
+
+    const getPos = (e) => {
+      const rect = pCanvas.getBoundingClientRect();
+      if (e.touches && e.touches.length > 0) {
+        return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+      }
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    };
+
+    const startDraw = (e) => {
+      if (!pSigCtx) initProfileCanvas();
+      pSigIsDrawing = true;
+      const pos = getPos(e);
+      pSigLastX = pos.x;
+      pSigLastY = pos.y;
+      pWrap?.classList.add('is-drawing');
+    };
+
+    const drawing = (e) => {
+      if (!pSigIsDrawing || !pSigCtx) return;
+      const pos = getPos(e);
+      pSigCtx.beginPath();
+      pSigCtx.moveTo(pSigLastX, pSigLastY);
+      pSigCtx.lineTo(pos.x, pos.y);
+      pSigCtx.stroke();
+      pSigLastX = pos.x;
+      pSigLastY = pos.y;
+      if (!pSigHasDrawn) {
+        pSigHasDrawn = true;
+        pWrap?.classList.add('has-drawn');
+      }
+    };
+
+    const stopDraw = () => {
+      if (!pSigIsDrawing) return;
+      pSigIsDrawing = false;
+      pWrap?.classList.remove('is-drawing');
+    };
+
+    pCanvas.addEventListener('mousedown', startDraw);
+    pCanvas.addEventListener('mousemove', drawing);
+    window.addEventListener('mouseup', stopDraw);
+    pCanvas.addEventListener('mouseleave', stopDraw);
+
+    pCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); }, { passive: false });
+    pCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); drawing(e); }, { passive: false });
+    pCanvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDraw(); }, { passive: false });
+    pCanvas.addEventListener('touchcancel', (e) => { e.preventDefault(); stopDraw(); }, { passive: false });
+
+    @if(!$user->signature_url)
+      setTimeout(() => initProfileCanvas(), 100);
+    @endif
+  });
 </script>
 @endsection

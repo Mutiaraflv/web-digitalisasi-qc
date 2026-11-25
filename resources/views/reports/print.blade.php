@@ -571,18 +571,39 @@
 
     .sig-table td {
       border: 1px solid #cbd5e1;
-      padding: 6px 8px;
+      padding: 6px 10px 8px 10px;
       vertical-align: bottom;
-      height: 95px;
-      min-height: 95px;
+      height: 125px;
+      min-height: 125px;
       width: 33.33%;
+      position: relative;
+    }
+    .sig-space-placeholder {
+      height: 72px;
+      width: 100%;
+    }
+    .sig-drawn-wrap {
+      height: 72px;
+      max-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 3px;
+      overflow: hidden;
+    }
+    .sig-drawn-img {
+      max-height: 70px;
+      max-width: 220px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
     }
     .sig-name {
       font-weight: 700;
       border-bottom: 1px solid #94a3b8;
       padding-bottom: 2px;
       margin-bottom: 3px;
-      margin-top: 45px;
       color: #1e3a8a;
     }
     .sig-meta {
@@ -636,12 +657,16 @@
     .review-modal-card {
       background: #ffffff;
       border-radius: 16px;
-      max-width: 400px;
+      max-width: 440px;
       width: 100%;
       padding: 24px;
       text-align: center;
       box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.28);
       animation: reviewModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .review-modal-card.step-sig {
+      max-width: 470px;
     }
     @keyframes reviewModalPop {
       from { opacity: 0; transform: translateY(10px) scale(0.96); }
@@ -676,21 +701,166 @@
       display: flex;
       gap: 10px;
       justify-content: center;
+      flex-wrap: wrap;
     }
     .review-modal-actions .btn {
-      padding: 8px 18px;
-      border-radius: 9px;
-      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12.5px;
       font-weight: 600;
       cursor: pointer;
       border: 1px solid #cbd5e1;
       background: #fff;
       color: #334155;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .review-modal-actions .btn-no-sig {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+    .review-modal-actions .btn-no-sig:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+    .review-modal-actions .btn-with-sig {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #fff;
+    }
+    .review-modal-actions .btn-with-sig:hover {
+      background: #1d4ed8;
     }
     .review-modal-actions .btn-confirm {
       background: #10b981;
       border-color: #10b981;
       color: #fff;
+    }
+    .review-modal-actions .btn-confirm:hover {
+      background: #059669;
+    }
+
+    /* Signature Canvas Pad */
+    .sig-canvas-wrap {
+      position: relative;
+      margin: 12px 0 6px 0;
+      border: 1.5px dashed #94a3b8;
+      border-radius: 10px;
+      background: #f8fafc;
+      overflow: hidden;
+      touch-action: none;
+      cursor: crosshair;
+    }
+    .sig-canvas-wrap.is-drawing {
+      border-color: #2563eb;
+      background: #ffffff;
+    }
+    #sigCanvas {
+      display: block;
+      width: 100%;
+      height: 140px;
+      touch-action: none;
+    }
+    .sig-canvas-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #94a3b8;
+      font-size: 13px;
+      pointer-events: none;
+      user-select: none;
+      transition: opacity 0.15s ease;
+    }
+    .sig-canvas-wrap.has-drawn .sig-canvas-placeholder {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .sig-canvas-tools {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 11px;
+      color: #64748b;
+      padding: 0 2px;
+    }
+    .btn-sig-clear {
+      background: transparent;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 3px 8px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .btn-sig-clear:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #b91c1c;
+    }
+    .sig-warn-text {
+      color: #dc2626;
+      font-size: 11.5px;
+      margin-bottom: 12px;
+      display: none;
+      text-align: center;
+    }
+    .review-sig-preview-card {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 12px auto 18px auto;
+      max-width: 320px;
+      text-align: center;
+    }
+    .review-sig-preview-label {
+      font-size: 11px;
+      color: #64748b;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .review-sig-preview-box {
+      height: 70px;
+      background: #ffffff;
+      border: 1px dashed #94a3b8;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      margin-bottom: 6px;
+    }
+    .review-sig-preview-img {
+      max-height: 62px;
+      max-width: 100%;
+      object-fit: contain;
+    }
+    .review-sig-preview-name {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #1e3a8a;
+    }
+    .sig-profile-save-chk {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: #475569;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+    .sig-profile-save-chk input {
+      cursor: pointer;
     }
     @media print {
       .review-modal-overlay { display: none !important; }
@@ -725,6 +895,8 @@
         @if(!$report->isReviewed() && $report->canBeReviewedBy(auth()->user()))
           <form id="finishReviewForm" method="POST" action="{{ route('reports.finishReview', $report->id) }}" style="display: inline; margin: 0;">
             @csrf
+            <input type="hidden" name="signature" id="finishReviewSignature">
+            <input type="hidden" name="save_to_profile" id="finishReviewSaveToProfile" value="0">
             <button type="button" id="btnTriggerFinishReview" class="btn" style="background: #10b981; color: #fff; border-color: #10b981; font-weight: 700;">{{ __('qc.print.finish_review') }}</button>
           </form>
         @elseif($report->isReviewed())
@@ -1686,6 +1858,13 @@
         <tbody>
           <tr>
             <td>
+              @if(!empty($sigs['checkedBy']['signature']))
+                <div class="sig-drawn-wrap">
+                  <img src="{{ $sigs['checkedBy']['signature'] }}" alt="TTD Checked" class="sig-drawn-img">
+                </div>
+              @else
+                <div class="sig-space-placeholder"></div>
+              @endif
               <div class="sig-name">{{ !empty($sigs['checkedBy']['name']) ? $sigs['checkedBy']['name'] : '............................' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['checkedBy']['title'] ?? 'QC Inspector' }}</span>
@@ -1693,6 +1872,13 @@
               </div>
             </td>
             <td>
+              @if(!empty($sigs['createdBy']['signature']))
+                <div class="sig-drawn-wrap">
+                  <img src="{{ $sigs['createdBy']['signature'] }}" alt="TTD Created" class="sig-drawn-img">
+                </div>
+              @else
+                <div class="sig-space-placeholder"></div>
+              @endif
               <div class="sig-name">{{ !empty($sigs['createdBy']['name']) ? $sigs['createdBy']['name'] : '............................' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['createdBy']['title'] ?? 'QC Inspector' }}</span>
@@ -1700,6 +1886,13 @@
               </div>
             </td>
             <td>
+              @if(!empty($sigs['reviewedBy']['signature']))
+                <div class="sig-drawn-wrap">
+                  <img src="{{ $sigs['reviewedBy']['signature'] }}" alt="TTD Reviewed" class="sig-drawn-img">
+                </div>
+              @else
+                <div class="sig-space-placeholder"></div>
+              @endif
               <div class="sig-name">{{ !empty($sigs['reviewedBy']['name']) ? $sigs['reviewedBy']['name'] : '............................' }}</div>
               <div class="sig-meta">
                 <span>{{ $sigs['reviewedBy']['title'] ?? 'Leader QC' }}</span>
@@ -1713,18 +1906,95 @@
 
   </div><!-- /page 6 -->
 
+  @php
+    $hasProfileSig = !empty(auth()->user()->signature_url);
+    $profileSigUrl = $hasProfileSig ? auth()->user()->signature_url : '';
+  @endphp
+
   @if(!empty($isReviewMode) && !$report->isReviewed() && $report->canBeReviewedBy(auth()->user()))
     <div class="review-modal-overlay" id="reviewConfirmModal" aria-hidden="true">
-      <div class="review-modal-card" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
-        <div class="review-modal-badge">✓</div>
-        <div class="review-modal-title" id="reviewModalTitle">{{ __('qc.print.modal_title') }}</div>
-        <div class="review-modal-desc">
-          {{ __('qc.print.modal_desc', ['ssc' => $report->ssc_id]) }}
-        </div>
-        <div class="review-modal-actions">
-          <button type="button" class="btn" id="btnCancelFinishReview">{{ __('qc.common.cancel') }}</button>
-          <button type="button" class="btn btn-confirm" id="btnConfirmFinishReview">{{ __('qc.print.modal_confirm') }}</button>
-        </div>
+      <div class="review-modal-card" id="reviewModalCard" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
+        
+        @if($hasProfileSig)
+          <!-- USER SUDAH PUNYA TTD PROFIL: Konfirmasi cepat & pratinjau TTD profil (Tanpa opsi gores baru) -->
+          <div id="reviewStepPrompt">
+            <div class="review-modal-badge">✓</div>
+            <div class="review-modal-title" id="reviewModalTitle">{{ __('qc.print.modal_title') }}</div>
+            <div class="review-modal-desc">
+              {{ __('qc.print.modal_desc', ['ssc' => $report->ssc_id]) }}
+            </div>
+
+            <div class="review-sig-preview-card">
+              <div class="review-sig-preview-label">{{ __('qc.print.modal_my_sig_label') }}</div>
+              <div class="review-sig-preview-box">
+                <img src="{{ $profileSigUrl }}" alt="TTD {{ auth()->user()->name }}" class="review-sig-preview-img">
+              </div>
+              <div class="review-sig-preview-name">{{ auth()->user()->name }} (Leader QC)</div>
+            </div>
+
+            <div class="review-modal-actions">
+              <button type="button" class="btn" id="btnCancelFinishReview">{{ __('qc.common.cancel') }}</button>
+              <button type="button" class="btn btn-no-sig" id="btnFinishWithoutSig" title="Selesaikan review tanpa membubuhkan tanda tangan digital">
+                {{ __('qc.print.modal_without_sig') }}
+              </button>
+              <button type="button" class="btn btn-confirm" id="btnFinishWithProfileSig" title="Gunakan tanda tangan profil resmi Anda">
+                {{ __('qc.print.modal_use_my_sig') }}
+              </button>
+            </div>
+          </div>
+        @else
+          <!-- USER BELUM PUNYA TTD PROFIL: Tawarkan Gores TTD Digital + opsi simpan ke profil -->
+          <div id="reviewStepPrompt">
+            <div class="review-modal-badge">✓</div>
+            <div class="review-modal-title" id="reviewModalTitle">{{ __('qc.print.modal_title') }}</div>
+            <div class="review-modal-desc">
+              {{ __('qc.print.modal_desc', ['ssc' => $report->ssc_id]) }}
+            </div>
+            <div class="review-modal-actions">
+              <button type="button" class="btn" id="btnCancelFinishReview">{{ __('qc.common.cancel') }}</button>
+              <button type="button" class="btn btn-no-sig" id="btnFinishWithoutSig" title="Selesaikan review tanpa tanda tangan digital">
+                {{ __('qc.print.modal_without_sig') }}
+              </button>
+              <button type="button" class="btn btn-with-sig" id="btnOpenSignaturePad" title="Goreskan tanda tangan digital">
+                {{ __('qc.print.modal_with_sig') }}
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 2: Kanvas Tanda Tangan Digital Leader QC -->
+          <div id="reviewStepSignature" style="display: none;">
+            <div class="review-modal-badge" style="background: #eff6ff; color: #2563eb;">✍</div>
+            <div class="review-modal-title">{{ __('qc.print.modal_sig_title') }}</div>
+            <div class="review-modal-desc" style="margin-bottom: 8px;">
+              {{ __('qc.print.modal_sig_desc') }}
+            </div>
+
+            <div class="sig-canvas-wrap" id="sigCanvasWrap">
+              <canvas id="sigCanvas"></canvas>
+              <div class="sig-canvas-placeholder" id="sigPlaceholder">{{ __('qc.print.modal_sig_placeholder') }}</div>
+            </div>
+
+            <div class="sig-canvas-tools">
+              <span>{{ auth()->user()->name }} (Leader QC)</span>
+              <button type="button" class="btn-sig-clear" id="btnSigClear">
+                ↺ {{ __('qc.print.modal_sig_clear') }}
+              </button>
+            </div>
+
+            <label class="sig-profile-save-chk">
+              <input type="checkbox" id="chkSaveToProfile" checked>
+              <span>Simpan tanda tangan ini ke profil saya untuk review berikutnya</span>
+            </label>
+
+            <div class="sig-warn-text" id="sigWarnText">{{ __('qc.print.modal_sig_empty_warn') }}</div>
+
+            <div class="review-modal-actions">
+              <button type="button" class="btn" id="btnBackToPrompt">{{ __('qc.print.modal_sig_back') }}</button>
+              <button type="button" class="btn btn-confirm" id="btnSubmitWithSig">{{ __('qc.print.modal_sig_confirm') }}</button>
+            </div>
+          </div>
+        @endif
+
       </div>
     </div>
   @endif
@@ -1739,33 +2009,249 @@
     (function () {
       const trigger = document.getElementById('btnTriggerFinishReview');
       const modal = document.getElementById('reviewConfirmModal');
+      const modalCard = document.getElementById('reviewModalCard');
+      const stepPrompt = document.getElementById('reviewStepPrompt');
+      const stepSig = document.getElementById('reviewStepSignature');
+
       const cancelBtn = document.getElementById('btnCancelFinishReview');
-      const confirmBtn = document.getElementById('btnConfirmFinishReview');
+      const finishWithoutSigBtn = document.getElementById('btnFinishWithoutSig');
+      const finishWithProfileSigBtn = document.getElementById('btnFinishWithProfileSig');
+      const openSigPadBtn = document.getElementById('btnOpenSignaturePad');
+      const backToPromptBtn = document.getElementById('btnBackToPrompt');
+      const submitWithSigBtn = document.getElementById('btnSubmitWithSig');
+      const sigClearBtn = document.getElementById('btnSigClear');
+
       const form = document.getElementById('finishReviewForm');
+      const sigInput = document.getElementById('finishReviewSignature');
+      const saveToProfileInput = document.getElementById('finishReviewSaveToProfile');
+      const canvas = document.getElementById('sigCanvas');
+      const canvasWrap = document.getElementById('sigCanvasWrap');
+      const warnText = document.getElementById('sigWarnText');
 
       if (!trigger || !modal || !form) return;
 
+      let ctx = null;
+      let isDrawing = false;
+      let hasDrawn = false;
+      let lastX = 0;
+      let lastY = 0;
+
+      const initCanvas = () => {
+        if (!canvas || !canvasWrap) return;
+        ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvasWrap.getBoundingClientRect();
+        const displayW = Math.max(280, rect.width || 420);
+        const displayH = 140;
+
+        canvas.style.width = displayW + 'px';
+        canvas.style.height = displayH + 'px';
+        canvas.width = Math.round(displayW * dpr);
+        canvas.height = Math.round(displayH * dpr);
+
+        ctx.scale(dpr, dpr);
+        ctx.strokeStyle = '#0f2b5c';
+        ctx.lineWidth = 2.4;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+      };
+
+      const clearCanvas = () => {
+        if (!canvas || !ctx) return;
+        const dpr = window.devicePixelRatio || 1;
+        ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+        hasDrawn = false;
+        canvasWrap?.classList.remove('has-drawn');
+        if (warnText) warnText.style.display = 'none';
+      };
+
+      const showPromptStep = () => {
+        if (stepPrompt) stepPrompt.style.display = 'block';
+        if (stepSig) stepSig.style.display = 'none';
+        modalCard?.classList.remove('step-sig');
+      };
+
+      const showSignatureStep = () => {
+        if (stepPrompt) stepPrompt.style.display = 'none';
+        if (stepSig) stepSig.style.display = 'block';
+        modalCard?.classList.add('step-sig');
+        requestAnimationFrame(() => {
+          initCanvas();
+          clearCanvas();
+        });
+      };
+
       const openModal = () => {
+        showPromptStep();
         modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
-        setTimeout(() => confirmBtn?.focus(), 40);
       };
+
       const closeModal = () => {
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
+        showPromptStep();
+        clearCanvas();
       };
+
+      // Pointer coordinates resolver
+      const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        if (e.touches && e.touches.length > 0) {
+          return {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+          };
+        }
+        return {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        };
+      };
+
+      const startDrawing = (e) => {
+        isDrawing = true;
+        const pos = getPos(e);
+        lastX = pos.x;
+        lastY = pos.y;
+        canvasWrap?.classList.add('is-drawing');
+        if (warnText) warnText.style.display = 'none';
+      };
+
+      const draw = (e) => {
+        if (!isDrawing || !ctx) return;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        lastX = pos.x;
+        lastY = pos.y;
+        if (!hasDrawn) {
+          hasDrawn = true;
+          canvasWrap?.classList.add('has-drawn');
+        }
+      };
+
+      const stopDrawing = () => {
+        if (!isDrawing) return;
+        isDrawing = false;
+        canvasWrap?.classList.remove('is-drawing');
+      };
+
+      if (canvas) {
+        // Mouse listeners
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        // Touch listeners (prevent scrolling while signing)
+        canvas.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          startDrawing(e);
+        }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => {
+          e.preventDefault();
+          draw(e);
+        }, { passive: false });
+        canvas.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          stopDrawing();
+        }, { passive: false });
+        canvas.addEventListener('touchcancel', (e) => {
+          e.preventDefault();
+          stopDrawing();
+        }, { passive: false });
+      }
 
       trigger.addEventListener('click', openModal);
       cancelBtn?.addEventListener('click', closeModal);
+      openSigPadBtn?.addEventListener('click', showSignatureStep);
+      backToPromptBtn?.addEventListener('click', showPromptStep);
+      sigClearBtn?.addEventListener('click', clearCanvas);
+
       modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
       });
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
       });
-      confirmBtn?.addEventListener('click', () => {
-        confirmBtn.disabled = true;
-        confirmBtn.textContent = @json(__('qc.common.saving'));
+
+      // Pilihan "Tidak (Tanpa TTD)": submit tanpa signature
+      finishWithoutSigBtn?.addEventListener('click', () => {
+        finishWithoutSigBtn.disabled = true;
+        finishWithoutSigBtn.textContent = @json(__('qc.common.saving'));
+        if (sigInput) sigInput.value = '';
+        form.submit();
+      });
+
+      // Pilihan "Gunakan TTD Profil Saya"
+      finishWithProfileSigBtn?.addEventListener('click', () => {
+        finishWithProfileSigBtn.disabled = true;
+        finishWithProfileSigBtn.textContent = @json(__('qc.common.saving'));
+        if (sigInput) sigInput.value = 'profile';
+        form.submit();
+      });
+
+      // Pangkas canvas agar tidak menyisakan ruang transparan kosong di sekeliling goresan
+      const trimCanvas = (origCanvas, pad = 6) => {
+        const origCtx = origCanvas.getContext('2d');
+        const width = origCanvas.width;
+        const height = origCanvas.height;
+        if (!width || !height) return origCanvas;
+
+        try {
+          const imgData = origCtx.getImageData(0, 0, width, height);
+          const data = imgData.data;
+          let minX = width, minY = height, maxX = -1, maxY = -1;
+
+          for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+              const alpha = data[((y * width + x) * 4) + 3];
+              if (alpha > 10) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+              }
+            }
+          }
+
+          if (maxX === -1) return origCanvas;
+
+          const pX = Math.max(0, minX - pad);
+          const pY = Math.max(0, minY - pad);
+          const pW = Math.min(width - 1, maxX + pad) - pX + 1;
+          const pH = Math.min(height - 1, maxY + pad) - pY + 1;
+
+          const trimmed = document.createElement('canvas');
+          trimmed.width = pW;
+          trimmed.height = pH;
+          const tCtx = trimmed.getContext('2d');
+          tCtx.drawImage(origCanvas, pX, pY, pW, pH, 0, 0, pW, pH);
+          return trimmed;
+        } catch (e) {
+          return origCanvas;
+        }
+      };
+
+      // Pilihan "Ya, Bubuhkan TTD Digital": simpan dataUrl lalu submit
+      submitWithSigBtn?.addEventListener('click', () => {
+        if (!hasDrawn) {
+          if (warnText) warnText.style.display = 'block';
+          return;
+        }
+        submitWithSigBtn.disabled = true;
+        submitWithSigBtn.textContent = @json(__('qc.common.saving'));
+        if (sigInput && canvas) {
+          const trimmed = trimCanvas(canvas, 6);
+          sigInput.value = trimmed.toDataURL('image/png');
+        }
+        const chkSave = document.getElementById('chkSaveToProfile');
+        if (chkSave && saveToProfileInput) {
+          saveToProfileInput.value = chkSave.checked ? '1' : '0';
+        }
         form.submit();
       });
     })();

@@ -25,10 +25,13 @@
         panX: 0,
         panY: 0,
         rotation: 0, // 0, 90, 180, 270
+        hasUserInteracted: false,
 
         // Ratio state
         activeRatioMode: 'slot', // 'slot', '4:3', '16:9', '1:1', 'free'
         apertureRatio: 1.0,
+        currentApW: 0,
+        currentApH: 0,
 
         // Drag state
         isDragging: false,
@@ -53,21 +56,55 @@
         zoomVal: null,
         applyBtn: null,
 
+        ensureElements() {
+            if (!this.modal) this.modal = document.getElementById('qcFramerModal');
+            if (!this.stage) this.stage = document.getElementById('framerStage');
+            if (!this.viewportContainer) this.viewportContainer = document.getElementById('framerViewportContainer');
+            if (!this.canvasWrap) this.canvasWrap = document.getElementById('framerCanvasWrap');
+            if (!this.img) this.img = document.getElementById('framerSourceImg');
+            if (!this.aperture) this.aperture = document.getElementById('framerAperture');
+            if (!this.slotBadge) this.slotBadge = document.getElementById('framerSlotBadge');
+            if (!this.zoomSlider) this.zoomSlider = document.getElementById('framerZoomSlider');
+            if (!this.zoomVal) this.zoomVal = document.getElementById('framerZoomVal');
+            if (!this.applyBtn) this.applyBtn = document.getElementById('btnFramerApply');
+        },
+
         init() {
-            this.modal = document.getElementById('qcFramerModal');
+            this.ensureElements();
             if (!this.modal) return;
-
-            this.stage = document.getElementById('framerStage');
-            this.viewportContainer = document.getElementById('framerViewportContainer');
-            this.canvasWrap = document.getElementById('framerCanvasWrap');
-            this.img = document.getElementById('framerSourceImg');
-            this.aperture = document.getElementById('framerAperture');
-            this.slotBadge = document.getElementById('framerSlotBadge');
-            this.zoomSlider = document.getElementById('framerZoomSlider');
-            this.zoomVal = document.getElementById('framerZoomVal');
-            this.applyBtn = document.getElementById('btnFramerApply');
-
             this.bindEvents();
+        },
+
+        normalizeUrl(url) {
+            if (!url || typeof url !== 'string') return '';
+            const trimmed = url.trim();
+            if (trimmed.startsWith('data:')) return trimmed;
+
+            // Jika URL adalah URL absolut (mis. http://localhost/... atau http://192.168.x.x/...),
+            // ekstrak path relatifnya (/reports/photo/.. atau /uploads/.. atau /images/..)
+            // agar selalu termuat langsung dari host & port aktif browser di Synology/klien mana pun
+            try {
+                if (/^https?:\/\//i.test(trimmed)) {
+                    const parsed = new URL(trimmed, window.location.origin);
+                    if (
+                        parsed.pathname.startsWith('/reports/photo') ||
+                        parsed.pathname.startsWith('/uploads') ||
+                        parsed.pathname.startsWith('/images')
+                    ) {
+                        return parsed.pathname + parsed.search;
+                    }
+                }
+            } catch (e) {}
+
+            if (
+                !trimmed.startsWith('/') &&
+                !trimmed.startsWith('http://') &&
+                !trimmed.startsWith('https://')
+            ) {
+                return '/' + trimmed;
+            }
+
+            return trimmed;
         },
 
         bindEvents() {
@@ -197,7 +234,13 @@
 
             // Window resize adjustment
             window.addEventListener('resize', () => {
-                if (self.isOpen) self.updateApertureGeometry();
+                if (self.isOpen && self.updateApertureGeometry()) {
+                    if (!self.hasUserInteracted) {
+                        self.fitCenter();
+                    } else {
+                        self.updateTransformUI();
+                    }
+                }
             });
         },
 
@@ -212,13 +255,15 @@
         },
 
         open(slotKey) {
-            const self = this;
+            this.ensureElements();
             this.slotKey = slotKey;
 
             // Resolve image url from report photos or preview
-            const currentUrl = window.reportPhotos?.[slotKey] ||
+            let currentUrl = (window.reportPhotos && window.reportPhotos[slotKey]) ||
                 document.querySelector(`#view_slot_${slotKey} img`)?.getAttribute('src') ||
-                window.qcOriginalPhotos?.[slotKey];
+                (window.qcOriginalPhotos && window.qcOriginalPhotos[slotKey]) || '';
+
+            currentUrl = this.normalizeUrl(currentUrl);
 
             if (!currentUrl) {
                 const S = window.qcI18n?.studio || {};
@@ -227,10 +272,14 @@
             }
 
             // Store raw uncropped photo permanently if not yet recorded
+            window.qcRawPhotos = window.qcRawPhotos || {};
             if (!window.qcRawPhotos[slotKey]) {
-                window.qcRawPhotos[slotKey] = window.qcOriginalPhotos[slotKey] || currentUrl;
+                const orig = (window.qcOriginalPhotos && window.qcOriginalPhotos[slotKey])
+                    ? this.normalizeUrl(window.qcOriginalPhotos[slotKey])
+                    : '';
+                window.qcRawPhotos[slotKey] = orig || currentUrl;
             }
-            this.sourceUrl = window.qcRawPhotos[slotKey];
+            this.sourceUrl = window.qcRawPhotos[slotKey] || currentUrl;
 
             // Resolve label
             const labelEl = document.querySelector(`#card_slot_${slotKey} .slot-item-label`) ||
@@ -255,10 +304,13 @@
             this.panX = 0;
             this.panY = 0;
             this.rotation = 0;
+            this.hasUserInteracted = false;
 
             // Show modal
             this.isOpen = true;
-            this.modal.classList.add('active');
+            if (this.modal) {
+                this.modal.classList.add('active');
+            }
             document.body.style.overflow = 'hidden';
 
             // Load Image
@@ -268,26 +320,54 @@
         close() {
             if (!this.isOpen) return;
             this.isOpen = false;
-            this.modal?.classList.remove('active');
+            this.hasUserInteracted = false;
+            if (this.modal) {
+                this.modal.classList.remove('active');
+            }
             document.body.style.overflow = '';
         },
 
         loadImage(src) {
             const self = this;
+            const normalized = this.normalizeUrl(src);
+            this.sourceUrl = normalized;
+
+            this.ensureElements();
+            if (!this.img) return;
+
+            // Hapus atribut crossorigin agar gambar lokal/relatif tidak diblokir kebijakan CORS
+            this.img.removeAttribute('crossorigin');
+            this.img.style.display = 'block';
+
             const onReady = () => {
+                if (!self.img.naturalWidth || !self.img.naturalHeight) return;
+
                 self.naturalWidth = self.img.naturalWidth;
                 self.naturalHeight = self.img.naturalHeight;
 
-                requestAnimationFrame(() => {
-                    self.updateApertureGeometry();
-                    self.fitCenter();
-                });
+                const refresh = () => {
+                    if (!self.isOpen) return;
+                    if (self.updateApertureGeometry()) {
+                        self.fitCenter();
+                    }
+                };
+
+                // Perbarui ukuran aperture & skala foto secara bertahap saat modal terbuka
+                refresh();
+                requestAnimationFrame(refresh);
+                setTimeout(refresh, 50);
+                setTimeout(refresh, 180);
 
                 if (window.lucide) lucide.createIcons();
             };
 
             this.img.onload = onReady;
-            this.img.src = src;
+            this.img.onerror = () => {
+                console.error('[QC Framer] Gagal memuat file foto sumber:', normalized);
+                window.qcNotify?.('Foto tidak dapat dimuat dari server.', 'error');
+            };
+
+            this.img.src = normalized;
             if (this.img.complete && this.img.naturalWidth) {
                 onReady();
             }
@@ -317,24 +397,30 @@
                 default:
                     this.apertureRatio = 1.3333;
             }
-            this.updateApertureGeometry();
-            this.fitCenter();
+            if (this.updateApertureGeometry()) {
+                this.fitCenter();
+            }
         },
 
         updateApertureGeometry() {
-            if (!this.stage || !this.aperture) return;
+            this.ensureElements();
+            if (!this.stage || !this.aperture) return false;
 
             const stageRect = this.stage.getBoundingClientRect();
-            const padding = 36;
-            const maxW = Math.max(100, stageRect.width - (padding * 2));
-            const maxH = Math.max(100, stageRect.height - (padding * 2));
+            const stageW = stageRect.width || this.stage.offsetWidth || 800;
+            const stageH = stageRect.height || this.stage.offsetHeight || 500;
 
+            const padding = 36;
+            const maxW = Math.max(120, stageW - (padding * 2));
+            const maxH = Math.max(120, stageH - (padding * 2));
+
+            const ratio = this.apertureRatio || 1.0;
             let apW = maxW;
-            let apH = apW / this.apertureRatio;
+            let apH = apW / ratio;
 
             if (apH > maxH) {
                 apH = maxH;
-                apW = apH * this.apertureRatio;
+                apW = apH * ratio;
             }
 
             apW = Math.round(apW);
@@ -343,22 +429,36 @@
             this.aperture.style.width = `${apW}px`;
             this.aperture.style.height = `${apH}px`;
 
-            this.viewportContainer.style.width = `${apW}px`;
-            this.viewportContainer.style.height = `${apH}px`;
+            if (this.viewportContainer) {
+                this.viewportContainer.style.width = `${apW}px`;
+                this.viewportContainer.style.height = `${apH}px`;
+            }
+
+            this.currentApW = apW;
+            this.currentApH = apH;
+            return true;
         },
 
-        fitCenter() {
-            if (!this.naturalWidth || !this.naturalHeight || !this.aperture) return;
+        fitCenter(forcedW, forcedH) {
+            this.ensureElements();
+            if (!this.naturalWidth || !this.naturalHeight) return;
 
-            const apW = this.aperture.offsetWidth || this.viewportContainer?.offsetWidth || 400;
-            const apH = this.aperture.offsetHeight || this.viewportContainer?.offsetHeight || 400;
+            const apW = forcedW || this.currentApW || this.aperture?.offsetWidth || this.viewportContainer?.offsetWidth || 400;
+            const apH = forcedH || this.currentApH || this.aperture?.offsetHeight || this.viewportContainer?.offsetHeight || 400;
+
+            if (apW <= 0 || apH <= 0) return;
 
             const isRotated = (this.rotation === 90 || this.rotation === 270);
             const effW = isRotated ? this.naturalHeight : this.naturalWidth;
             const effH = isRotated ? this.naturalWidth : this.naturalHeight;
 
-            // Scale image to cover aperture completely (no black bars by default)
-            const coverScale = Math.max(apW / effW, apH / effH);
+            if (effW <= 0 || effH <= 0) return;
+
+            // Menghitung skala agar foto menutupi 100% wadah aperture (mode COVER penuh)
+            const scaleX = apW / effW;
+            const scaleY = apH / effH;
+            // Gunakan Math.max dengan toleransi subpiksel 1.002 untuk memastikan tidak ada celah hitam 1px
+            const coverScale = Math.max(scaleX, scaleY) * 1.002;
 
             this.baseCoverScale = coverScale;
             this.userZoom = 1.0;
@@ -370,6 +470,7 @@
         },
 
         setUserZoom(newZoom) {
+            this.hasUserInteracted = true;
             this.userZoom = Math.max(this.minZoom, Math.min(this.maxZoom, newZoom));
             this.scale = (this.baseCoverScale || 1.0) * this.userZoom;
             this.updateTransformUI();
@@ -385,21 +486,22 @@
         },
 
         reset() {
+            this.hasUserInteracted = false;
             this.rotation = 0;
             this.fitCenter();
         },
 
         startDrag(clientX, clientY) {
+            this.hasUserInteracted = true;
             this.isDragging = true;
             this.dragStartX = clientX;
             this.dragStartY = clientY;
             this.lastPanX = this.panX;
             this.lastPanY = this.panY;
-            this.viewportContainer.classList.add('is-dragging');
+            this.viewportContainer?.classList.add('is-dragging');
         },
 
         onDrag(clientX, clientY) {
-            if (!this.isDragging) return;
             const dx = clientX - this.dragStartX;
             const dy = clientY - this.dragStartY;
             this.panX = this.lastPanX + dx;
@@ -415,66 +517,74 @@
         updateTransformUI() {
             if (!this.canvasWrap || !this.img) return;
 
-            // Apply transform to inner image wrapper centered within aperture
+            // Terapkan transformasi yang berpusat pada aperture
             const transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.scale}) rotate(${this.rotation}deg)`;
             this.canvasWrap.style.transform = transform;
 
-            // Update zoom slider and badge
+            // Sinkronkan slider dan label persentase zoom
             const pct = Math.round((this.userZoom || 1.0) * 100);
             if (this.zoomSlider) this.zoomSlider.value = pct;
             if (this.zoomVal) this.zoomVal.textContent = `${pct}%`;
         },
 
-        // Render current framing view to an off-screen high-resolution canvas
+        // Render framing aktif ke kanvas resolusi tinggi
         exportFramedCanvas() {
             const self = this;
             return new Promise((resolve, reject) => {
-                if (!self.naturalWidth || !self.naturalHeight) {
-                    return reject(new Error('Image not loaded'));
+                if (!self.naturalWidth || !self.naturalHeight || !self.img?.complete || self.img.naturalWidth === 0) {
+                    return reject(new Error('Foto belum selesai dimuat. Silakan tunggu hingga foto muncul.'));
                 }
 
-                const apW = self.aperture.offsetWidth;
-                const apH = self.aperture.offsetHeight;
+                const apW = self.currentApW || self.aperture?.offsetWidth || self.viewportContainer?.offsetWidth || 400;
+                const apH = self.currentApH || self.aperture?.offsetHeight || self.viewportContainer?.offsetHeight || 400;
 
-                // High resolution export: target width ~1600px for large slots, ~1200px for grid
+                if (apW <= 0 || apH <= 0) {
+                    return reject(new Error('Ukuran bingkai foto tidak valid.'));
+                }
+
+                // Resolusi tinggi: ~1600px untuk slot banner besar, ~1200px untuk grid 2x2
                 const targetW = (self.slotKey === 'drawing_dimension' || self.slotKey === 'finding_component' || self.slotKey === 'tir_diagram') ? 1600 : 1200;
-                const targetH = Math.round(targetW / self.apertureRatio);
+                const targetH = Math.round(targetW / (self.apertureRatio || 1.0));
 
                 const canvas = document.createElement('canvas');
                 canvas.width = targetW;
                 canvas.height = targetH;
                 const ctx = canvas.getContext('2d');
 
+                // Latar putih sebagai pengaman mutlak (kanvas tidak akan pernah menghasilkan JPEG hitam kosong)
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, targetW, targetH);
+
                 // High quality image smoothing
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
 
-                // Ratio between export canvas pixels and screen aperture pixels
+                // Rasio resolusi ekspor terhadap dimensi aperture di layar
                 const exportRatio = targetW / apW;
 
-                // Move canvas origin to center of viewport
+                // Geser titik origin ke tengah kanvas ekspor
                 ctx.translate(targetW / 2, targetH / 2);
 
-                // Apply pan offset scaled to export resolution
+                // Terapkan pergeseran pan sesuai rasio ekspor
                 ctx.translate(self.panX * exportRatio, self.panY * exportRatio);
 
-                // Apply zoom scale
-                ctx.scale(self.scale * exportRatio, self.scale * exportRatio);
-
-                // Apply rotation
+                // Terapkan rotasi
                 ctx.rotate((self.rotation * Math.PI) / 180);
 
-                // Draw source image centered
+                // Terapkan skala zoom
+                ctx.scale(self.scale * exportRatio, self.scale * exportRatio);
+
+                // Gambar foto sumber di titik tengah
                 ctx.drawImage(self.img, -self.naturalWidth / 2, -self.naturalHeight / 2);
 
                 canvas.toBlob((blob) => {
-                    if (blob) {
+                    if (blob && blob.size > 200) {
                         resolve({
                             blob: blob,
                             dataUrl: canvas.toDataURL('image/jpeg', 0.92)
                         });
                     } else {
-                        reject(new Error('Canvas export blob failed'));
+                        reject(new Error('Gagal mengekspor gambar hasil framing.'));
                     }
                 }, 'image/jpeg', 0.92);
             });
@@ -492,12 +602,27 @@
             try {
                 const result = await self.exportFramedCanvas();
 
-                // Upload cropped high-res photo to server (antre otomatis bila offline)
+                // Upload cropped high-res photo to server
                 const filename = `framed_${self.slotKey}_${Date.now()}.jpg`;
-                const up = await window.qcUploadPhoto(self.slotKey, result.blob, filename, 'framed');
 
-                if (up.queued) {
-                    // Hanya tampilan; data laporan tetap memakai foto lama sampai upload berhasil
+                let up;
+                if (typeof window.qcUploadPhoto === 'function') {
+                    up = await window.qcUploadPhoto(self.slotKey, result.blob, filename, 'framed');
+                } else {
+                    const formData = new FormData();
+                    formData.append('photo', result.blob, filename);
+                    formData.append('section', self.slotKey);
+                    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                    const resp = await fetch('/reports/upload-photo', {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': csrf },
+                        body: formData
+                    });
+                    const data = await resp.json();
+                    up = { url: data.url || result.dataUrl, queued: false };
+                }
+
+                if (up && up.queued) {
                     if (typeof window.renderSlotPreview === 'function') {
                         window.renderSlotPreview(self.slotKey, result.dataUrl, true);
                     }
@@ -506,17 +631,26 @@
                     return;
                 }
 
-                // Reset any existing markers on this slot since photo framing/coordinates changed
+                // Reset marker koordinat lama jika ada
                 if (window.qcPhotoMarkers && window.qcPhotoMarkers[self.slotKey]) {
                     delete window.qcPhotoMarkers[self.slotKey];
                 }
 
-                window.qcApplyUploadedPhoto('framed', self.slotKey, up.url);
+                const finalUrl = up?.url || result.dataUrl;
+
+                if (typeof window.qcApplyUploadedPhoto === 'function') {
+                    window.qcApplyUploadedPhoto('framed', self.slotKey, finalUrl);
+                } else {
+                    if (window.reportPhotos) window.reportPhotos[self.slotKey] = finalUrl;
+                    if (typeof window.renderSlotPreview === 'function') {
+                        window.renderSlotPreview(self.slotKey, finalUrl);
+                    }
+                }
 
                 window.qcNotify?.(S.framer_success || 'Posisi dan framing foto berhasil diterapkan!', 'success');
                 self.close();
             } catch (err) {
-                console.error('Framing save error:', err);
+                console.error('[QC Framer] Error applying framing:', err);
                 window.qcNotify?.('Gagal menyimpan framing: ' + (err.message || 'Error'), 'error');
             } finally {
                 self.applyBtn.disabled = false;

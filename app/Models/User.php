@@ -40,6 +40,7 @@ class User extends Authenticatable
         'name',
         'email',
         'avatar',
+        'signature',
         'role',
         'theme',
         'locale',
@@ -61,6 +62,23 @@ class User extends Authenticatable
     {
         if ($this->avatar && file_exists(public_path('uploads/avatars/' . $this->avatar))) {
             return asset('uploads/avatars/' . $this->avatar);
+        }
+        return null;
+    }
+
+    /**
+     * Get digital signature public URL or null if none uploaded/registered.
+     */
+    public function getSignatureUrlAttribute(): ?string
+    {
+        $sig = $this->attributes['signature'] ?? null;
+        if (!empty($sig)) {
+            if (file_exists(public_path('uploads/signatures/' . $sig))) {
+                return asset('uploads/signatures/' . $sig);
+            }
+            if (str_starts_with($sig, 'data:image/') || str_starts_with($sig, '/')) {
+                return $sig;
+            }
         }
         return null;
     }

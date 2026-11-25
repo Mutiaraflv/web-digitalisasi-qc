@@ -198,6 +198,171 @@ class ProfileController extends Controller
     }
 
     /**
+     * Upload or draw/save the user's digital signature.
+     */
+    public function uploadSignature(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        // 1. Check if canvas base64 data was submitted
+        if ($request->filled('signature_data')) {
+            $dataUrl = (string) $request->input('signature_data');
+            if (preg_match('#^data:image/(png|jpeg|jpg|webp);base64,(.+)$#i', $dataUrl, $m)) {
+                $bin = base64_decode($m[2]);
+                if ($bin !== false && strlen($bin) > 20 && strlen($bin) < 5_000_000) {
+                    $dir = public_path('uploads/signatures');
+                    if (!file_exists($dir)) {
+                        @mkdir($dir, 0755, true);
+                    }
+                    if ($user->signature && file_exists($dir . '/' . $user->signature)) {
+                        @unlink($dir . '/' . $user->signature);
+                    }
+                    $filename = 'sig_' . $user->id . '_' . time() . '.png';
+                    $destPath = $dir . '/' . $filename;
+                    $this->cropAndSaveSignatureImage($bin, $destPath);
+
+                    $user->update(['signature' => $filename]);
+
+                    ActivityLog::record(
+                        'profile_updated',
+                        "Memperbarui tanda tangan digital akun ({$user->name}) via kanvas",
+                        null,
+                        ['user' => $user->email]
+                    );
+
+                    return redirect()->route('profile.show')
+                        ->with('success', 'Tanda tangan digital berhasil disimpan di profil.');
+                }
+            }
+            return redirect()->route('profile.show')
+                ->with('error', 'Format data tanda tangan tidak valid.');
+        }
+
+        // 2. Check if file was uploaded
+        $request->validate([
+            'signature_file' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+        ], [
+            'signature_file.required' => 'Pilih file gambar tanda tangan atau gunakan kanvas.',
+            'signature_file.image' => 'File harus berupa gambar.',
+            'signature_file.mimes' => 'Format file tanda tangan harus PNG, JPG, atau WEBP.',
+            'signature_file.max' => 'Ukuran file tanda tangan maksimal 5 MB.',
+        ]);
+
+        $file = $request->file('signature_file');
+        $dir = public_path('uploads/signatures');
+        if (!file_exists($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+        if ($user->signature && file_exists($dir . '/' . $user->signature)) {
+            @unlink($dir . '/' . $user->signature);
+        }
+
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (!in_array($ext, ['png', 'jpg', 'jpeg', 'webp'])) {
+            $ext = 'png';
+        }
+        $filename = 'sig_' . $user->id . '_' . time() . '.' . $ext;
+        $destPath = $dir . '/' . $filename;
+        $rawBytes = @file_get_contents($file->getRealPath());
+        if ($rawBytes && $this->cropAndSaveSignatureImage($rawBytes, $destPath)) {
+            // Berhasil dipangkas & dioptimasi
+        } else {
+            $file->move($dir, $filename);
+        }
+
+        $user->update(['signature' => $filename]);
+
+        ActivityLog::record(
+            'profile_updated',
+            "Mengunggah gambar tanda tangan digital akun ({$user->name})",
+            null,
+            ['user' => $user->email]
+        );
+
+        return redirect()->route('profile.show')
+            ->with('success', 'Gambar tanda tangan digital berhasil diperbarui.');
+    }
+
+    /**
+     * Pangkas area transparan/kosong berlebih di sekeliling goresan tanda tangan.
+     */
+    private function cropAndSaveSignatureImage(string $binaryData, string $destPath, int $pad = 8): bool
+    {
+        if (!extension_loaded('gd') || !function_exists('imagecreatefromstring')) {
+            return (bool) @file_put_contents($destPath, $binaryData);
+        }
+
+        $im = @imagecreatefromstring($binaryData);
+        if (!$im) {
+            return (bool) @file_put_contents($destPath, $binaryData);
+        }
+
+        $w = imagesx($im);
+        $h = imagesy($im);
+        $minX = $w; $maxX = -1; $minY = $h; $maxY = -1;
+
+        for ($y = 0; $y < $h; $y++) {
+            for ($x = 0; $x < $w; $x++) {
+                $rgba = imagecolorat($im, $x, $y);
+                $alpha = ($rgba >> 24) & 0x7F;
+                if ($alpha < 125) { // piksel tidak transparan
+                    if ($x < $minX) $minX = $x;
+                    if ($x > $maxX) $maxX = $x;
+                    if ($y < $minY) $minY = $y;
+                    if ($y > $maxY) $maxY = $y;
+                }
+            }
+        }
+
+        if ($maxX !== -1) {
+            $cropX = max(0, $minX - $pad);
+            $cropY = max(0, $minY - $pad);
+            $cropW = min($w - 1, $maxX + $pad) - $cropX + 1;
+            $cropH = min($h - 1, $maxY + $pad) - $cropY + 1;
+
+            $cropped = imagecreatetruecolor($cropW, $cropH);
+            imagealphablending($cropped, false);
+            imagesavealpha($cropped, true);
+            $trans = imagecolorallocatealpha($cropped, 0, 0, 0, 127);
+            imagefilledrectangle($cropped, 0, 0, $cropW, $cropH, $trans);
+            imagecopy($cropped, $im, 0, 0, $cropX, $cropY, $cropW, $cropH);
+
+            imagedestroy($im);
+            $im = $cropped;
+        }
+
+        imagealphablending($im, false);
+        imagesavealpha($im, true);
+        $saved = (bool) @imagepng($im, $destPath, 6);
+        imagedestroy($im);
+        return $saved;
+    }
+
+    /**
+     * Remove the user's digital signature.
+     */
+    public function destroySignature(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->signature && file_exists(public_path('uploads/signatures/' . $user->signature))) {
+            @unlink(public_path('uploads/signatures/' . $user->signature));
+        }
+
+        $user->update(['signature' => null]);
+
+        ActivityLog::record(
+            'profile_updated',
+            "Menghapus tanda tangan digital akun ({$user->name})",
+            null,
+            ['user' => $user->email]
+        );
+
+        return redirect()->route('profile.show')
+            ->with('success', 'Tanda tangan digital berhasil dihapus dari profil.');
+    }
+
+    /**
      * Update the user's password.
      */
     public function updatePassword(Request $request): RedirectResponse
