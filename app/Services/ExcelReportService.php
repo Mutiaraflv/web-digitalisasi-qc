@@ -1018,7 +1018,7 @@ class ExcelReportService
         $metaRow = $row + 3;
 
         $sheet->getRowDimension($hdrRow)->setRowHeight(18);
-        $sheet->getRowDimension($spaceRow)->setRowHeight(65);
+        $sheet->getRowDimension($spaceRow)->setRowHeight(75);
         $sheet->getRowDimension($nameRow)->setRowHeight(17);
         $sheet->getRowDimension($metaRow)->setRowHeight(16);
 

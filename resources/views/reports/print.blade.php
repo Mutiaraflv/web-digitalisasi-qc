@@ -571,29 +571,29 @@
 
     .sig-table td {
       border: 1px solid #cbd5e1;
-      padding: 6px 10px 8px 10px;
+      padding: 6px 12px 10px 12px;
       vertical-align: bottom;
-      height: 135px;
-      min-height: 135px;
+      height: 145px;
+      min-height: 145px;
       width: 33.33%;
       position: relative;
     }
     .sig-space-placeholder {
-      height: 82px;
+      height: 95px;
       width: 100%;
     }
     .sig-drawn-wrap {
-      height: 82px;
-      max-height: 82px;
+      height: 95px;
+      max-height: 95px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
       overflow: hidden;
     }
     .sig-drawn-img {
-      max-height: 80px;
-      max-width: 240px;
+      max-height: 95px;
+      max-width: 95%;
       width: auto;
       height: auto;
       object-fit: contain;
