@@ -573,18 +573,18 @@
       border: 1px solid #cbd5e1;
       padding: 6px 10px 8px 10px;
       vertical-align: bottom;
-      height: 125px;
-      min-height: 125px;
+      height: 135px;
+      min-height: 135px;
       width: 33.33%;
       position: relative;
     }
     .sig-space-placeholder {
-      height: 72px;
+      height: 82px;
       width: 100%;
     }
     .sig-drawn-wrap {
-      height: 72px;
-      max-height: 72px;
+      height: 82px;
+      max-height: 82px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -592,8 +592,8 @@
       overflow: hidden;
     }
     .sig-drawn-img {
-      max-height: 70px;
-      max-width: 220px;
+      max-height: 80px;
+      max-width: 240px;
       width: auto;
       height: auto;
       object-fit: contain;

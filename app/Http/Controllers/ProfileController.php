@@ -314,7 +314,7 @@ class ProfileController extends Controller
             $h = $newH;
         }
 
-        // 2. Cek apakah gambar memiliki transparansi asli (PNG) atau latar solid (JPG)
+        // 2. Cek apakah gambar memiliki transparansi asli (PNG) atau latar kertas solid (JPG)
         $hasAlpha = false;
         $sampleY = min(20, $h);
         $sampleX = min(20, $w);
@@ -329,7 +329,29 @@ class ProfileController extends Controller
             }
         }
 
-        // 3. Tentukan bounding box goresan tanda tangan
+        // Ukur kecerahan kertas dasar dari 4 sudut gambar untuk foto solid (JPG/kertas)
+        $inkThreshold = 220;
+        if (!$hasAlpha) {
+            $cornerPoints = [
+                [max(0, min(5, $w - 1)), max(0, min(5, $h - 1))],
+                [max(0, $w - 6), max(0, min(5, $h - 1))],
+                [max(0, min(5, $w - 1)), max(0, $h - 6)],
+                [max(0, $w - 6), max(0, $h - 6)],
+            ];
+            $cornerTotal = 0;
+            foreach ($cornerPoints as [$cx, $cy]) {
+                $rgb = imagecolorat($im, $cx, $cy);
+                $r = ($rgb >> 16) & 0xFF;
+                $g = ($rgb >> 8) & 0xFF;
+                $b = $rgb & 0xFF;
+                $cornerTotal += ($r * 299 + $g * 587 + $b * 114) / 1000;
+            }
+            $paperBrightness = $cornerTotal / count($cornerPoints);
+            // Tinta pulpen adalah piksel yang lebih gelap dari kertas minimal 25 poin
+            $inkThreshold = max(40, $paperBrightness - 25);
+        }
+
+        // 3. Tentukan bounding box goresan tanda tangan (pangkas seluruh sisa kertas kosong)
         $minX = $w; $maxX = -1; $minY = $h; $maxY = -1;
 
         for ($y = 0; $y < $h; $y++) {
@@ -345,9 +367,9 @@ class ProfileController extends Controller
                     // PNG transparan: piksel bukan transparan
                     $isContent = ($alpha < 120);
                 } else {
-                    // Foto JPG di kertas: piksel yang lebih gelap dari warna kertas (kecerahan < 230)
+                    // Foto JPG di kertas: piksel yang lebih gelap dari ambang batas kertas
                     $brightness = ($r * 299 + $g * 587 + $b * 114) / 1000;
-                    $isContent = ($brightness < 230);
+                    $isContent = ($brightness < $inkThreshold);
                 }
 
                 if ($isContent) {
@@ -373,7 +395,7 @@ class ProfileController extends Controller
             imagefilledrectangle($cropped, 0, 0, $cropW, $cropH, $trans);
 
             if (!$hasAlpha) {
-                // Untuk foto di kertas putih: buat latar kertas putihnya menjadi transparan
+                // Untuk foto di kertas: buat latar kertas menjadi transparan, pertahankan goresan tinta
                 for ($cy = 0; $cy < $cropH; $cy++) {
                     for ($cx = 0; $cx < $cropW; $cx++) {
                         $rgba = imagecolorat($im, $cropX + $cx, $cropY + $cy);
@@ -381,7 +403,7 @@ class ProfileController extends Controller
                         $g = ($rgba >> 8) & 0xFF;
                         $b = $rgba & 0xFF;
                         $brightness = ($r * 299 + $g * 587 + $b * 114) / 1000;
-                        if ($brightness > 230) {
+                        if ($brightness >= $inkThreshold) {
                             imagesetpixel($cropped, $cx, $cy, $trans);
                         } else {
                             $col = imagecolorallocatealpha($cropped, $r, $g, $b, 0);
