@@ -787,7 +787,7 @@ class ReportController extends Controller
                     'report' => $report
                 ]);
             }
-            return redirect()->route('reports.index', ['tab' => 'approval'])
+            return redirect()->route('reports.index', ['tab' => 'all'])
                 ->with('success', "Laporan {$report->ssc_id} sudah berstatus Reviewed.");
         }
 
@@ -862,7 +862,7 @@ class ReportController extends Controller
             ]);
         }
 
-        return redirect()->route('reports.index', ['tab' => 'approval'])
+        return redirect()->route('reports.index', ['tab' => 'all'])
             ->with('success', "Laporan {$report->ssc_id} berhasil diselesaikan (Reviewed)!");
     }
 
