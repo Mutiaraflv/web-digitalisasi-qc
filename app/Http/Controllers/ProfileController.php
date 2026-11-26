@@ -257,15 +257,11 @@ class ProfileController extends Controller
             @unlink($dir . '/' . $user->signature);
         }
 
-        $ext = strtolower($file->getClientOriginalExtension());
-        if (!in_array($ext, ['png', 'jpg', 'jpeg', 'webp'])) {
-            $ext = 'png';
-        }
-        $filename = 'sig_' . $user->id . '_' . time() . '.' . $ext;
+        $filename = 'sig_' . $user->id . '_' . time() . '.png';
         $destPath = $dir . '/' . $filename;
         $rawBytes = @file_get_contents($file->getRealPath());
         if ($rawBytes && $this->cropAndSaveSignatureImage($rawBytes, $destPath)) {
-            // Berhasil dipangkas & dioptimasi
+            // Berhasil dipangkas & dioptimasi sebagai PNG transparan
         } else {
             $file->move($dir, $filename);
         }
@@ -284,7 +280,8 @@ class ProfileController extends Controller
     }
 
     /**
-     * Pangkas area transparan/kosong berlebih di sekeliling goresan tanda tangan.
+     * Pangkas area transparan/kosong berlebih di sekeliling goresan tanda tangan,
+     * serta otomatis mengonversi kertas putih pada foto JPG menjadi transparan.
      */
     private function cropAndSaveSignatureImage(string $binaryData, string $destPath, int $pad = 8): bool
     {
@@ -299,13 +296,61 @@ class ProfileController extends Controller
 
         $w = imagesx($im);
         $h = imagesy($im);
+
+        // 1. Batasi ukuran maksimum jika foto resolusi sangat besar (agar tidak timeout/OOM)
+        $maxW = 1000;
+        $maxH = 500;
+        if ($w > $maxW || $h > $maxH) {
+            $scale = min($maxW / $w, $maxH / $h);
+            $newW = max(1, (int)($w * $scale));
+            $newH = max(1, (int)($h * $scale));
+            $resized = imagecreatetruecolor($newW, $newH);
+            imagealphablending($resized, false);
+            imagesavealpha($resized, true);
+            imagecopyresampled($resized, $im, 0, 0, 0, 0, $newW, $newH, $w, $h);
+            imagedestroy($im);
+            $im = $resized;
+            $w = $newW;
+            $h = $newH;
+        }
+
+        // 2. Cek apakah gambar memiliki transparansi asli (PNG) atau latar solid (JPG)
+        $hasAlpha = false;
+        $sampleY = min(20, $h);
+        $sampleX = min(20, $w);
+        for ($y = 0; $y < $sampleY; $y++) {
+            for ($x = 0; $x < $sampleX; $x++) {
+                $rgba = imagecolorat($im, $x, $y);
+                $alpha = ($rgba >> 24) & 0x7F;
+                if ($alpha > 10) {
+                    $hasAlpha = true;
+                    break 2;
+                }
+            }
+        }
+
+        // 3. Tentukan bounding box goresan tanda tangan
         $minX = $w; $maxX = -1; $minY = $h; $maxY = -1;
 
         for ($y = 0; $y < $h; $y++) {
             for ($x = 0; $x < $w; $x++) {
                 $rgba = imagecolorat($im, $x, $y);
                 $alpha = ($rgba >> 24) & 0x7F;
-                if ($alpha < 125) { // piksel tidak transparan
+                $r = ($rgba >> 16) & 0xFF;
+                $g = ($rgba >> 8) & 0xFF;
+                $b = $rgba & 0xFF;
+
+                $isContent = false;
+                if ($hasAlpha) {
+                    // PNG transparan: piksel bukan transparan
+                    $isContent = ($alpha < 120);
+                } else {
+                    // Foto JPG di kertas: piksel yang lebih gelap dari warna kertas (kecerahan < 230)
+                    $brightness = ($r * 299 + $g * 587 + $b * 114) / 1000;
+                    $isContent = ($brightness < 230);
+                }
+
+                if ($isContent) {
                     if ($x < $minX) $minX = $x;
                     if ($x > $maxX) $maxX = $x;
                     if ($y < $minY) $minY = $y;
@@ -314,6 +359,7 @@ class ProfileController extends Controller
             }
         }
 
+        // 4. Pangkas ke area tanda tangan saja
         if ($maxX !== -1) {
             $cropX = max(0, $minX - $pad);
             $cropY = max(0, $minY - $pad);
@@ -325,7 +371,27 @@ class ProfileController extends Controller
             imagesavealpha($cropped, true);
             $trans = imagecolorallocatealpha($cropped, 0, 0, 0, 127);
             imagefilledrectangle($cropped, 0, 0, $cropW, $cropH, $trans);
-            imagecopy($cropped, $im, 0, 0, $cropX, $cropY, $cropW, $cropH);
+
+            if (!$hasAlpha) {
+                // Untuk foto di kertas putih: buat latar kertas putihnya menjadi transparan
+                for ($cy = 0; $cy < $cropH; $cy++) {
+                    for ($cx = 0; $cx < $cropW; $cx++) {
+                        $rgba = imagecolorat($im, $cropX + $cx, $cropY + $cy);
+                        $r = ($rgba >> 16) & 0xFF;
+                        $g = ($rgba >> 8) & 0xFF;
+                        $b = $rgba & 0xFF;
+                        $brightness = ($r * 299 + $g * 587 + $b * 114) / 1000;
+                        if ($brightness > 230) {
+                            imagesetpixel($cropped, $cx, $cy, $trans);
+                        } else {
+                            $col = imagecolorallocatealpha($cropped, $r, $g, $b, 0);
+                            imagesetpixel($cropped, $cx, $cy, $col);
+                        }
+                    }
+                }
+            } else {
+                imagecopy($cropped, $im, 0, 0, $cropX, $cropY, $cropW, $cropH);
+            }
 
             imagedestroy($im);
             $im = $cropped;

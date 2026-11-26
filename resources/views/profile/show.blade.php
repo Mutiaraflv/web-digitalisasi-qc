@@ -164,18 +164,18 @@
         @endif
 
         <!-- Editor Input / Ubah Tanda Tangan -->
-        <div id="sigEditorContainer" style="{{ $user->signature_url ? 'display: none; margin-top: 1rem;' : '' }}">
+        <div id="sigEditorContainer" style="{{ ($user->signature_url && !$errors->has('signature_file')) ? 'display: none; margin-top: 1rem;' : 'margin-top: 1rem;' }}">
           <div class="sig-tab-pills">
-            <button type="button" class="sig-tab-pill active" id="tabBtnDraw" onclick="switchSigTab('draw')">
+            <button type="button" class="sig-tab-pill {{ $errors->has('signature_file') ? '' : 'active' }}" id="tabBtnDraw" onclick="switchSigTab('draw')">
               <i data-lucide="pen-line"></i> {{ __('qc.profile.tab_draw') }}
             </button>
-            <button type="button" class="sig-tab-pill" id="tabBtnUpload" onclick="switchSigTab('upload')">
+            <button type="button" class="sig-tab-pill {{ $errors->has('signature_file') ? 'active' : '' }}" id="tabBtnUpload" onclick="switchSigTab('upload')">
               <i data-lucide="upload-cloud"></i> {{ __('qc.profile.tab_upload') }}
             </button>
           </div>
 
           <!-- TAB 1: Goreskan Tanda Tangan di Kanvas -->
-          <div id="sigTabDraw" class="sig-tab-pane">
+          <div id="sigTabDraw" class="sig-tab-pane" style="{{ $errors->has('signature_file') ? 'display: none;' : '' }}">
             <div class="sig-profile-canvas-wrap" id="profileCanvasWrap">
               <canvas id="profileSigCanvas"></canvas>
               <div class="sig-profile-placeholder" id="profileSigPlaceholder">
@@ -205,15 +205,20 @@
           </div>
 
           <!-- TAB 2: Unggah Berkas Gambar TTD -->
-          <div id="sigTabUpload" class="sig-tab-pane" style="display: none;">
+          <div id="sigTabUpload" class="sig-tab-pane" style="{{ $errors->has('signature_file') ? 'display: block;' : 'display: none;' }}">
             <form method="POST" action="{{ route('profile.signature.upload') }}" enctype="multipart/form-data">
               @csrf
-              <div class="sig-upload-box" onclick="document.getElementById('profileSigFileInput').click()">
+              <div class="sig-upload-box" id="sigUploadDropzone" onclick="document.getElementById('profileSigFileInput').click()">
                 <i data-lucide="image-up" class="sig-upload-icon"></i>
                 <div class="sig-upload-text">{{ __('qc.profile.upload_drag') }}</div>
                 <div class="sig-upload-subtext">{{ __('qc.profile.upload_hint') }}</div>
                 <input type="file" id="profileSigFileInput" name="signature_file" accept="image/png, image/jpeg, image/jpg, image/webp" style="display: none;" onchange="previewUploadSig(this)">
               </div>
+              @error('signature_file')
+                <div style="color: var(--danger, #ef4444); font-size: 0.8rem; margin-top: 6px; text-align: center; font-weight: 500;">
+                  <i data-lucide="alert-circle" style="width: 13px; height: 13px; vertical-align: -2px; display: inline-block;"></i> {{ $message }}
+                </div>
+              @enderror
               <div id="uploadPreviewWrap" style="display: none; margin-top: 10px; text-align: center;">
                 <img id="uploadPreviewImg" style="max-height: 70px; max-width: 180px; object-fit: contain; border: 1px dashed var(--border); border-radius: 6px; padding: 4px; background: #fff;">
                 <div id="uploadFileName" style="font-size: 11px; color: var(--text-subtle); margin-top: 4px;"></div>
@@ -781,6 +786,35 @@
     pCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); drawing(e); }, { passive: false });
     pCanvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDraw(); }, { passive: false });
     pCanvas.addEventListener('touchcancel', (e) => { e.preventDefault(); stopDraw(); }, { passive: false });
+
+    // Drag & Drop listener for signature upload
+    const dropzone = document.getElementById('sigUploadDropzone');
+    const fileInput = document.getElementById('profileSigFileInput');
+    if (dropzone && fileInput) {
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.style.borderColor = 'var(--primary, #2563eb)';
+          dropzone.style.background = 'rgba(37, 99, 235, 0.05)';
+        }, false);
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropzone.style.borderColor = '';
+          dropzone.style.background = '';
+        }, false);
+      });
+      dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files && dt.files.length > 0) {
+          fileInput.files = dt.files;
+          previewUploadSig(fileInput);
+        }
+      }, false);
+    }
 
     @if(!$user->signature_url)
       setTimeout(() => initProfileCanvas(), 100);
