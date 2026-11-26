@@ -71,6 +71,8 @@ return [
         'password' => 'Kata sandi',
         'remember' => 'Ingat saya di perangkat ini',
         'sign_in_btn' => 'Masuk',
+        'timeout_message' => 'Sesi Anda telah berakhir karena tidak ada aktivitas selama 20 menit. Silakan masuk kembali.',
+        'session_timeout' => 'Sesi berakhir otomatis karena tidak ada aktivitas.',
         'no_account' => 'Jika belum memiliki akun, hubungi administrator sistem.',
         'or' => 'atau',
         'face_btn' => 'Masuk dengan Biometrik / Kunci Perangkat',

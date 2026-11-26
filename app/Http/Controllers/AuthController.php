@@ -26,13 +26,14 @@ class AuthController extends Controller
             'password.required' => 'Kata sandi wajib diisi.',
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! Auth::attempt($credentials, false)) {
             return back()
                 ->withErrors(['email' => 'Email atau kata sandi tidak cocok.'])
                 ->onlyInput('email');
         }
 
         $request->session()->regenerate();
+        $request->session()->put('_last_user_activity', time());
         \App\Models\User::touchPresence(Auth::user(), $request, true);
         ActivityLog::record('login', 'Masuk ke sistem QCMS');
 

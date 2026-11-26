@@ -618,17 +618,124 @@
 <script>
 (function () {
   const hbUrl = '{{ route("presence.heartbeat") }}';
+  const loginUrl = '{{ route("login", ["timeout" => 1]) }}';
+  const logoutUrl = '{{ route("logout") }}';
+  const IDLE_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
+  const ACTIVE_WINDOW_MS = 60 * 1000; // 1 minute active threshold
   let lastBeatAt = Date.now();
   let stopped = false;
+
+  // Track user activity timestamp with cross-tab localStorage sync
+  let lastUserActivity = Date.now();
+  try {
+    const stored = localStorage.getItem('qc_last_active');
+    if (stored && Number(stored) > 0) {
+      lastUserActivity = Math.max(lastUserActivity, Number(stored));
+    }
+  } catch (_) {}
+
+  function markActive() {
+    lastUserActivity = Date.now();
+    try {
+      localStorage.setItem('qc_last_active', String(lastUserActivity));
+    } catch (_) {}
+  }
+
+  window.__qcIsUserActive = function () {
+    try {
+      const stored = localStorage.getItem('qc_last_active');
+      if (stored && Number(stored) > 0) {
+        lastUserActivity = Math.max(lastUserActivity, Number(stored));
+      }
+    } catch (_) {}
+    return (Date.now() - lastUserActivity) < ACTIVE_WINDOW_MS;
+  };
+
+  window.__qcCheckIdleTimeout = function () {
+    return checkIdleTimeout();
+  };
+
+  // Listen to user interaction events (throttled)
+  let throttleTimer = null;
+  ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click', 'wheel'].forEach(evt => {
+    window.addEventListener(evt, () => {
+      if (!throttleTimer) {
+        throttleTimer = setTimeout(() => {
+          throttleTimer = null;
+          markActive();
+        }, 1000);
+      }
+    }, { passive: true });
+  });
+
+  // Cross-tab synchronization via localStorage events
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'qc_last_active' && e.newValue) {
+      lastUserActivity = Math.max(lastUserActivity, Number(e.newValue));
+    } else if (e.key === 'qc_auto_logout') {
+      stopped = true;
+      window.location.href = loginUrl;
+    }
+  });
 
   function getCsrf() {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
   }
 
+  async function triggerAutoLogout() {
+    if (stopped) return;
+    stopped = true;
+    try {
+      localStorage.setItem('qc_auto_logout', String(Date.now()));
+      localStorage.removeItem('qc_last_active');
+    } catch (_) {}
+
+    try {
+      await fetch(logoutUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': getCsrf(),
+        },
+      });
+    } catch (_) {}
+
+    window.location.href = loginUrl;
+  }
+
+  function checkIdleTimeout() {
+    if (stopped) return true;
+    try {
+      const stored = localStorage.getItem('qc_last_active');
+      if (stored && Number(stored) > 0) {
+        lastUserActivity = Math.max(lastUserActivity, Number(stored));
+      }
+    } catch (_) {}
+
+    const idleMs = Date.now() - lastUserActivity;
+    if (idleMs >= IDLE_TIMEOUT_MS) {
+      triggerAutoLogout();
+      return true;
+    }
+    return false;
+  }
+
   async function sendHeartbeat() {
     if (stopped || document.hidden || window.__qcHasOwnLivePoll) return;
+    if (checkIdleTimeout()) return;
+
     const now = Date.now();
     if ((now - lastBeatAt) < 20000) return;
+
+    const isUserActive = window.__qcIsUserActive();
+    // If completely idle for > 2 minutes, pause presence heartbeat so presence transitions to offline
+    if ((now - lastUserActivity) > (120 * 1000)) {
+      return;
+    }
+
     lastBeatAt = now;
     try {
       const res = await fetch(hbUrl, {
@@ -639,10 +746,12 @@
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': getCsrf(),
+          'X-QC-User-Active': isUserActive ? '1' : '0',
         },
       });
       if (res.status === 401 || res.status === 419) {
         stopped = true;
+        window.location.href = loginUrl;
       }
     } catch (_) {
       // Transient offline / tunnel hiccup — retry on next interval
@@ -650,8 +759,18 @@
   }
 
   setInterval(sendHeartbeat, 25000);
+  setInterval(checkIdleTimeout, 10000);
+
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
+      if (!checkIdleTimeout()) {
+        sendHeartbeat();
+      }
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    if (!checkIdleTimeout()) {
       sendHeartbeat();
     }
   });
